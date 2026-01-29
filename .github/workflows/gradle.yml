@@ -1,0 +1,57 @@
+name: WorkFlow CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  backend:
+    name: Backend Build (Gradle)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # gradlew 실행권한 이슈 방지
+      - name: Grant execute permission for gradlew
+        working-directory: workflow-backend
+        run: chmod +x gradlew
+
+      # 백엔드 빌드 (테스트는 일단 제외 추천)
+      - name: Build with Gradle Wrapper
+        working-directory: workflow-backend
+        run: ./gradlew clean build -x test
+
+  frontend:
+    name: Frontend Build (React)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: workflow-frontend/my-react-app/package-lock.json
+
+      - name: Install deps
+        working-directory: workflow-frontend/my-react-app
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: workflow-frontend/my-react-app
+        run: npm run build
