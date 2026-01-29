@@ -1,0 +1,17 @@
+# STS/Eclipse
+.metadata/
+.classpath
+.project
+.settings/
+
+# Backend (Gradle)
+workflow-backend/build/
+workflow-backend/.gradle/
+
+# Frontend (React)
+workflow-frontend/**/node_modules/
+workflow-frontend/**/dist/
+
+# OS
+Thumbs.db
+.DS_Store
