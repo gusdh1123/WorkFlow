@@ -22,15 +22,6 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api")
 public class AuthController {
 	
-//	@Autowired
-//	AuthRepository lr;	
-//	
-//	@PostMapping("/login")
-//	public void insterUsers(@RequestBody AuthEntity le) {
-//		System.out.println("컨트롤러 진입");
-//		System.out.println("출력" + le.getPasswordHash());
-//	}
-	
 	private final AuthService authService;
 	
 	// 쿠키 생성
@@ -98,8 +89,10 @@ public class AuthController {
 	public ResponseEntity<Void> logout(HttpServletResponse res, HttpServletRequest req){
 		
 		res.addCookie(httpCookie("refreshToken", "", 0));
+		String refreshToken = readCookie(req, "refreshToken");
 		
-		// DB에 리프래쉬 토큰 제거하기
+		// DB에 리프래쉬 토큰 논리적 제거하기
+		authService.logout(refreshToken);
 		
 		System.out.println("토큰" + req.getCookies());
 		
