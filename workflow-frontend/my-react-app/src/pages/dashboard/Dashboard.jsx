@@ -1,20 +1,22 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from "react";
+import { useAuth } from "../auth/useAuth";
+import { apiFetch } from "../api/apiFetch"; 
 
 export default function Dashboard() {
+
   const kpis = ['TODO', 'IN_PROGRESS', 'REVIEW', 'DONE', 'ON_HOLD', 'CANCELED']
   const [counts, setCounts] = useState({})
+  const { accessToken, setAccessToken } = useAuth();
 
-  useEffect(() => {
-    fetch('/api/kpi')
-      .then((res) => res.json())
-      .then((data) => {
-        // data 예시: { TODO: 3, IN_PROGRESS: 2, ... }
-        setCounts(data)
+useEffect(() => {
+    apiFetch("/api/kpi", accessToken, setAccessToken)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
       })
-      .catch((err) => {
-        console.error('KPI 불러오기 실패', err)
-      })
-  }, [])
+      .then(setCounts)
+      .catch((e) => console.error("KPI 불러오기 실패", e));
+  }, [accessToken, setAccessToken]);
 
   return (
     <div className="dashboardGrid">

@@ -82,14 +82,14 @@ public class SecurityConfig {
 		return source;
 	}
 
-	// DB 없이 메모리 유저
-	// UserDetailsService 시큐리티가 이 username의 사용자 정보 가져와 할때 쓰이는 인터페이스
-	// DB가 있다면 보통 userRepositiry로 조회해서 반환
-	@Bean
-	public UserDetailsService userDetailsService(PasswordEncoder encoder) {
-		UserDetails user = User.builder().username("user").password(encoder.encode("1234")).roles("USER").build();
-		return new InMemoryUserDetailsManager(user);
-	}
+//	// DB 없이 메모리 유저
+//	// UserDetailsService 시큐리티가 이 username의 사용자 정보 가져와 할때 쓰이는 인터페이스
+//	// DB가 있다면 보통 userRepositiry로 조회해서 반환
+//	@Bean
+//	public UserDetailsService userDetailsService(PasswordEncoder encoder) {
+//		UserDetails user = User.builder().username("user").password(encoder.encode("1234")).roles("USER").build();
+//		return new InMemoryUserDetailsManager(user);
+//	}
 
 	// 비밀번호를 평문으로 비교하면 위험하니 해시로 비교
 	// BCryptPasswordEncoder가 가장 흔한 표준

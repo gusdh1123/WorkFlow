@@ -38,7 +38,7 @@ public class UserEntity {
 	private String role;
 	private String status;
 	
-	@Column(name="last_Login_at")
+	@Column(name="last_login_at")
 	private LocalDateTime lastLoginAt;
 	
 	// 업데이트 적용 안되게
@@ -46,7 +46,7 @@ public class UserEntity {
 	private LocalDateTime createdAt;
 	
 	// 일단 막아 둠
-	@Column(name="updated_at", updatable = false)
+	@Column(name="updated_at")
 	private LocalDateTime updatedAt;
 	
 	

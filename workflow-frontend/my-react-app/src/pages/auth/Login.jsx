@@ -1,6 +1,7 @@
 import './Login.css'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from './useAuth';
 
 function Login()  {
 
@@ -8,6 +9,7 @@ function Login()  {
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const {setAccessToken} = useAuth();
 
     const loginHandle = async () => {
         try {
@@ -29,6 +31,10 @@ function Login()  {
             if (!response.ok){
                 throw new Error("로그인 실패");
             }
+
+            // 엑세스 토큰 받기
+            const data = await response.json();
+            setAccessToken(data.accessToken);
 
             // 로그인 후 이동
             navigate("/")

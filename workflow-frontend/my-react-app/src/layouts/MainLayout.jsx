@@ -1,20 +1,11 @@
-// src/layouts/MainLayout.jsx
-import { Outlet, NavLink, useNavigate} from 'react-router-dom'
-import './MainLayout.css'
+import { Outlet, NavLink } from "react-router-dom";
+import "./MainLayout.css";
 import logo from "../assets/images/Logo.png";
-
+import { useLogout } from "../pages/auth/useLogout";
 
 export default function MainLayout() {
 
-const navigate = useNavigate();
-
-const onLogout = async () => {
-    await fetch("http://localhost:8081/api/logout", {
-    method: "POST",
-    credentials: "include"
-    });
-    navigate("/login");
-  };
+   const logout = useLogout();
 
   return (
     <div className="appShell">
@@ -53,7 +44,7 @@ const onLogout = async () => {
             <button className="ghostBtn">Notifications</button>
             <button className="ghostBtn">Profile</button>
             <NavLink to="/login"><button className="ghostBtn">Login</button></NavLink>
-            <button onClick={onLogout} className="ghostBtn">logout</button>
+            <button onClick={logout} className="ghostBtn">logout</button>
           </div>
         </header>
 

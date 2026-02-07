@@ -1,17 +1,23 @@
 package com.workflow.auth.jwt;
 
+import java.io.IOException;
+
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.workflow.auth.service.AuthService;
+import com.workflow.auth.service.CustomUserDetailsService;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.*;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
+import lombok.RequiredArgsConstructor;
 
-import java.io.IOException;
-
+@RequiredArgsConstructor
 // OncePerRequestFilter: 요청 1번당 필터도 1번만 실행되게 보장하는 편한 필터 베이스 클래스
 public class JwtAuthFilter extends OncePerRequestFilter {
 
@@ -21,11 +27,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     // ex) 너는 InMemoryUserDetailsManager로 “user/1234/ROLE_USER” 들어있지
     private final UserDetailsService userDetailsService;
 
-    // 생성자
-    public JwtAuthFilter(JwtProvider jwtProvider, UserDetailsService userDetailsService) {
-        this.jwtProvider = jwtProvider;
-        this.userDetailsService = userDetailsService;
-    }
+//    // 생성자
+//    public JwtAuthFilter(JwtProvider jwtProvider, UserDetailsService userDetailsService) {
+//        this.jwtProvider = jwtProvider;
+//        this.userDetailsService = userDetailsService;
+//    }
 
     // 모든 요청이 들어올 때마다 여기 실행됨
     // request: 들어온 HTTP 요청

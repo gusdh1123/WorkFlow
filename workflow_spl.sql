@@ -16,6 +16,11 @@ SELECT * FROM users;
 
 DROP TABLE test;
 
+DROP TABLE refresh_tokens;
+DROP TABLE audit_logs;
+DROP TABLE attachments;
+DROP TABLE comments;
+DROP TABLE tasks;
 DROP TABLE users;
 
 DELETE FROM users;
@@ -36,9 +41,9 @@ CREATE TABLE users (
 	position VARCHAR(100) NOT NULL,
 	role VARCHAR(20) NOT NULL,
 	status VARCHAR(20) NOT NULL,
-	last_login_at TIMESTAMPTZ NULL,
-	created_at TIMESTAMPTZ NULL,
-	updated_at TIMESTAMPTZ NULL
+	last_login_at timestamp(6) without time zone NULL,
+	created_at timestamp(6) without time zone NULL,
+	updated_at timestamp(6) without time zone NULL
 );
 
 CREATE TABLE tasks (

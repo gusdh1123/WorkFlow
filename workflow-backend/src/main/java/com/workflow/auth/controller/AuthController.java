@@ -66,30 +66,28 @@ public class AuthController {
 		System.out.println("Access 토큰: " + tokens.getAccessToken());
 		System.out.println("Refresh 토큰: " + tokens.getRefreshToken());
 		
-		res.addCookie(httpCookie("accessToken", tokens.getAccessToken(), 15));
 		res.addCookie(httpCookie("refreshToken", tokens.getRefreshToken(), 10080));
 		
-		return ResponseEntity.ok().build();
+		return ResponseEntity.ok(Map.of("accessToken", tokens.getAccessToken()));
 		
 	}
 	
 	@PostMapping("/refresh")
-	public ResponseEntity<Void> refresh(HttpServletRequest req, HttpServletResponse res){
+	public ResponseEntity<?> refresh(HttpServletRequest req, HttpServletResponse res){
 		
 		String refreshToken = readCookie(req, "refreshToken");
 		String newAccessToken = authService.refresh(refreshToken);// 서비스에서 다시 발급 코드
-
-		res.addCookie(httpCookie("accessToken", newAccessToken, 15));
 		
-		return ResponseEntity.ok().build();
+		return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
 		
 	}
 	
 	@PostMapping("/logout")
 	public ResponseEntity<Void> logout(HttpServletResponse res, HttpServletRequest req){
 		
-		res.addCookie(httpCookie("accessToken", "", 0));
 		res.addCookie(httpCookie("refreshToken", "", 0));
+		
+		// DB에 리프래쉬 토큰 제거하기
 		
 		System.out.println("토큰" + req.getCookies());
 		

@@ -39,6 +39,7 @@ public class AuthService {
 		String accessToken = jwtProvider.createAccessToken(user.getEmail(), user.getRole());
 		String refresToken = jwtProvider.createRefreshToken(user.getEmail());
 		
+		// DB에 리프래쉬 토큰 저장하기
 		
 		return new Tokens(accessToken, refresToken);	
 		
