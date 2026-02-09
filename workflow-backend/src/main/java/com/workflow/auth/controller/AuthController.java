@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.workflow.auth.dto.Tokens;
 import com.workflow.auth.service.AuthService;
+import com.workflow.common.exception.UnauthorizedException;
 import com.workflow.common.util.CookieUtil;
 import com.workflow.user.entity.UserEntity;
 
@@ -40,25 +41,35 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refresh(HttpServletRequest req, HttpServletResponse res){
+    public ResponseEntity<?> refresh(HttpServletRequest req, HttpServletResponse res) {
 
         String refreshToken = CookieUtil.readCookie(req, "refreshToken");
 
-        // 쿠키 자체가 없으면 -> 비로그인 204처리
+        // 쿠키 자체가 없으면 = 비로그인 상태
         if (refreshToken == null) {
             return ResponseEntity.noContent().build();
         }
 
-        // 유효한 경우 액세스 토큰 발급
         try {
-            String newAccessToken = authService.refresh(refreshToken); // 서비스에서 다시 발급 코드
-            return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
-        } catch (Exception e) {
-            // 만료/위조/없는 토큰 -> 비로그인
+            // 회전된 access + refresh
+            Tokens tokens = authService.refresh(refreshToken);
+
+            // 새 refresh 쿠키 재설정
+            CookieUtil.addHttpOnlyCookie(res, "refreshToken", tokens.refreshToken(), 10080);
+            
+            return ResponseEntity.ok(Map.of("accessToken", tokens.accessToken()));
+
+        } catch (UnauthorizedException e) {
+
+            // refresh 실패 시 쿠키 제거
+        	// 잘못되서 이상하게 작동함 없애는 게 맞고 로그아웃에서 삭제하기.
+            // CookieUtil.deleteCookie(res,"refreshToken");
+            
             return ResponseEntity.status(401).build();
         }
     }
 
+ 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletResponse res, HttpServletRequest req){
 
@@ -73,7 +84,7 @@ public class AuthController {
             authService.logout(refreshToken);
         }
 
-        // System.out.println("토큰" + req.getCookies()); // 이건 굳이 안 찍는 게 좋아(로그에 남음)
-        return ResponseEntity.ok().build();
+        // 204 넘겨줄 값이 없으니까
+        return ResponseEntity.noContent().build();
     }
 }

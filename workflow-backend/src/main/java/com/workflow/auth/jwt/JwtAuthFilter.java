@@ -38,6 +38,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
+    	
+    	// 나중에 차단, 삭제 이런 계정 상태 추가 할거면.
+    	// if (u.getStatus() == UserStatus.DELETED || u.getStatus() == UserStatus.BLOCKED) {
+    	//     throw new UsernameNotFoundException("inactive user");
+    	// }
 
         // 이미 인증된 상태면 스킵
         // (다른 필터에서 Authentication을 이미 세팅했을 수도 있음)

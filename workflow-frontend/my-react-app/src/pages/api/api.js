@@ -1,74 +1,128 @@
 import axios from "axios";
 
-// 기본 axios 인스턴스
+// refresh는 refreshOnce로만 호출할 것
+
+/**
+ * 1) axios 기본 인스턴스
+ * - 모든 일반 API 요청에 사용
+ * - accessToken은 Authorization 헤더로 전달
+ * - refreshToken은 HttpOnly 쿠키로 자동 전송
+ */
 export const api = axios.create({
   baseURL: "http://localhost:8081",
-  withCredentials: true, // refreshToken 쿠키 보내려면 필수
+  withCredentials: true, // refreshToken 쿠키 주고받기
 });
 
-// accessToken 주입(아래에서 setter로 연결)
-let accessToken = null;
-export const setApiAccessToken = (token) => {
-  accessToken = token;
-};
-
-// 요청마다 Authorization 자동 세팅
-// Authorization: Bearer <accessToken>
-api.interceptors.request.use((config) => {
-  if (accessToken) {
-    config.headers.Authorization = `Bearer ${accessToken}`;
-  }
-  return config;
-});
-
-// refresh는 api 말고 "순수 axios"로 호출(무한루프 방지)
+/**
+ * refresh 전용 axios 인스턴스
+ * - refresh 요청에는 interceptor를 타지 않게 분리
+ * - 무한 루프(refresh → 401 → refresh)를 방지
+ */
 export const refreshClient = axios.create({
   baseURL: "http://localhost:8081",
   withCredentials: true,
 });
 
-// 리프래쉬 1번만
-// 첫번째 요청만 수행 후 나머지는 queue에 대기
-// 리프래쉬 성공하면 대기 중인 요청들을 새 토큰으로 다시 실행
+/**
+ * 2) accessToken 메모리 보관
+ * - localStorage/sessionStorage 미사용 (XSS 대응)
+ * - 페이지 새로고침 시 사라지는 것이 정상
+ * - refresh 성공 시 다시 메모리에 주입
+ */
+let accessToken = null;
+
+export const setApiAccessToken = (token) => {
+  accessToken = token;
+};
+
+/**
+ * 요청 인터셉터
+ * - accessToken이 있으면 Authorization 헤더 자동 추가
+ * - 토큰이 없으면 헤더를 붙이지 않음
+ */
+api.interceptors.request.use((config) => {
+  if (accessToken) {
+    config.headers = config.headers || {};
+    config.headers.Authorization = `Bearer ${accessToken}`;
+  }
+  return config;
+});
+
+/**
+ * 3) refresh 단일화 (핵심 로직)
+ * - 동시에 여러 요청에서 refresh가 필요해도
+ *   실제 refresh 요청은 1번만 발생
+ * - 나머지는 같은 Promise를 공유
+ */
+let refreshPromise = null;
+
+export function refreshOnce() {
+  if (!refreshPromise) {
+    refreshPromise = refreshClient
+      .post("/api/refresh")
+      .then((res) => {
+        // 204: 비로그인 상태 (정상)
+        if (res.status === 204) return null;
+
+        // 200: accessToken 재발급 성공
+        return res.data?.accessToken ?? null;
+      })
+      .catch((e) => {
+        // 401: refreshToken 만료/폐기 → 조용히 로그아웃 처리
+        if (e.response?.status === 401) return null;
+        throw e; // 그 외 에러는 상위로 전달
+      })
+      .finally(() => {
+        // 다음 refresh를 위해 Promise 초기화
+        refreshPromise = null;
+      });
+  }
+  return refreshPromise;
+}
+
+/**
+ * 4) 401 처리 로직 (queue + 재시도)
+ * - accessToken 만료로 401 발생 시 refresh 시도
+ * - refresh 중이면 요청을 queue에 대기
+ * - refresh 성공 시 대기 중 요청 재실행
+ */
 let isRefreshing = false;
 let queue = [];
 
-// queue 실행 함수
-// refresh 성공 → resolve(token) 호출해서 대기 요청들 재시도
-// refresh 실패 → reject(error) 해서 대기 요청들 전부 실패 처리
+// refresh 완료 후 대기 중이던 요청들 처리
 const runQueue = (error, token = null) => {
   queue.forEach((p) => (error ? p.reject(error) : p.resolve(token)));
   queue = [];
 };
 
-// 응답 인터셉터: 401이면 리프래쉬 후 재시도
-// 성공 응답은 통과 실패하면 여기서 처리
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
     const original = error.config;
 
-    // // 로그 확인용
-    // if (error.response?.status === 401) {
-    //   console.log("[API 401]", original.method, original.url);
-    // }
+    // 401 아니면 그대로 에러 반환
+    if (error.response?.status !== 401) {
+      return Promise.reject(error);
+    }
 
-    // 401이 아니면 패스
-    if (error.response?.status !== 401) return Promise.reject(error);
+    // refresh 요청 자체에서 401 → 재시도 금지
+    if (original?.url?.includes("/api/refresh")) {
+      return Promise.reject(error);
+    }
 
-    // refresh 자체 호출이면 패스(무한루프 방지)
-    if (original.url?.includes("/api/refresh")) return Promise.reject(error);
-
-    // 이미 재시도 한 요청이면 패스(무한루프 방지)
-    if (original._retry) return Promise.reject(error);
+    // 이미 재시도한 요청이면 중단
+    if (original._retry) {
+      return Promise.reject(error);
+    }
     original._retry = true;
 
-    // 동시에 여러 요청이 401 나면 refresh 1번만 하고 나머진 대기
-    // 이미 리프래쉬 중이면 queue에 대기
+    // refresh 진행 중이면 queue에 대기
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
         queue.push({
           resolve: (token) => {
+            if (!token) return reject(error);
+            original.headers = original.headers || {};
             original.headers.Authorization = `Bearer ${token}`;
             resolve(api(original));
           },
@@ -77,27 +131,30 @@ api.interceptors.response.use(
       });
     }
 
-    // 리프래쉬 시작
     isRefreshing = true;
 
     try {
-      const res = await refreshClient.post("/api/refresh");
-      const newToken = res.data.accessToken;
+      const newToken = await refreshOnce();
 
+      // refresh 실패 → 인증 종료
+      if (!newToken) throw error;
+
+      // 새 토큰 메모리에 반영
       setApiAccessToken(newToken);
 
+      // 대기 중 요청들 재개
       runQueue(null, newToken);
 
+      // 원래 요청 재시도
+      original.headers = original.headers || {};
       original.headers.Authorization = `Bearer ${newToken}`;
       return api(original);
 
-      // 실패 처리
     } catch (e) {
+      // refresh 실패 시 모든 대기 요청 실패 처리
       runQueue(e, null);
       setApiAccessToken(null);
       return Promise.reject(e);
-
-      // 리프래쉬 상태 해제
     } finally {
       isRefreshing = false;
     }

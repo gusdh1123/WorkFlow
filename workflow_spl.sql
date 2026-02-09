@@ -30,9 +30,9 @@ DELETE FROM users;
 
 
 -- 계정 3개
-INSERT INTO users VALUES (1, 'admin', '$2a$10$t8zVyp9gVqPhTdT0XG4RIOdg9PbLRuHvj8GMjcwUqt7jyvdO.D4HK', '김워크', 'CEO', '관리자', 'ADMIN', 'DISABLED', now(), now(), now());
-INSERT INTO users VALUES (2, 'song', '$2a$10$t8zVyp9gVqPhTdT0XG4RIOdg9PbLRuHvj8GMjcwUqt7jyvdO.D4HK', '송현오', '개발부', '부장', 'USER', 'DISABLED', now(), now(),now());
-INSERT INTO users VALUES (3, 'lim', '$2a$10$t8zVyp9gVqPhTdT0XG4RIOdg9PbLRuHvj8GMjcwUqt7jyvdO.D4HK', '임현규', '개발부', '주임', 'USER', 'DISABLED', now(), now(), now());
+INSERT INTO users VALUES (1, 'admin', '$2a$10$t8zVyp9gVqPhTdT0XG4RIOdg9PbLRuHvj8GMjcwUqt7jyvdO.D4HK', '김워크', 'CEO', '관리자', 'ADMIN', 'OFFLINE', now(), now(), now());
+INSERT INTO users VALUES (2, 'song', '$2a$10$t8zVyp9gVqPhTdT0XG4RIOdg9PbLRuHvj8GMjcwUqt7jyvdO.D4HK', '송현오', '개발부', '부장', 'USER', 'OFFLINE', now(), now(),now());
+INSERT INTO users VALUES (3, 'lim', '$2a$10$t8zVyp9gVqPhTdT0XG4RIOdg9PbLRuHvj8GMjcwUqt7jyvdO.D4HK', '임현규', '개발부', '주임', 'USER', 'OFFLINE', now(), now(), now());
 
 
 CREATE TABLE users (

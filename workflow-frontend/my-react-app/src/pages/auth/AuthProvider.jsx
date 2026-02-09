@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AuthCtx } from "./AuthContext";
-import { refreshClient, setApiAccessToken } from "../api/api";
+import { refreshOnce, setApiAccessToken } from "../api/api";
 import { jwtDecode } from "jwt-decode";
 
 export default function AuthProvider({ children }) {
@@ -8,47 +8,52 @@ export default function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [authReady, setAuthReady] = useState(false);
 
+  // accessToken이 바뀔 때마다 api에 주입 + user 디코딩
   useEffect(() => {
     setApiAccessToken(accessToken);
 
     if (accessToken) {
-     const decoded = jwtDecode(accessToken);
-     setUser({
-       id: decoded.sub,
-       email: decoded.email,
-       role: decoded.role,
-       name: decoded.name
-     });
-   } else {
-     setUser(null);
-   }
+      const decoded = jwtDecode(accessToken);
+      setUser({
+        id: decoded.sub,
+        email: decoded.email,
+        role: decoded.role,
+        name: decoded.name,
+      });
+    } else {
+      setUser(null);
+    }
   }, [accessToken]);
 
-useEffect(() => {
-  const boot = async () => {
-    try {
+  // 앱 시작 시 1회 refresh로 로그인 복구
+  useEffect(() => {
+    let mounted = true;
 
-      const res = await refreshClient.post("/api/refresh");
+    const boot = async () => {
+try {
+  const token = await refreshOnce();
+  if (!mounted) return;
 
-      // 204면 비로그인(정상) → 아무 것도 안 함
-      if (res.status === 204) return;
+  // token 있으면 로그인 복구
+  if (token) setAccessToken(token);
 
-      // 성공 시 액세스 토큰 저장
-      setAccessToken(res.data.accessToken);
+  // token 없으면 비로그인 상태
+} catch {
+  if (mounted) {
+    setAccessToken(null);
+    setUser(null);
+  }
+} finally {
+  if (mounted) setAuthReady(true);
+}
+    };
 
-    } catch (e) {
+    boot();
 
-      // 쿠키는 있는데 토큰이 죽었으면 401 (이것도 조용히 처리 가능)
-      if (e.response?.status === 401) return;
-
-      console.error("[BOOT REFRESH ERROR]", e);
-
-    } finally {
-      setAuthReady(true);
-    }
-  };
-  boot();
-}, []);
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   if (!authReady) return null;
 

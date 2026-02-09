@@ -26,6 +26,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 // 파리미터 없는 기본 생성자를 protected 접근제어자로 만들겠다. 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
 public class AuthEntity {
 	
 	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -58,11 +59,6 @@ public class AuthEntity {
 	        this.expiresAt = LocalDateTime.now().plusDays(7);
 	    }
 	}
-	
-	@Builder
-    private AuthEntity(UserEntity user) {
-        this.user = user;
-    }
 
 	public void setTokenHash(String tokenHash) {
 		this.tokenHash = tokenHash;

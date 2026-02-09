@@ -33,9 +33,9 @@ public class CustomUserDetailsService implements UserDetailsService {
     var u = userRepository.findById(userId)
         .orElseThrow(() -> new UsernameNotFoundException(userIdStr));
 
-    System.out.println("[UDS] found id=" + u.getId()
-    + ", email=" + u.getEmail()
-    + ", pw=" + (u.getPassword() == null ? "null" : "len=" + u.getPassword().length()));
+//    System.out.println("[UDS] found id=" + u.getId()
+//    + ", email=" + u.getEmail()
+//    + ", pw=" + (u.getPassword() == null ? "null" : "len=" + u.getPassword().length()));
 
     // 권한은 u.getRole() 기반 추천
     // "USER" / "ADMIN" 형태면 roles()로 넣기
