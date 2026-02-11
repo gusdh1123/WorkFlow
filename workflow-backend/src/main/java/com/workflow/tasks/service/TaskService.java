@@ -1,6 +1,5 @@
 package com.workflow.tasks.service;
 
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.domain.Page;
@@ -18,6 +17,7 @@ import com.workflow.tasks.dto.TaskResponse;
 import com.workflow.tasks.entity.TaskEntity;
 import com.workflow.tasks.enums.TaskStatus;
 import com.workflow.tasks.repasitory.TaskRepository;
+import com.workflow.user.entity.UserEntity;
 import com.workflow.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -35,10 +35,10 @@ public class TaskService {
             throw new UnauthorizedException("로그인이 필요합니다.");
         }
 
-        var creator = userRepository.findById(loginUserId)
+        UserEntity creator = userRepository.findById(loginUserId)
                 .orElseThrow(() -> new UnauthorizedException("사용자가 존재하지 않습니다."));
 
-        var assignee = (req.assigneeId() == null)
+        UserEntity assignee = (req.assigneeId() == null)
                 ? null
                 : userRepository.findById(req.assigneeId())
                     .orElseThrow(() -> new NotFoundException("담당자를 찾을 수 없습니다."));
