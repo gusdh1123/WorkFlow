@@ -4,17 +4,44 @@ import { useEffect, useState, useCallback } from "react";
 import { api } from "../api/api";
 
 export default function Tasks() {
-  const [scope, setScope] = useState("all"); // all | created | assigned
-  const [status, setStatus] = useState("");  // ""이면 전체
+  const [scope, setScope] = useState("all"); 
+  const [status, setStatus] = useState("");  
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // 백엔드 응답이 Page면 content만 뽑기
+  // paging state
+  const [page, setPage] = useState(0);   
+  const [size] = useState(9);           
+  const [totalPages, setTotalPages] = useState(0);
+
+  // 백엔드 응답이 Page면 content만 뽑기 (유지)
   const normalizeTasks = (data) => {
     if (Array.isArray(data)) return data;
     if (Array.isArray(data?.content)) return data.content;
     if (Array.isArray(data?.tasks)) return data.tasks;
     return [];
+  };
+
+  // 페이지 버튼 범위 만들기
+  const buildPageButtons = (current, total) => {
+    if (total <= 1) return [0];
+
+    const maxButtons = 7;
+    const half = Math.floor(maxButtons / 2);
+
+    let start = Math.max(0, current - half);
+    let end = Math.min(total - 1, current + half);
+
+    const count = end - start + 1;
+    if (count < maxButtons) {
+      const 부족 = maxButtons - count;
+      start = Math.max(0, start - 부족);
+      end = Math.min(total - 1, end + (maxButtons - (end - start + 1)));
+    }
+
+    const pages = [];
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
   };
 
   // HTML -> 텍스트
@@ -32,25 +59,39 @@ export default function Tasks() {
       if (scope) params.scope = scope;
       if (status) params.status = status;
 
+      params.page = page;
+      params.size = size;
+
       const res = await api.get("/api/tasks", { params });
 
       // 확인용
-      console.log("GET /api/tasks params =", params);
-      console.log("GET /api/tasks res.data =", res.data);
+      // console.log("GET /api/tasks params =", params);
+      // console.log("GET /api/tasks res.data =", res.data);
 
       const list = normalizeTasks(res.data);
       setTasks(list);
+
+      // totalPages 저장
+      setTotalPages(res.data?.totalPages ?? 0);
     } catch (e) {
       console.error("목록 조회 실패", e);
       setTasks([]);
+      setTotalPages(0);
     } finally {
       setLoading(false);
     }
+  }, [scope, status, page, size]);
+
+  // scope/status 바뀌면 0페이지로 리셋
+  useEffect(() => {
+    setPage(0);
   }, [scope, status]);
 
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
+
+  const pageButtons = buildPageButtons(page, totalPages);
 
   return (
     <div className="tasks">
@@ -150,6 +191,64 @@ export default function Tasks() {
           );
         })}
       </ul>
+
+      {/* Pagination UI */}
+      {totalPages > 1 && (
+        <div className="tasks__pagination" aria-label="페이지 이동">
+          <button
+            type="button"
+            className="tasks__pageBtn"
+            onClick={() => setPage(0)}
+            disabled={page === 0}
+          >
+            «
+          </button>
+
+          <button
+            type="button"
+            className="tasks__pageBtn"
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={page === 0}
+          >
+            ‹
+          </button>
+
+          {pageButtons[0] > 0 && <span className="tasks__pageEllipsis">…</span>}
+
+          {pageButtons.map((p) => (
+            <button
+              key={p}
+              type="button"
+              className={`tasks__pageBtn ${p === page ? "is-active" : ""}`}
+              onClick={() => setPage(p)}
+            >
+              {p + 1}
+            </button>
+          ))}
+
+          {pageButtons[pageButtons.length - 1] < totalPages - 1 && (
+            <span className="tasks__pageEllipsis">…</span>
+          )}
+
+          <button
+            type="button"
+            className="tasks__pageBtn"
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            disabled={page >= totalPages - 1}
+          >
+            ›
+          </button>
+
+          <button
+            type="button"
+            className="tasks__pageBtn"
+            onClick={() => setPage(totalPages - 1)}
+            disabled={page >= totalPages - 1}
+          >
+            »
+          </button>
+        </div>
+      )}
     </div>
   );
 }

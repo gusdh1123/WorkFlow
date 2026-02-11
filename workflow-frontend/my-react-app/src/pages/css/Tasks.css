@@ -214,3 +214,36 @@
 .tasks__dot {
   opacity: 0.6;
 }
+
+.tasks__pagination {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  margin: 18px 0 8px;
+}
+
+.tasks__pageBtn {
+  border: 1px solid #e6e8f0;
+  background: #fff;
+  border-radius: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.tasks__pageBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.tasks__pageBtn.is-active {
+  border-color: #5b7cfa;
+  background: #eef2ff;
+  font-weight: 700;
+}
+
+.tasks__pageEllipsis {
+  color: #9aa3b2;
+  padding: 0 4px;
+}
+
