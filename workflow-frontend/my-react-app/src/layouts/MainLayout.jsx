@@ -1,4 +1,5 @@
-import { Outlet, NavLink } from "react-router-dom";
+import { Outlet, NavLink, useLocation} from "react-router-dom";
+import { useEffect /*, useState */ } from "react";
 import "./MainLayout.css";
 import MainLogo from "../assets/images/Logo.png";
 import { useLogout } from "../pages/auth/useLogout";
@@ -9,7 +10,19 @@ export default function MainLayout() {
    const logout = useLogout();
    const { user } = useAuth();
 
-   console.log(user);
+   const { pathname } = useLocation();
+   console.log("현재 경로:", pathname);
+
+   const titleMap = {
+    "/": "Dashboard",
+    "/tasks": "Tasks"
+   }
+
+   const title = titleMap[pathname] ?? "WorkFlow";
+
+   useEffect(() => {
+   document.title = title;
+   }, [title]);
 
   return (
     <div className="appShell">
@@ -42,7 +55,7 @@ export default function MainLayout() {
 
       <div className="mainCol">
         <header className="header">
-          <div className="headerTitle">Dashboard</div>
+          <div className="headerTitle">{title}</div>
           <div className="headerActions">
             <button className="ghostBtn">Search</button>
             {/* <button className="ghostBtn">Profile</button> */}

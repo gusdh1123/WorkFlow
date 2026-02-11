@@ -1,0 +1,39 @@
+package com.workflow.common.exception;
+
+import java.util.Map;
+import java.util.HashMap;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.*;
+
+@RestControllerAdvice
+public class ApiExceptionHandler {
+
+    // 네 커스텀 예외 처리
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<?> handleApiException(ApiException e) {
+        return ResponseEntity
+                .status(e.getStatus())
+                .body(Map.of(
+                        "code", e.getCode(),
+                        "message", e.getMessage()
+                ));
+    }
+
+    // Validation 예외 처리
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<?> handleValidation(MethodArgumentNotValidException e) {
+
+        Map<String, String> errors = new HashMap<>();
+
+        e.getBindingResult().getFieldErrors()
+                .forEach(fe -> errors.put(fe.getField(), fe.getDefaultMessage()));
+
+        return ResponseEntity.badRequest().body(Map.of(
+                "code", "VALIDATION_ERROR",
+                "message", "입력값을 확인해주세요.",
+                "errors", errors
+        ));
+    }
+}

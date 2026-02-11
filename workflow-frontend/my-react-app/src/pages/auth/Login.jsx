@@ -26,6 +26,7 @@ const loginHandle = async () => {
 
     return (
       <div className='loginPage'>
+        <title>login</title>
         <div className='loginBox'>
             <img className="LoginLogo" src={LoginLogo} alt="LoginLogo"/>
 

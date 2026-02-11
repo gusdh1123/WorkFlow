@@ -25,6 +25,8 @@ public interface AuthRepository extends JpaRepository<AuthEntity, Long>{
 	Optional<AuthEntity> findByUserAndRevokedAtIsNull(UserEntity user);
 	
 	// 한 사람당 리프래시 토큰 1개씩
+	// @Modifying: @Query는 SELECT이기 때문에 UPDATE, DELETE를 쓰려면 붙여야 함.
+	// JPQL UPDATE, DELETE는 영속성 컨텍스트를 무시하고 DB만 직접 수정함. 그래서 DB상태와 메모리 상태가 다를 수 있음.
 	@Modifying
     @Query("""
         update AuthEntity a
@@ -36,7 +38,7 @@ public interface AuthRepository extends JpaRepository<AuthEntity, Long>{
                               @Param("now") LocalDateTime now);
 	
 	// 스케줄러 토큰 로그 삭제
-	@Modifying
+	@Modifying // (clearAutomatically = true, flushAutomatically = true)
 	@Query("""
 	  delete from AuthEntity a
 	   where a.revokedAt is not null
@@ -44,3 +46,7 @@ public interface AuthRepository extends JpaRepository<AuthEntity, Long>{
 	""")
 	int deleteRevokedBefore(@Param("cutoff") LocalDateTime cutoff);
 }
+
+	//@Modifying(clearAutomatically = true, flushAutomatically = true)
+	//clearAutomatically: 실행 직후, 영속성 컨텍스트 초기화
+	// flushAutomatically: 실행 직전 변경 내용 DB 반영

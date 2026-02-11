@@ -1,0 +1,216 @@
+.tasks {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 20px;
+}
+
+/* 헤더 */
+.tasks__header {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.tasks__titleRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tasks__title {
+  font-size: 28px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.tasks__create {
+  margin-left: 8px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #d9e1ff;
+  background: #eef2ff;
+  color: #2b4cff;
+}
+
+.tasks__create:hover {
+  filter: brightness(0.98);
+}
+
+/* 컨트롤 영역 */
+.tasks__controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 탭 */
+.tasks__tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tasks__tab {
+  border: 1px solid #e6e8ef;
+  background: #fff;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.12s ease;
+}
+
+.tasks__tab:hover {
+  background: #f6f7fb;
+}
+
+.tasks__tab.is-active {
+  border-color: #c9d4ff;
+  background: #eef2ff;
+  color: #2b4cff;
+  font-weight: 700;
+}
+
+/* 상태 필터 */
+.tasks__select {
+  margin-left: auto;
+  border: 1px solid #e6e8ef;
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: #fff;
+  font-size: 14px;
+}
+
+/* 구분선 */
+.tasks__divider {
+  margin: 16px 0 18px;
+  height: 1px;
+  background: #eceef5;
+}
+
+/* 상태 메시지 */
+.tasks__state {
+  padding: 18px 0;
+  color: #6b7280;
+}
+
+/* 카드 그리드 */
+.tasks__grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+/* 반응형 */
+@media (max-width: 1000px) {
+  .tasks__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 640px) {
+  .tasks__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 카드 */
+.tasks__card {
+  border: 1px solid #eceef5;
+  background: #fff;
+  border-radius: 16px;
+  padding: 14px 14px 12px;
+  box-shadow: 0 2px 10px rgba(20, 26, 40, 0.04);
+}
+
+.tasks__cardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.tasks__cardTitle {
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+/* badge */
+.tasks__badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 800;
+  border: 1px solid #e6e8ef;
+  background: #f6f7fb;
+  color: #374151;
+  white-space: nowrap;
+}
+
+/* 상태별 배지 (기본 느낌만, 색 너무 튀지 않게) */
+.tasks__badge--todo {
+  background: #eef2ff;
+  border-color: #d9e1ff;
+  color: #2b4cff;
+}
+
+.tasks__badge--in_progress,
+.tasks__badge--review {
+  background: #f6f7fb;
+  border-color: #e6e8ef;
+  color: #374151;
+}
+
+.tasks__badge--done {
+  background: #ecfdf3;
+  border-color: #c7f0d3;
+  color: #067647;
+}
+
+.tasks__badge--on_hold {
+  background: #fff7ed;
+  border-color: #fed7aa;
+  color: #9a3412;
+}
+
+.tasks__badge--canceled {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+/* description */
+.tasks__desc {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.45;
+
+  /* 긴 텍스트 조금 정리 */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* meta */
+.tasks__meta {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tasks__dot {
+  opacity: 0.6;
+}
