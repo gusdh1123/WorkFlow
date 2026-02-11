@@ -29,5 +29,5 @@ public interface TaskRepository extends JpaRepository<TaskEntity, Long> {
     @EntityGraph(attributePaths = {"createdBy", "assignee"})
     Page<TaskEntity> findByIsDeletedFalseAndAssignee_IdAndStatus( Long assigneeId, TaskStatus status, Pageable pageable );
 
-    long countByIsDeletedFalseAndAssignee_IdAndStatus(Long assigneeId, TaskStatus status);
+    long countByIsDeletedFalseAndAssignee_IdAndStatus(Long userId, TaskStatus status);
 }

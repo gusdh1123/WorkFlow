@@ -1,7 +1,7 @@
 package com.workflow.tasks.dto;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 
 import com.workflow.tasks.entity.TaskEntity;
 import com.workflow.tasks.enums.TaskPriority;
@@ -14,7 +14,7 @@ public record TaskResponse(
         TaskStatus status,
         TaskPriority priority,
         LocalDate dueDate,
-        OffsetDateTime createdAt,
+        LocalDateTime createdAt,
 
         Long createdById,
         String createdByName,

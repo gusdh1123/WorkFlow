@@ -2,13 +2,10 @@ package com.workflow.tasks.entity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 
 import com.workflow.tasks.enums.TaskPriority;
 import com.workflow.tasks.enums.TaskStatus;
 import com.workflow.user.entity.UserEntity;
-import com.workflow.user.enums.Role;
-import com.workflow.user.enums.UserStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -31,7 +28,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.var;
 
 @Entity
 @Table(name = "tasks")
@@ -76,7 +72,7 @@ public class TaskEntity {
     private boolean isDeleted;
 
     @Column(name="deleted_at")
-    private OffsetDateTime deletedAt;
+    private LocalDateTime deletedAt;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "created_by", nullable = false)
@@ -87,20 +83,20 @@ public class TaskEntity {
     private UserEntity assignee;
 
     @Column(name = "created_at", nullable = false)
-    private OffsetDateTime createdAt;
+    private LocalDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)
-    private OffsetDateTime updatedAt;
+    private LocalDateTime updatedAt;
 
     @PrePersist
     void prePersist() {
-        var now = OffsetDateTime.now();
+    	LocalDateTime now = LocalDateTime.now();
         createdAt = now;
         updatedAt = now;
     }
 
     @PreUpdate
     void preUpdate() {
-    	updatedAt = OffsetDateTime.now();
+    	updatedAt = LocalDateTime.now();
     }
 }
