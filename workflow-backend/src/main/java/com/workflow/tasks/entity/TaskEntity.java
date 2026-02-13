@@ -3,25 +3,14 @@ package com.workflow.tasks.entity;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.workflow.department.entity.DepartmentEntity;
 import com.workflow.tasks.enums.TaskPriority;
 import com.workflow.tasks.enums.TaskStatus;
+import com.workflow.tasks.enums.TaskVisibility;
 import com.workflow.user.entity.UserEntity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,15 +22,13 @@ import lombok.Setter;
 @Table(name = "tasks")
 @Getter @Setter
 @AllArgsConstructor
-//(access = AccessLevel.PROTECTED) =
-//파리미터 없는 기본 생성자를 protected 접근제어자로 만들겠다. 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 public class TaskEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // BIGSERIAL
+    private Long id;
 
     @NotBlank(message = "제목은 필수입니다.")
     @Column(nullable = false, length = 200)
@@ -50,14 +37,20 @@ public class TaskEntity {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @NotNull(message = "상태(status)는 필수입니다.")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private TaskStatus status;
+    @Builder.Default
+    private TaskStatus status = TaskStatus.TODO;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 20)
-    private TaskPriority priority;
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private TaskPriority priority = TaskPriority.MEDIUM;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private TaskVisibility visibility = TaskVisibility.DEPARTMENT;
 
     @Column(name="due_date")
     private LocalDate dueDate;
@@ -69,7 +62,8 @@ public class TaskEntity {
     private String cancelReason;
 
     @Column(name="is_deleted", nullable = false)
-    private boolean isDeleted;
+    @Builder.Default
+    private boolean isDeleted = false;
 
     @Column(name="deleted_at")
     private LocalDateTime deletedAt;
@@ -82,6 +76,14 @@ public class TaskEntity {
     @JoinColumn(name = "assignee_id")
     private UserEntity assignee;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "owner_department_id", nullable = false)
+    private DepartmentEntity ownerDepartment;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "work_department_id", nullable = false)
+    private DepartmentEntity workDepartment;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -90,13 +92,26 @@ public class TaskEntity {
 
     @PrePersist
     void prePersist() {
-    	LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now();
         createdAt = now;
         updatedAt = now;
+
+        // 혹시라도 null로 들어오면 기본값 방어
+        if (status == null) status = TaskStatus.TODO;
+        if (priority == null) priority = TaskPriority.MEDIUM;
+        if (visibility == null) visibility = TaskVisibility.DEPARTMENT;
+
+        // 서비스에서 이미 owner/work 부서 세팅해서 덮어쓰지 않게
+        if (createdBy != null && ownerDepartment == null) {
+            ownerDepartment = createdBy.getDepartment();
+        }
+        if (workDepartment == null) {
+            workDepartment = (assignee != null) ? assignee.getDepartment() : ownerDepartment;
+        }
     }
 
     @PreUpdate
     void preUpdate() {
-    	updatedAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
     }
 }

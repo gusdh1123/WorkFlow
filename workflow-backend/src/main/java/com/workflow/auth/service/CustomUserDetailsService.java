@@ -5,6 +5,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import com.workflow.user.entity.UserEntity;
 import com.workflow.user.repository.UserRepository;
 
 @Service
@@ -30,7 +31,7 @@ public class CustomUserDetailsService implements UserDetailsService {
       throw new UsernameNotFoundException(userIdStr);
     }
 
-    var u = userRepository.findById(userId)
+    UserEntity u = userRepository.findById(userId)
         .orElseThrow(() -> new UsernameNotFoundException(userIdStr));
 
 //    System.out.println("[UDS] found id=" + u.getId()

@@ -4,17 +4,50 @@ import { api } from "../api/api";
 import TaskEditor from "./TaskEditor";
 import "../css/TaskForm.css";
 
-export default function TaskForm() {
+export default function TaskForm({mode="create"}) {
   const nav = useNavigate();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
 
   const [status, setStatus] = useState("TODO");
-  const [priority, setPriority] = useState("");
-  const [dueDate, setDueDate] = useState("");
+  const [priority, setPriority] = useState("MEDIUM");
 
-  const [assigneeId, setAssigneeId] = useState(""); 
+  const PRIORITIES = ["LOW", "MEDIUM", "HIGH"];
+
+  const isEdit = mode === "edit";
+  const statusOptions = isEdit ? status : ["TODO"];
+  const ALL_STATUS = [
+  "TODO",
+  "IN_PROGRESS",
+  "REVIEW",
+  "DONE",
+  "ON_HOLD",
+  "CANCELED"
+  ];
+
+  // 오늘 기준 +7일 (기본 마감일)
+  const defaultToday = () => {
+    const day = new Date();
+    day.setDate(day.getDate() + 7);
+    return day.toISOString().split("T")[0];
+  };
+
+  // minDate: 오늘
+  const minDate = (() => new Date().toISOString().split("T")[0])();
+
+  // maxDate: 10년 뒤
+  const maxDate = (() => {
+    const day = new Date();
+    day.setFullYear(day.getFullYear() + 10);
+    return day.toISOString().split("T")[0];
+  })();
+
+  const [dueDate, setDueDate] = useState(defaultToday());
+
+  const [visibility, setVisibility] = useState("DEPARTMENT");
+
+  const [assigneeId, setAssigneeId] = useState("");
   const [users, setUsers] = useState([]);
 
   const [errors, setErrors] = useState({});
@@ -26,9 +59,10 @@ export default function TaskForm() {
   }, []);
 
   const validateClient = () => {
-    if (!title.trim()) return "제목을 입력해줘";
-    if (title.length > 200) return "제목은 200자까지 가능해";
-    if (!status) return "상태를 선택해줘";
+    if (!title.trim()) return "제목을 입력해 주세요.";
+    if (title.length > 200) return "제목은 200자까지만 작성 가능합니다.";
+    if (!status) return "상태를 선택해 주세요.";
+    if (!visibility) return "공개 범위를 선택해 주세요.";
     return null;
   };
 
@@ -42,14 +76,15 @@ export default function TaskForm() {
     const payload = {
       title: title.trim(),
       description: description || null,
-      status,
+      status: statusOptions,
       priority: priority ? priority : null,
+      visibility,
       dueDate: dueDate ? dueDate : null,
       assigneeId: assigneeId ? Number(assigneeId) : null,
     };
 
     try {
-      await api.post("/api/tasks", payload);
+      await api.post("/api/tasks/create", payload);
       nav("/tasks");
     } catch (err) {
       const data = err.response?.data;
@@ -74,7 +109,8 @@ export default function TaskForm() {
         {errors.title && <div className="taskform__error">{errors.title}</div>}
       </div>
 
-      <div className="taskform__row taskform__row--4">
+      {/* 상태/우선순위/마감일/담당자/공개범위 */}
+      <div className="taskform__row taskform__row--5">
         <div className="taskform__section">
           <label className="taskform__label">상태</label>
           <select
@@ -82,12 +118,11 @@ export default function TaskForm() {
             value={status}
             onChange={(e) => setStatus(e.target.value)}
           >
-            <option value="TODO">TODO</option>
-            <option value="IN_PROGRESS">IN_PROGRESS</option>
-            <option value="REVIEW">REVIEW</option>
-            <option value="DONE">DONE</option>
-            <option value="ON_HOLD">ON_HOLD</option>
-            <option value="CANCELED">CANCELED</option>
+            {statusOptions.map((s) => (
+              <option key={s} value={s}>
+              {s}
+              </option>
+            ))}
           </select>
           {errors.status && <div className="taskform__error">{errors.status}</div>}
         </div>
@@ -99,10 +134,11 @@ export default function TaskForm() {
             value={priority}
             onChange={(e) => setPriority(e.target.value)}
           >
-            <option value="">선택</option>
-            <option value="LOW">LOW</option>
-            <option value="MEDIUM">MEDIUM</option>
-            <option value="HIGH">HIGH</option>
+            {PRIORITIES.map((p) =>(
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -113,6 +149,8 @@ export default function TaskForm() {
             type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
+            min={minDate}
+            max={maxDate}
           />
         </div>
 
@@ -130,6 +168,37 @@ export default function TaskForm() {
               </option>
             ))}
           </select>
+        </div>
+
+        {/* 공개 범위: 세그먼트 버튼 */}
+        <div className="taskform__section">
+          <label className="taskform__label">공개 범위</label>
+
+          <div className="taskform__segment" role="tablist" aria-label="공개 범위">
+            <button
+              type="button"
+              className={visibility === "PUBLIC" ? "is-active" : ""}
+              onClick={() => setVisibility("PUBLIC")}
+            >
+              전사
+            </button>
+
+            <button
+              type="button"
+              className={visibility === "DEPARTMENT" ? "is-active" : ""}
+              onClick={() => setVisibility("DEPARTMENT")}
+            >
+              부서
+            </button>
+
+            <button
+              type="button"
+              className={visibility === "PRIVATE" ? "is-active" : ""}
+              onClick={() => setVisibility("PRIVATE")}
+            >
+              개인
+            </button>
+          </div>
         </div>
       </div>
 

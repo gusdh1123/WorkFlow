@@ -1,5 +1,5 @@
 /* 페이지 배경 */
-.loginPage {
+.login__page {
   position: fixed;
   inset: 0;
   display: flex;
@@ -9,7 +9,7 @@
 }
 
 /* 로그인 카드 */
-.loginBox {
+.login__box {
   background: #ffffff;
   padding: 32px 28px;
   border-radius: 12px;
@@ -22,7 +22,7 @@
 }
 
 /* 타이틀
-.loginBox h2 {
+.login__box h2 {
   margin-bottom: 12px;
   font-size: 22px;
   font-weight: 700;
@@ -30,7 +30,7 @@
 } */
 
 /* 인풋 */
-.loginBox input {
+.login__box input {
   width: 90%;
   padding: 12px 14px;
   font-size: 14px;
@@ -43,22 +43,22 @@
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.loginBox input::placeholder {
+.login__box input::placeholder {
   color: #9ca3af;
 }
 
-.loginBox input:hover {
+.login__box input:hover {
   border-color: #9ca3af;
 }
 
-.loginBox input:focus {
+.login__box input:focus {
   outline: none;
   border-color: #4fc3f7;
   box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.25);
 }
 
 /* 버튼 */
-.loginBox button {
+.login__box button {
   margin-top: 6px;
   padding: 12px;
   border-radius: 8px;
@@ -73,17 +73,33 @@
   transition: background 0.2s ease, transform 0.1s ease;
 }
 
-.loginBox button:hover {
+.login__box button:hover {
   background: #29b6f6;
 }
 
-.loginBox button:active {
+.login__box button:active {
   transform: translateY(1px);
 }
 
-.LoginLogo{
+.login__logo{
   margin-top: 10px;
   margin-left: 10px;
   max-width: 295.5px;
   min-width: 295.5px;
+}
+
+.login__form{
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.login__box input{
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.login__box button{
+  width: 100%;
+  box-sizing: border-box;
 }

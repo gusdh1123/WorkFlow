@@ -11,7 +11,7 @@ export default function TaskCreate() {
       </div>
 
       <div className="taskcreate__content">
-        <TaskForm />
+        <TaskForm mode="create" />
       </div>
     </div>
   );

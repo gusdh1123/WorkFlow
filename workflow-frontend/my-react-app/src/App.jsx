@@ -6,6 +6,7 @@ import AuthProvider from "./pages/auth/AuthProvider";
 import ProtectedRoute from "./pages/auth/ProtectedRoute";
 import Tasks from "./pages/tasks/Tasks";
 import TaskCreate from "./pages/tasks/TaskCreate";
+import TaskDetail from "./pages/tasks/TaskDetail";
 
 export default function App() {
   return (
@@ -16,7 +17,8 @@ export default function App() {
           <Route element={<MainLayout />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/tasks" element={<Tasks />} />
-            <Route path="/tasks/taskcreate" element={<TaskCreate />} />
+            <Route path="/tasks/create" element={<TaskCreate />} />
+            <Route path="/tasks/:id" element={<TaskDetail />} />
           </Route>
         </Route>
 

@@ -25,49 +25,53 @@ export default function MainLayout() {
    }, [title]);
 
   return (
-    <div className="appShell">
-      <aside className="sidebar">
-        <div className="sidebarTitle"><img className="MainLogo" src={MainLogo} alt="MainLogo"/></div>
-        <nav className="sidebarNav">
-          <NavLink to="/" end className={({ isActive }) => `navItem ${isActive ? 'active' : ''}`}>
+    <div className="app__shell">
+      <div className="app__container">
+       <aside className="sidebar">
+        <div className="sidebar__title"><img className="main__logo" src={MainLogo} alt="MainLogo"/></div>
+        <nav className="sidebar__nav">
+          <NavLink to="/" end className={({ isActive }) => `nav__item ${isActive ? 'active' : ''}`}>
             Dashboard
           </NavLink>
-          <NavLink to="/tasks" className={({ isActive }) => `navItem ${isActive ? 'active' : ''}`}>
+          <NavLink to="/tasks" className={({ isActive }) => `nav__item ${isActive ? 'active' : ''}`}>
             My Tasks
           </NavLink>
-          <NavLink to="/projects" className={({ isActive }) => `navItem ${isActive ? 'active' : ''}`}>
+          <NavLink to="/projects" className={({ isActive }) => `nav__item ${isActive ? 'active' : ''}`}>
             Projects
           </NavLink>
-          <NavLink to="/team" className={({ isActive }) => `navItem ${isActive ? 'active' : ''}`}>
+          <NavLink to="/team" className={({ isActive }) => `nav__item ${isActive ? 'active' : ''}`}>
             Team
           </NavLink>
-          <NavLink to="/calendar" className={({ isActive }) => `navItem ${isActive ? 'active' : ''}`}>
+          <NavLink to="/calendar" className={({ isActive }) => `nav__item ${isActive ? 'active' : ''}`}>
             Calendar
           </NavLink>
-          <NavLink to="/reports" className={({ isActive }) => `navItem ${isActive ? 'active' : ''}`}>
+          <NavLink to="/reports" className={({ isActive }) => `nav__item ${isActive ? 'active' : ''}`}>
             Reports
           </NavLink>
-          <NavLink to="/settings" className={({ isActive }) => `navItem ${isActive ? 'active' : ''}`}>
+          <NavLink to="/settings" className={({ isActive }) => `nav__item ${isActive ? 'active' : ''}`}>
             Settings
           </NavLink>
         </nav>
-      </aside>
+       </aside>
 
-      <div className="mainCol">
+       <div className="main__col">
+        <div className="main__wrap">
         <header className="header">
-          <div className="headerTitle">{title}</div>
-          <div className="headerActions">
-            <button className="ghostBtn">Search</button>
+          <div className="header__title">{title}</div>
+          <div className="header__actions">
+            <button className="ghost__btn">Search</button>
             {/* <button className="ghostBtn">Profile</button> */}
-            <button className="ghostBtn">Notifications</button>
-            <button className="ghostBtn">{user?.name}님</button>
-            <button onClick={logout} className="ghostBtn">logout</button>
+            <button className="ghost__btn">Notifications</button>
+            <button className="ghost__btn header__userBtn">{user?.name}님</button>
+            <button onClick={logout} className="ghost__btn">logout</button>
           </div>
         </header>
 
         <main className="content">
           <Outlet />
         </main>
+        </div>
+       </div>
       </div>
     </div>
   )

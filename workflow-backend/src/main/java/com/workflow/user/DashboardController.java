@@ -26,7 +26,7 @@ public class DashboardController {
   }
 
   @GetMapping("/kpi")
-  public Map<String, Long> kpi(@AuthenticationPrincipal UserDetails principal) {
+  public Map<String, Map<String, Long>> kpi(@AuthenticationPrincipal UserDetails principal) {
       return taskService.kpi(Long.parseLong(principal.getUsername()));
   }
 }

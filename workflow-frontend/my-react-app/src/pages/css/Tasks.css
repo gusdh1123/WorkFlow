@@ -1,3 +1,7 @@
+/* =========================
+   Tasks Page Layout
+========================= */
+
 .tasks {
   max-width: 1100px;
   margin: 0 auto;
@@ -76,12 +80,18 @@
 
 /* 상태 필터 */
 .tasks__select {
-  margin-left: auto;
   border: 1px solid #e6e8ef;
   border-radius: 10px;
   padding: 8px 10px;
   background: #fff;
   font-size: 14px;
+}
+
+.tasks__filters {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 /* 구분선 */
@@ -97,7 +107,10 @@
   color: #6b7280;
 }
 
-/* 카드 그리드 */
+/* =========================
+   Grid
+========================= */
+
 .tasks__grid {
   list-style: none;
   padding: 0;
@@ -107,7 +120,6 @@
   gap: 12px;
 }
 
-/* 반응형 */
 @media (max-width: 1000px) {
   .tasks__grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -119,43 +131,222 @@
   }
 }
 
-/* 카드 */
+/* =========================
+   Card
+========================= */
+
 .tasks__card {
   border: 1px solid #eceef5;
   background: #fff;
   border-radius: 16px;
-  padding: 14px 14px 12px;
+  padding: 12px;
   box-shadow: 0 2px 10px rgba(20, 26, 40, 0.04);
+  transition: transform .18s ease, box-shadow .18s ease;
+
+  height: 182px;      /* ✅ 카드 고정 */
+  overflow: hidden;
 }
 
+.tasks__card:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px rgba(15,23,42,.10);
+}
+
+/* 카드 전체 클릭 영역 */
+.tasks__cardLink {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+
+  color: inherit;
+  text-decoration: none !important;
+}
+
+/* 카드 안 어떤 링크도 밑줄 금지 */
+.tasks__cardLink:hover,
+.tasks__cardLink:visited,
+.tasks__cardLink:active,
+.tasks__card a,
+.tasks__card a:hover {
+  color: inherit;
+  text-decoration: none !important;
+}
+
+/* 상단: 제목 + 배지 */
 .tasks__cardTop {
   display: flex;
-  justify-content: space-between;
   align-items: flex-start;
+  justify-content: space-between;
   gap: 10px;
 }
 
+/* 제목: 2줄 고정 */
 .tasks__cardTitle {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+
   font-size: 16px;
   font-weight: 800;
-  line-height: 1.25;
+  line-height: 1.3;
+
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+
+  min-height: calc(1.3em * 2);
 }
 
-/* badge */
+/* =========================
+   Badges (일자 배치)
+========================= */
+
+/* ✅ 배지: 한 줄로만, 넘치면 잘라내기 */
+.tasks__badges{
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  min-width: 0;
+
+  max-width: 100%;     /* ✅ 카드 안에서 가능한 만큼 */
+  /* overflow: hidden;    ✅ 넘칠 때만 숨김 */
+  overflow: visible;
+}
+
+/* ✅ 배지 크기 = 상세페이지 규격 기반 (가독성 위해 살짝만 업) */
 .tasks__badge {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+
+  height: 28px;
+  line-height: 28px;   /* ✅ baseline 튐 방지 */
+  padding: 0 12px;
+
   border-radius: 999px;
-  padding: 5px 10px;
-  font-size: 12px;
-  font-weight: 800;
   border: 1px solid #e6e8ef;
   background: #f6f7fb;
-  color: #374151;
-  white-space: nowrap;
+  color: #111827;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  flex: 0 0 auto;
+  max-width: 150px;    /* ✅ 너무 긴 배지 ... */
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* 상태별 배지 (기본 느낌만, 색 너무 튀지 않게) */
+/* D-day 배지는 맨 오른쪽 끝으로 보내고 싶으면 */
+.tasks__badge--dday {
+  margin-left: 0 !important; 
+  border-style: dashed;
+  font-weight: 900;
+}
+
+/* =========================
+   Description / Meta
+========================= */
+
+/* 내용: 3줄 고정 */
+.tasks__desc {
+  margin: 5px 0 0;
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.35;
+
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+
+  min-height: calc(1.35em * 3);
+}
+
+/* 메타: 바닥 고정 */
+.tasks__meta {
+  padding-top: 8px;
+  line-height: 1.1;  
+
+  font-size: 12px;
+  color: #6b7280;
+
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.tasks__dot {
+  opacity: 0.6;
+}
+
+/* =========================
+   Due-state card highlight
+========================= */
+
+.tasks__card.is-overdue {
+  border-color: #f0b4b4;
+  box-shadow: 0 0 0 2px rgba(240, 180, 180, 0.3);
+}
+
+.tasks__card.is-dday {
+  border-color: #f1d08a;
+  box-shadow: 0 0 0 2px rgba(241, 208, 138, 0.3);
+}
+
+.tasks__card.is-soon {
+  border-color: #cfe3ff;
+  box-shadow: 0 0 0 2px rgba(207, 227, 255, 0.4);
+}
+
+.tasks__card.is-soon:hover,
+.tasks__card.is-dday:hover,
+.tasks__card.is-overdue:hover{
+  transform: translateY(-4px);
+  box-shadow: 0 22px 40px rgba(15,23,42,.16);
+}
+
+/* =========================
+   Priority badges
+========================= */
+
+.tasks__badge--priority {
+  font-weight: 900;
+}
+
+/* HIGH */
+.tasks__badge--priority-high {
+  color: #dc2626;
+  border-color: rgba(220, 38, 38, 0.25);
+  background: rgba(220, 38, 38, 0.08);
+}
+
+/* MEDIUM */
+.tasks__badge--priority-medium {
+  color: #d97706;
+  border-color: rgba(217, 119, 6, 0.25);
+  background: rgba(217, 119, 6, 0.1);
+}
+
+/* LOW */
+.tasks__badge--priority-low {
+  color: #2563eb;
+  border-color: rgba(37, 99, 235, 0.25);
+  background: rgba(37, 99, 235, 0.08);
+}
+
+/* =========================
+   Status badges (tone 유지)
+========================= */
+
 .tasks__badge--todo {
   background: #eef2ff;
   border-color: #d9e1ff;
@@ -187,33 +378,9 @@
   color: #b91c1c;
 }
 
-/* description */
-.tasks__desc {
-  margin-top: 10px;
-  font-size: 14px;
-  color: #374151;
-  line-height: 1.45;
-
-  /* 긴 텍스트 조금 정리 */
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* meta */
-.tasks__meta {
-  margin-top: 10px;
-  font-size: 12px;
-  color: #6b7280;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.tasks__dot {
-  opacity: 0.6;
-}
+/* =========================
+   Pagination (원래 유지)
+========================= */
 
 .tasks__pagination {
   display: flex;
@@ -246,4 +413,32 @@
   color: #9aa3b2;
   padding: 0 4px;
 }
+.tasks__card h1,
+.tasks__card h2,
+.tasks__card h3,
+.tasks__card h4,
+.tasks__card h5,
+.tasks__card h6,
+.tasks__card p {
+  margin: 0;
+}
 
+/* =========================
+   완료 / 취소 업무 톤 다운
+   ========================= */
+
+/* 완료 업무 */
+.tasks__card--done {
+  opacity: 0.55;
+}
+
+/* 취소 업무 */
+.tasks__card--canceled {
+  opacity: 0.4;
+}
+
+/* hover 시 살짝 복구 */
+.tasks__card--done:hover,
+.tasks__card--canceled:hover {
+  opacity: 0.75;
+}

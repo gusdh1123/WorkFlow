@@ -1,71 +1,93 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
 import { api } from "../api/api.js";
 
 export default function Dashboard() {
-
-  const kpis = ['TODO', 'IN_PROGRESS', 'REVIEW', 'DONE', 'ON_HOLD', 'CANCELED']
-  const [counts, setCounts] = useState({})
+  const nav = useNavigate();
   const { accessToken } = useAuth();
 
-// accessToken 값이 바뀔때 마다 안에 있는 코드를 실행하라. 
-useEffect(() => {
-  console.log("Dashboard accessToken =", accessToken);
-  if (!accessToken) return; // 로그인 전엔 호출 X
+  const kpis = ["TODO", "IN_PROGRESS", "REVIEW", "DONE", "ON_HOLD", "CANCELED"];
 
-  // 겟 포스트 구분
-  api.get("/api/kpi")
-  // 요청 성공하면 200(ok) 실행
-    .then((res) => setCounts(res.data))
-    // 실패하면 에러 표시
-    // ex) 토큰 만료 401, 서버 오류 500, 네트워크 오류 등
-    .catch((e) => console.error("KPI 불러오기 실패", e));
-}, [accessToken]);
+  const [counts, setCounts] = useState({});
+  const [scope, setScope] = useState("assigned"); // assigned | created
+
+  useEffect(() => {
+    if (!accessToken) return;
+
+    api
+      .get("/api/kpi")
+      .then((res) => setCounts(res.data))
+      .catch((e) => console.error("KPI 불러오기 실패", e));
+  }, [accessToken]);
+
+  // KPI 클릭 -> Tasks로 이동 + 필터 전달
+  const handleKpiClick = (status) => {
+    nav(`/tasks?status=${encodeURIComponent(status)}&scope=${encodeURIComponent(scope)}`);
+  };
 
   return (
-    <div className="dashboardGrid">
+    <div className="dashboard__grid">
+      {/* 스코프 선택 */}
+      <div className="kpi__tabs">
+        <button
+          className={scope === "assigned" ? "active" : ""}
+          onClick={() => setScope("assigned")}
+          type="button"
+        >
+          내 업무
+        </button>
+
+        <button
+          className={scope === "created" ? "active" : ""}
+          onClick={() => setScope("created")}
+          type="button"
+        >
+          내가 만든 업무
+        </button>
+      </div>
+
       {/* KPI Cards */}
-      <section className="kpiRow">
+      <section className="kpi__row">
         {kpis.map((k) => (
-          <div key={k} className="card">
-            <div className="cardTitle">{k}</div>
-            <div className="muted">{counts[k] ?? 0}</div>
+          <div
+            key={k}
+            className={`card ${k}`}
+            onClick={() => handleKpiClick(k)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") handleKpiClick(k);
+            }}
+            style={{ cursor: "pointer" }}
+          >
+            <div className="card__title">{k}</div>
+            <div className="kpi__value">{counts?.[scope]?.[k] ?? 0}</div>
           </div>
         ))}
       </section>
 
-      {/* 아래 2컬럼 */}
-      <section className="twoCol">
-        <div className="card bigCard">
-          <div className="cardTitle">My Tasks Table</div>
-          <div className="muted">(필터: 상태/담당자/기간/키워드)
+      {/* 아래 영역 */}
+      <section className="two__col">
+        <div className="card card__tasks">
+          <div className="card__title">My Tasks Table</div>
+          <div className="muted">
+            <p>My Tasks Table</p>
+            <p>My Tasks Table</p>
+            <p>My Tasks Table</p>
+            <p>My Tasks Table</p>
           </div>
         </div>
 
-        <div className="card bigCard2">
-          <div className="cardTitle">Activity Log</div>
-          <div className="muted">(상태/담당자/마감일 변경 이력)
-            <p>확인용</p>
-            <p>확인용</p>
-            <p>확인용</p>
-            <p>확인용</p>
-            <p>확인용</p>
-            <p>확인용</p>
-            <p>확인용</p>
-            <p>확인용</p>
-            <p>확인용</p>
-            <p>확인용</p>
-            <p>확인용</p>
-            <p>확인용</p>
-            <p>확인용</p>
-            <p>확인용</p>
-            <p>확인용</p>
-            <p>확인용</p>
-            <p>확인용</p>
-            <p>확인용</p>
+        <div className="card card__activity">
+          <div className="card__title">Activity Log</div>
+          <div className="muted">
+            <p>Activity Log</p>
+            <p>Activity Log</p>
+            <p>Activity Log</p>
           </div>
         </div>
       </section>
     </div>
-  )
+  );
 }

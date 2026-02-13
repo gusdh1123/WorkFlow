@@ -15,8 +15,10 @@
   gap: 12px;
 }
 
-.taskform__row--4 {
-  grid-template-columns: 1.1fr 1fr 1fr 1.4fr;
+.taskform__row--5 {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1.1fr 1fr 1fr 1.4fr 1.3fr;
 }
 
 .taskform__section {
@@ -98,7 +100,7 @@
   overflow: hidden;
   background: #fff;
 
-  min-height: 260px;   /* ✅ 기본 높이 */
+  min-height: 260px;   /* 기본 높이 */
 }
 
 .taskform__editor .ql-container {
@@ -107,4 +109,57 @@
 
 .taskform__editor .ql-editor {
   min-height: 220px;
+}
+
+/* 세그먼트 컨트롤 */
+.taskform__segment {
+  display: flex;
+  background: #f1f5f9;
+  border-radius: 10px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.taskform__segment button {
+  flex: 1;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  transition: all 0.15s ease;
+}
+
+.taskform__segment button.is-active {
+  background: #2563eb;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+}
+
+.taskform__segment button:hover:not(.is-active) {
+  background: rgba(15, 23, 42, 0.05);
+}
+
+/* 노트북 대응 */
+@media (max-width: 1200px) {
+  .taskform__row--5 {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+/* 태블릿 대응 */
+@media (max-width: 900px) {
+  .taskform__row--5 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* 모바일 대응 */
+@media (max-width: 600px) {
+  .taskform__row--5 {
+    grid-template-columns: 1fr;
+  }
 }

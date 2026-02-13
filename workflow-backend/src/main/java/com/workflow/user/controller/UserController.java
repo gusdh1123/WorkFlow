@@ -21,12 +21,13 @@ public class UserController {
 	
 	@GetMapping("/assigneelist")
 	public List<UserSimpleResponse> list() {
-	    return userRepository.findAll().stream()
-	            .map(u -> new UserSimpleResponse(
-	                    u.getId(),
-	                    u.getName(),
-	                    u.getDepartment()
-	            ))
-	            .toList();
+	  return userRepository.findAllWithDepartment().stream()
+	      .map(u -> new UserSimpleResponse(
+	          u.getId(),
+	          u.getName(),
+	          u.getDepartment().getName()
+	      ))
+	      .toList();
 	}
+
 }
