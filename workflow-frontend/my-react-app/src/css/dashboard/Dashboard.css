@@ -1,0 +1,143 @@
+/* ==========================
+   Dashboard Layout / Grid
+========================== */
+.dashboard__grid {
+  display: grid;
+  gap: 12px;
+}
+
+/* KPI Tabs */
+.kpi__tabs {
+  display: flex;
+  margin: 5px 0;
+  gap: 8px;
+}
+
+.kpi__tabs button {
+  border: none;
+  background: transparent;
+
+  padding: 8px 12px;
+  border-radius: 12px;
+
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--muted);
+
+  cursor: pointer;
+  transition: background .18s ease, color .18s ease, transform .18s ease;
+}
+
+.kpi__tabs button:hover {
+  background: #eef2f7;
+  color: var(--text);
+  transform: translateY(-1px);
+}
+
+.kpi__tabs button.active {
+  background: #0f172a;
+  color: #fff;
+}
+
+.kpi__tabs button:active {
+  transform: scale(0.98);
+}
+
+/* KPI Row */
+.kpi__row {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+
+/* ==========================
+   Card Component
+========================== */
+.card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 8px 18px rgba(15,23,42,.06);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px rgba(15,23,42,.10);
+}
+
+/* Card Titles */
+.card__title {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  line-height: 1.2;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  margin-bottom: 6px;
+}
+
+/* Muted Text */
+.muted {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* KPI Card Specific */
+.kpi__row .card {
+  min-height: 86px;
+  padding: 12px 14px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.kpi__value {
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-top: 6px;
+}
+
+/* ==========================
+   Two Column Layout
+========================== */
+.two__col {
+  display: grid;
+  grid-template-columns: 3.2fr 1.4fr;
+  gap: 16px;
+  align-items: start;
+}
+
+/* Scrollable Card Sections */
+.card__tasks,
+.card__activity {
+  overflow: auto;
+  max-height: 100%;
+  padding: 12px 14px;
+}
+
+/* ==========================
+   Status Colors for KPI Values
+========================== */
+.kpi__value.TODO { color: #6b7280; }
+.kpi__value.IN_PROGRESS { color: #2563eb; }
+.kpi__value.REVIEW { color: #f59e0b; }
+.kpi__value.DONE { color: #16a34a; }
+.kpi__value.ON_HOLD { color: #7c3aed; }
+.kpi__value.CANCELED { color: #dc2626; }
+
+/* ==========================
+   Top Accent Line for Cards
+========================== */
+.card.TODO { border-top: 3px solid #9ca3af; }
+.card.IN_PROGRESS { border-top: 3px solid #2563eb; }
+.card.REVIEW { border-top: 3px solid #f59e0b; }
+.card.DONE { border-top: 3px solid #16a34a; }
+.card.ON_HOLD { border-top: 3px solid #7c3aed; }
+.card.CANCELED { border-top: 3px solid #dc2626; }

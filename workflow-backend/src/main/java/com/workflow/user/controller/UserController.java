@@ -16,18 +16,20 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/user")
 public class UserController {
 	
-	private final UserRepository userRepository;
-	
-	
+	private final UserRepository userRepository;  // User 관련 DB 접근
+
+	// 업무 담당자 선택용 리스트 조회
 	@GetMapping("/assigneelist")
 	public List<UserSimpleResponse> list() {
-	  return userRepository.findAllWithDepartment().stream()
-	      .map(u -> new UserSimpleResponse(
-	          u.getId(),
-	          u.getName(),
-	          u.getDepartment().getName()
-	      ))
-	      .toList();
+	    // DB에서 모든 사용자와 소속 부서 정보 조회
+	    return userRepository.findAllWithDepartment()
+	            .stream()
+	            // DTO로 변환: id, 이름, 부서명만 반환
+	            .map(u -> new UserSimpleResponse(
+	                u.getId(),
+	                u.getName(),
+	                u.getDepartment().getName()
+	            ))
+	            .toList();
 	}
-
 }

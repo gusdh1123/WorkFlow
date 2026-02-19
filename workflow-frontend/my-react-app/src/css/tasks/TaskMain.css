@@ -1,0 +1,396 @@
+/* ===================================================
+   Tasks Page Layout
+   - 메인 컨테이너, 헤더, 컨트롤, 탭, 상태 필터
+=================================================== */
+
+.tasks {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 20px;
+}
+
+/* ===== Header ===== */
+.tasks__header {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.tasks__titleRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tasks__title {
+  font-size: 28px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.tasks__create {
+  margin-left: 8px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #d9e1ff;
+  background: #eef2ff;
+  color: #2b4cff;
+}
+.tasks__create:hover {
+  filter: brightness(0.98);
+  text-decoration: none;
+}
+
+/* ===== Controls ===== */
+.tasks__controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ===== Tabs ===== */
+.tasks__tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tasks__tab {
+  border: 1px solid #e6e8ef;
+  background: #fff;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.12s ease;
+}
+.tasks__tab:hover {
+  background: #f6f7fb;
+}
+.tasks__tab.is-active {
+  border-color: #c9d4ff;
+  background: #eef2ff;
+  color: #2b4cff;
+  font-weight: 700;
+}
+
+/* ===== Status Select / Filters ===== */
+.tasks__select {
+  border: 1px solid #e6e8ef;
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: #fff;
+  font-size: 14px;
+}
+
+.tasks__filters {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ===== Divider ===== */
+.tasks__divider {
+  margin: 16px 0 18px;
+  height: 1px;
+  background: #eceef5;
+}
+
+/* ===== State Message ===== */
+.tasks__state {
+  padding: 18px 0;
+  color: #6b7280;
+}
+
+/* ===================================================
+   Grid Layout
+   - 카드 그리드 및 반응형
+=================================================== */
+
+.tasks__grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 1000px) {
+  .tasks__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 640px) {
+  .tasks__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===================================================
+   Card
+   - 카드 컨테이너, 전체 클릭 영역, 제목, 배지, 설명, 메타
+=================================================== */
+
+.tasks__card {
+  border: 1px solid #eceef5;
+  background: #fff;
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 2px 10px rgba(20, 26, 40, 0.04);
+  transition: transform .18s ease, box-shadow .18s ease;
+
+  height: 182px;      /* 카드 고정 */
+  overflow: hidden;
+}
+.tasks__card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px rgba(15,23,42,.10);
+}
+
+/* 전체 클릭 영역 */
+.tasks__cardLink {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+
+  color: inherit;
+  text-decoration: none !important;
+}
+.tasks__cardLink:hover,
+.tasks__cardLink:visited,
+.tasks__cardLink:active,
+.tasks__card a,
+.tasks__card a:hover {
+  color: inherit;
+  text-decoration: none !important;
+}
+
+/* ===== Card Top (제목 + 배지/아이콘) ===== */
+.tasks__cardTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.tasks__cardTitle {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.3;
+
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  line-clamp: 3;  
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+
+  min-height: calc(1.3em * 2);
+}
+
+/* ===================================================
+   Badges
+   - 상태, 우선순위, D-day
+=================================================== */
+
+.tasks__badges {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  min-width: 0;
+
+  max-width: 100%;
+  overflow: visible; /* 넘침 숨김 아님 */
+}
+
+.tasks__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+
+  height: 28px;
+  line-height: 28px;
+  padding: 0 12px;
+
+  border-radius: 999px;
+  border: 1px solid #e6e8ef;
+  background: #f6f7fb;
+  color: #111827;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  flex: 0 0 auto;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* D-day 배지 */
+.tasks__badge--dday {
+  margin-left: 0 !important; 
+  border-style: dashed;
+  font-weight: 900;
+}
+
+/* Priority badges */
+.tasks__badge--priority { font-weight: 900; }
+.tasks__badge--priority-high { color:#dc2626; border-color:rgba(220,38,38,0.25); background:rgba(220,38,38,0.08);}
+.tasks__badge--priority-medium { color:#d97706; border-color:rgba(217,119,6,0.25); background:rgba(217,119,6,0.1);}
+.tasks__badge--priority-low { color:#2563eb; border-color:rgba(37,99,235,0.25); background:rgba(37,99,235,0.08);}
+
+/* Status badges */
+.tasks__badge--todo { background:#eef2ff; border-color:#d9e1ff; color:#2b4cff; }
+.tasks__badge--in_progress,
+.tasks__badge--review { background:#f6f7fb; border-color:#e6e8ef; color:#374151; }
+.tasks__badge--done { background:#ecfdf3; border-color:#c7f0d3; color:#067647; }
+.tasks__badge--on_hold { background:#fff7ed; border-color:#fed7aa; color:#9a3412; }
+.tasks__badge--canceled { background:#fef2f2; border-color:#fecaca; color:#b91c1c; }
+
+/* ===================================================
+   Description & Meta
+   - 내용 3줄 고정, 메타 정보
+=================================================== */
+
+.tasks__desc {
+  margin: 5px 0 0;
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.35;
+
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  line-clamp: 3;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+
+  min-height: calc(1.35em * 3);
+
+  word-break: break-word;
+  contain: layout;
+}
+
+.tasks__desc::before {
+  content: "";
+  display: block;
+}
+
+.tasks__desc.is-empty {
+  color: transparent;
+  user-select: none;
+}
+
+.tasks__meta {
+  padding-top: 8px;
+  line-height: 1.1;  
+  font-size: 12px;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.tasks__dot { opacity: 0.6; }
+
+/* ===================================================
+   Due-state Card Highlight
+=================================================== */
+
+.tasks__card.is-overdue { border-color:#f0b4b4; box-shadow:0 0 0 2px rgba(240,180,180,0.3);}
+.tasks__card.is-dday { border-color:#f1d08a; box-shadow:0 0 0 2px rgba(241,208,138,0.3);}
+.tasks__card.is-soon { border-color:#cfe3ff; box-shadow:0 0 0 2px rgba(207,227,255,0.4);}
+.tasks__card.is-soon:hover,
+.tasks__card.is-dday:hover,
+.tasks__card.is-overdue:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 22px 40px rgba(15,23,42,.16);
+}
+
+/* ===================================================
+   Pagination
+=================================================== */
+
+.tasks__pagination {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  margin: 18px 0 8px;
+}
+
+.tasks__pageBtn {
+  border: 1px solid #e6e8f0;
+  background: #fff;
+  border-radius: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.tasks__pageBtn:disabled { opacity:0.4; cursor:not-allowed; }
+.tasks__pageBtn.is-active { border-color:#5b7cfa; background:#eef2ff; font-weight:700; }
+.tasks__pageEllipsis { color:#9aa3b2; padding:0 4px; }
+
+/* ===================================================
+   Completed / Canceled Card Tone Down
+=================================================== */
+
+.tasks__card--done { opacity:0.55; }
+.tasks__card--canceled { opacity:0.4; }
+.tasks__card--done:hover,
+.tasks__card--canceled:hover { opacity:0.75; }
+
+/* ===================================================
+   Attach Icons
+   - 이미지 / 파일 / 비디오 등
+=================================================== */
+
+.tasks__cardIcons {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  flex: 0 0 auto;
+  min-width: 52px;   /* 폭 0 방지 */
+  z-index: 2;        /* 겹침 방지 */
+}
+
+.tasks__att {
+  width: auto;
+  height: 28px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid #e6e8ef;
+  font-size: 14px;
+  line-height: 1;
+  color: #111827 !important;
+  opacity: 1 !important;
+  filter: none !important;
+  white-space: nowrap;
+}
+
+.tasks__card--done .tasks__att,
+.tasks__card--canceled .tasks__att { opacity: 0.95 !important; }
+
+.tasks__att--img { border-color: rgba(37, 99, 235, 0.20); }
+.tasks__att--file { border-color: rgba(15, 23, 42, 0.15); }
+.tasks__att--video { border-color: rgba(217, 119, 6, 0.22); }

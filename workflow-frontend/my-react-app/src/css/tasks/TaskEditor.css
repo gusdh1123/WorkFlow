@@ -1,0 +1,41 @@
+/* ==========================
+   TaskEditor (Quill) 전용
+========================== */
+
+/* 툴팁 위치 조정 */
+.ql-snow .ql-tooltip {
+  left: 0 !important;
+}
+
+/* 툴바: 항상 상단에 붙도록 */
+.taskform__editor .ql-toolbar.ql-snow {
+  flex: 0 0 auto;
+  border: 0;
+  border-bottom: 1px solid #e8edf5;
+}
+
+/* 컨테이너가 남은 높이 전부 차지 */
+.taskform__editor .ql-container.ql-snow {
+  flex: 1 1 auto;
+  min-height: 0;          /* 필수: 스크롤 동작 보장 */
+  border: 0;
+  overflow: hidden;       /* 컨테이너 자체는 숨김 */
+  display: flex;          /* flex 구조 */
+  flex-direction: column;
+  height: 100%;           /* 상위 높이 맞춤 */
+}
+
+/* 에디터 본문만 스크롤 */
+.taskform__editor .ql-editor {
+  flex: 1 1 auto;
+  min-height: 0;          /* 필수 */
+  overflow-y: auto;       /* 본문 스크롤 */
+  padding: 12px;
+}
+
+/* 전체 에디터 flex 구조 유지 */
+.taskform__editor .quill {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}

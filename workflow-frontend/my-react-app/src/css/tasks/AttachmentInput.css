@@ -1,0 +1,84 @@
+/* ==========================
+   Attachment Input Styles
+========================== */
+
+/* Attachment Form Wrapper */
+.taskform--attach {
+  margin-top: 14px;
+}
+
+/* File Input */
+.taskform__file {
+  height: 40px;
+  padding: 6px 10px;
+  border: 1px solid #dbe3f0;
+  border-radius: 10px;
+  background: #fff;
+}
+
+/* Helper Text */
+.taskform__help {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* ==========================
+   Dropzone / Drag & Drop
+========================== */
+.attach__drop {
+  border: 1px dashed #dbe3f0;
+  border-radius: 10px;
+  padding: 12px;
+  background: #fff;
+  cursor: pointer;
+  transition: background .15s ease, transform .15s ease;
+}
+
+.attach__drop:hover {
+  background: #f8fafc;
+  transform: translateY(-1px);
+}
+
+.attach__dropTitle {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.attach__dropHelp {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* ==========================
+   Attachment List
+========================== */
+.attach__list {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.attach__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #eef2f7;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+/* Remove Button */
+.attach__remove {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #94a3b8;
+}
+
+.attach__remove:hover {
+  color: #ef4444;
+}

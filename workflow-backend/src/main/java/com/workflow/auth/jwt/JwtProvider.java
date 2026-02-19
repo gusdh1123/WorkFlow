@@ -30,109 +30,101 @@ import io.jsonwebtoken.security.Keys;
 public class JwtProvider {
 
 	// key: JWT 서명(Sign)과 검증(Verify)에 쓰는 비밀키
-	// expMillis : 토큰 만료 시간(밀리초 단위)
+	// accessExpMillis : Access 토큰 만료 시간(밀리초 단위)
+	// refreshExpMillis : Refresh 토큰 만료 시간(밀리초 단위)
 	private final SecretKey key;
 	private final long accessExpMillis;
 	private final long refreshExpMillis;
 
 	// 생성자: 설정값 주입 + 가공
 	// @Value("${jwt.secret}"): application.properties에 있는 jwt.secret 값을 문자열로 주입
-	// @Value("${jwt.access-token-exp-min}"): jwt.access-token-exp-min 값을 long으로 주입
-	// (예: 30)
-	public JwtProvider(@Value("${jwt.secret}") String secret, @Value("${jwt.access-exp-min}") long accessExpMin,
-			@Value("${jwt.refresh-exp-day}") long refreshExpDay) {
-		// 비밀키로 SecretKey 생성
-		// secret 문자열을 UTF-8 바이트 배열로 바꿈
-		// Keys.hmacShaKeyFor(...): HMAC 알고리즘(HS256/HS384/HS512) 서명에 맞는 SecretKey로 변환
-		// 중요: secret이 너무 짧으면 여기서 예외가 나거나(혹은 validate에서 실패) 보안상 위험함으로 HS256 기준 최소 32바이트
-		// 이상 권장
+	// @Value("${jwt.access-exp-min}"): access 토큰 만료시간(분)
+	// @Value("${jwt.refresh-exp-day}"): refresh 토큰 만료시간(일)
+	public JwtProvider(@Value("${jwt.secret}") String secret,
+	                   @Value("${jwt.access-exp-min}") long accessExpMin,
+	                   @Value("${jwt.refresh-exp-day}") long refreshExpDay) {
+
+		// 보안 핵심 부분
+		// secret 문자열을 UTF-8 바이트 배열로 변환
+		// HMAC 서명용 SecretKey 생성
+		// HS256 기준 최소 32바이트 이상 권장 (짧으면 보안 취약)
 		this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-		// 만료시간을 “분 → 밀리초”로 변환
-		// expMin이 “분” 단위니까 분 × 60초 × 1000ms = 밀리초로 변환
-		// ex) 10분이면 10 * 60_000 = 600,000ms
+
+		// 분 → 밀리초 변환
 		this.accessExpMillis = accessExpMin * 60_000L;
-		this.refreshExpMillis = refreshExpDay * 24L * 60L * 60_000L; // day -> ms
+
+		// 일 → 밀리초 변환
+		this.refreshExpMillis = refreshExpDay * 24L * 60L * 60_000L;
 	}
 
 	// Access 토큰 생성
-	// now: 현재 시간
-	// exp: 현재 시간 + 만료시간 = 토큰 만료 시각
 	public String createAccessToken(UserEntity userEntity) {
+
 		Date now = new Date();
 		Date exp = new Date(now.getTime() + accessExpMillis);
 
-		// Jwts.builder() : JWT 만들기 시작
 		return Jwts.builder()
-				// .subject(email) : payload의 sub(subject) 클레임에 email 저장
-				// 이걸 나중에 getEmail()으로 다시 꺼냄
+				// subject(sub) 에 사용자 고유값 저장 (여기선 userId)
 				.subject(String.valueOf(userEntity.getId()))
-				// 추가 정보 넣기(우린 권한)
+
+				// 권한 정보 (ROLE_USER / ROLE_ADMIN 등)
 				.claim("role", userEntity.getRole().name())
+
+				// 토큰 타입 구분 (access)
 				.claim("typ", "access")
+
+				// 추가 사용자 정보 (프론트에서 활용 가능)
 				.claim("name", userEntity.getName())
 				.claim("email", userEntity.getEmail())
-				// issuedAt(now) : iat(issued at): 언제 발급됐는지 기록
+
+				// 발급 시간
 				.issuedAt(now)
-				// .expiration(exp) : exp: 언제 만료되는지 기록
+
+				// 만료 시간
 				.expiration(exp)
-				// .signWith(key) : 위 payload를 key로 서명해서 위조/변조 방지
-				.signWith(key) // ← 0.12.x 방식
-				// .compact() : 최종적으로 xxxxx.yyyyy.zzzzz 형태 문자열(JWT) 생성
+
+				// 서명 (위변조 방지 핵심)
+				.signWith(key)
+
+				// 최종 JWT 문자열 생성
 				.compact();
 	}
 
 	// Refresh 토큰 생성
 	public String createRefreshToken(Long userId) {
+
 		Date now = new Date();
 		Date exp = new Date(now.getTime() + refreshExpMillis);
 
 		return Jwts.builder()
 				.subject(String.valueOf(userId))
+
+				// 토큰 타입 구분 (refresh)
 				.claim("typ", "refresh")
+
 				.issuedAt(now)
 				.expiration(exp)
 				.signWith(key)
 				.compact();
 	}
 
-	// 아래랑 중복
-//    // 토큰 검증
-//    public boolean validate(String token) {
-//        try {
-//        	// Jwts.parser() : JWT 파서 생성
-//            Jwts.parser()
-//            		// .verifyWith(key) : 이 key로 서명을 검증하겠다
-//            		// 토큰이 조작되었거나 다른 키로 서명되면 실패
-//                    .verifyWith(key)   // ← 0.12.x 핵심
-//                    // .build() : 파서 빌드
-//                    .build()
-//                    // .parseSignedClaims(token) : “서명된 JWT”를 파싱(검증 포함)
-//                    // 여기서 보통 다음을 검사하게 됨:
-//                    // 서명 유효한지, 만료됐는지(exp), 형식이 맞는지
-//                    // 예외 나면 false: 만료됨, 서명 불일치, 토큰 깨짐 등등
-//                    .parseSignedClaims(token);
-//            return true;
-//        } catch (Exception e) {
-//            return false;
-//        }
-//    }
-
-	// 서명/만료 검증 파싱
+	// 서명 + 만료 검증 파싱
 	public Claims parseAndValidate(String token) {
-		// Jwts.parser() : JWT 파서 생성
+
+		// 이 과정에서 자동으로 검증되는 것:
+		// 1. 서명 위변조 여부
+		// 2. 만료(exp) 여부
+		// 3. 토큰 형식 유효성
+		// 하나라도 실패하면 예외 발생
+
 		return Jwts.parser()
-				// .verifyWith(key) : 이 key로 서명을 검증하겠다
-				// 토큰이 조작되었거나 다른 키로 서명되면 실패
 				.verifyWith(key)
-				// .build() : 파서 빌드
 				.build()
-				// .parseSignedClaims(token) : “서명된 JWT”를 파싱(검증 포함)
-				// 여기서 보통 다음을 검사하게 됨:
-				// 서명 유효한지, 만료됐는지(exp), 형식이 맞는지
-				// 예외 나면 false: 만료됨, 서명 불일치, 토큰 깨짐 등등
-				.parseSignedClaims(token).getPayload();
+				.parseSignedClaims(token)
+				.getPayload();
 	}
 
+	// 토큰 타입 체크
 	public boolean isRefreshToken(Claims claims) {
 		return "refresh".equals(claims.get("typ", String.class));
 	}
@@ -141,6 +133,7 @@ public class JwtProvider {
 		return "access".equals(claims.get("typ", String.class));
 	}
 
+	// Claims 정보 추출
 	public String getRole(Claims claims) {
 		return claims.get("role", String.class);
 	}

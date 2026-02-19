@@ -1,4 +1,3 @@
-
 -- 현재 사용중인 계정 조회
 SELECT current_user;
 -- 현재 DB조회
@@ -99,7 +98,7 @@ CREATE TABLE comments(
     parent_id BIGINT NULL,
     content TEXT NOT NULL,
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
-    deleted_at timestamp(6) without time zone NULL DEFAULT NOW(),
+    deleted_at timestamp(6) without time zone NULL,
     created_at timestamp(6) without time zone NOT NULL DEFAULT NOW(),
     updated_at timestamp(6) without time zone NOT NULL DEFAULT NOW(),
     FOREIGN KEY (task_id) REFERENCES tasks(id),
@@ -116,7 +115,7 @@ CREATE TABLE attachments(
     size_bytes BIGINT NOT NULL,
     storage_path VARCHAR(500) NOT NULL,
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
-    deleted_at timestamp(6) without time zone NULL DEFAULT NOW(),
+    deleted_at timestamp(6) without time zone NULL,
     created_at timestamp(6) without time zone NOT NULL DEFAULT NOW(),
     FOREIGN KEY (task_id) REFERENCES tasks(id),
     FOREIGN KEY (uploader_id) REFERENCES users(id)
@@ -139,9 +138,9 @@ CREATE TABLE audit_logs(
 CREATE TABLE refresh_tokens(
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
-    token_hash VARCHAR(255) NOT NULL,
-    expires_at timestamp(6) without time zone NOT NULL DEFAULT NOW(),
-    revoked_at timestamp(6) without time zone NULL DEFAULT NOW(),
+    token_hash VARCHAR(255) NOT NULL UNIQUE,
+    expires_at timestamp(6) without time zone NOT NULL,
+    revoked_at timestamp(6) without time zone NULL,
     created_at timestamp(6) without time zone NOT NULL DEFAULT NOW(),
     FOREIGN KEY (user_id) REFERENCES users (id)
 );

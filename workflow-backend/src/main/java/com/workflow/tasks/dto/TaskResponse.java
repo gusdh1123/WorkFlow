@@ -2,7 +2,9 @@ package com.workflow.tasks.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
+import com.workflow.attachment.dto.AttachmentResponse;
 import com.workflow.department.entity.DepartmentEntity;
 import com.workflow.tasks.entity.TaskEntity;
 import com.workflow.tasks.enums.TaskPriority;
@@ -10,108 +12,99 @@ import com.workflow.tasks.enums.TaskStatus;
 import com.workflow.tasks.enums.TaskVisibility;
 import com.workflow.user.entity.UserEntity;
 
-public record TaskResponse(Long id, String title, String description, TaskStatus status, TaskPriority priority,
-		TaskVisibility visibility, LocalDate dueDate, LocalDateTime createdAt,
+import lombok.Builder;
+import lombok.Getter;
 
-		Long createdById, String createdByName, String createdByDepartmentName, String createdByDepartmentCode,
+@Getter
+@Builder
+public class TaskResponse {
 
-		Long assigneeId, String assigneeName, String assigneeDepartmentName, String assigneeDepartmentCode,
+    private Long id;                      // 업무 ID
+    private String title;                  // 업무 제목
+    private String description;            // 업무 상세 내용
+    private TaskStatus status;             // 상태 (TODO, IN_PROGRESS, DONE 등)
+    private TaskPriority priority;         // 우선순위
+    private TaskVisibility visibility;     // 공개 범위 (PUBLIC, DEPARTMENT, PRIVATE 등)
+    private LocalDate dueDate;             // 마감일
+    private LocalDateTime createdAt;       // 생성 시각
 
-		String ownerDepartmentName, String ownerDepartmentCode, String workDepartmentName, String workDepartmentCode) {
-	public static TaskResponse from(TaskEntity t) {
+    private Long createdById;              // 생성자 ID
+    private String createdByName;          // 생성자 이름
+    private String createdByDepartmentName;// 생성자 소속 부서명
+    private String createdByDepartmentCode;// 생성자 소속 부서 코드
 
-        UserEntity cb = t.getCreatedBy();
-        UserEntity as = t.getAssignee();
+    private Long assigneeId;               // 담당자 ID
+    private String assigneeName;           // 담당자 이름
+    private String assigneeDepartmentName; // 담당자 소속 부서명
+    private String assigneeDepartmentCode; // 담당자 소속 부서 코드
 
-        DepartmentEntity cbDept = (cb == null) ? null : cb.getDepartment();
-        DepartmentEntity asDept = (as == null) ? null : as.getDepartment();
+    private String ownerDepartmentName;    // 업무 소유 부서명
+    private String ownerDepartmentCode;    // 업무 소유 부서 코드
+    private String workDepartmentName;     // 실제 업무 처리 부서명
+    private String workDepartmentCode;     // 실제 업무 처리 부서 코드
 
-        DepartmentEntity ownerDept = t.getOwnerDepartment();
-        DepartmentEntity workDept = t.getWorkDepartment();
+    private List<AttachmentResponse> attachments; // 첨부파일 리스트
+    private long attachmentsCount;                // 첨부파일 개수, 목록/상세 공통
 
-        return new TaskResponse(
-                t.getId(),
-                t.getTitle(),
-                t.getDescription(),
-                t.getStatus(),
-                t.getPriority(),
-                t.getVisibility(),
-                t.getDueDate(),
-                t.getCreatedAt(),
+    // 정적 빌더 변환 메서드
+    
+    // 상세 조회용: 첨부 리스트 포함
+    public static TaskResponse from(TaskEntity t, List<AttachmentResponse> attachments) {
+        long count = (attachments == null) ? 0 : attachments.size();
+        return from(t, attachments, count);
+    }
 
-                cb != null ? cb.getId() : null,
-                cb != null ? cb.getName() : null,
-                cbDept != null ? cbDept.getName() : null,
-                cbDept != null ? cbDept.getCode() : null,
+    // 목록 조회용: 첨부 리스트 없이 개수만
+    public static TaskResponse from(TaskEntity t, long attachmentsCount) {
+        return from(t, List.of(), attachmentsCount);
+    }
 
-                as != null ? as.getId() : null,
-                as != null ? as.getName() : null,
-                asDept != null ? asDept.getName() : null,
-                asDept != null ? asDept.getCode() : null,
+    // 공통 빌더: 생성자, 담당자, 부서 정보 모두 포함
+    public static TaskResponse from(TaskEntity t,
+                                       List<AttachmentResponse> attachments,
+                                       long attachmentsCount) {
 
-                ownerDept != null ? ownerDept.getName() : null,
-                ownerDept != null ? ownerDept.getCode() : null,
-                workDept != null ? workDept.getName() : null,
-                workDept != null ? workDept.getCode() : null
-                		
-                // 위와 같이 하는 이유는 아무 값도 안들어가는 순간 500이 터지기 때문에 값이 없으면 널을 넣는 것
-                // 값이 없다는 걸 명시적으로 표현
-                // Optional 방식으로 해도 됨
-//              // 작성자
-//              Optional.ofNullable(cb)
-//              .map(UserEntity::getId)
-//              .orElse(null),
-//
-//              Optional.ofNullable(cb)
-//              .map(UserEntity::getName)
-//              .orElse(null),
-//
-//              Optional.ofNullable(cb)
-//      		.map(UserEntity::getDepartment)
-//				.map(DepartmentEntity::getName)
-//              .orElse(null),
-//
-//              Optional.ofNullable(cb)
-//              .map(UserEntity::getDepartment)
-//              .map(DepartmentEntity::getCode)
-//              .orElse(null),
-//
-//              // 담당자
-//              Optional.ofNullable(as)
-//              .map(UserEntity::getId)
-//              .orElse(null),
-//
-//              Optional.ofNullable(as)
-//              .map(UserEntity::getName)
-//              .orElse(null),
-//
-//              Optional.ofNullable(as)
-//              .map(UserEntity::getDepartment)
-//              .map(DepartmentEntity::getName)
-//              .orElse(null),
-//
-//              Optional.ofNullable(as)
-//              .map(UserEntity::getDepartment)
-//              .map(DepartmentEntity::getCode)
-//              .orElse(null),
-//
-//              // 소유 부서
-//              Optional.ofNullable(t.getOwnerDepartment())
-//              .map(DepartmentEntity::getName)
-//              .orElse(null),
-//
-//              Optional.ofNullable(t.getOwnerDepartment())
-//              .map(DepartmentEntity::getCode)
-//              .orElse(null),
-//
-//              // 수행 부서
-//              Optional.ofNullable(t.getWorkDepartment())
-//              .map(DepartmentEntity::getName)
-//              .orElse(null),
-//
-//              Optional.ofNullable(t.getWorkDepartment())
-//              .map(DepartmentEntity::getCode)
-//              .orElse(null)
-        );
+        UserEntity cb = t.getCreatedBy();  // 생성자 정보
+        UserEntity as = t.getAssignee();   // 담당자 정보
+
+        DepartmentEntity cbDept = (cb == null) ? null : cb.getDepartment(); // 생성자 부서
+        DepartmentEntity asDept = (as == null) ? null : as.getDepartment(); // 담당자 부서
+
+        DepartmentEntity ownerDept = t.getOwnerDepartment(); // 업무 소유 부서
+        DepartmentEntity workDept = t.getWorkDepartment();  // 실제 처리 부서
+
+        return TaskResponse.builder()
+                .id(t.getId())
+                .title(t.getTitle())
+                .description(t.getDescription())
+                .status(t.getStatus())
+                .priority(t.getPriority())
+                .visibility(t.getVisibility())
+                .dueDate(t.getDueDate())
+                .createdAt(t.getCreatedAt())
+
+                .createdById(cb != null ? cb.getId() : null)
+                .createdByName(cb != null ? cb.getName() : null)
+                .createdByDepartmentName(cbDept != null ? cbDept.getName() : null)
+                .createdByDepartmentCode(cbDept != null ? cbDept.getCode() : null)
+
+                .assigneeId(as != null ? as.getId() : null)
+                .assigneeName(as != null ? as.getName() : null)
+                .assigneeDepartmentName(asDept != null ? asDept.getName() : null)
+                .assigneeDepartmentCode(asDept != null ? asDept.getCode() : null)
+
+                .ownerDepartmentName(ownerDept != null ? ownerDept.getName() : null)
+                .ownerDepartmentCode(ownerDept != null ? ownerDept.getCode() : null)
+                .workDepartmentName(workDept != null ? workDept.getName() : null)
+                .workDepartmentCode(workDept != null ? workDept.getCode() : null)
+
+                .attachments(attachments != null ? attachments : List.of())
+                .attachmentsCount(Math.max(0, attachmentsCount)) // 음수 방어
+                .build();
+    }
+
+    // 기존 코드 호환용: 첨부파일 0개 처리
+    public static TaskResponse from(TaskEntity t) {
+        return from(t, 0);
     }
 }
