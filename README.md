@@ -161,27 +161,23 @@
 <details>
 <summary><h3>TASKS</h3></summary>
 
-### TASKS
 <details>
-<summary><h3>List</h3></summary>
+<summary><h4>List</h4></summary>
 
-#### List
 <img width="2060" height="1227" alt="List" src="https://github.com/user-attachments/assets/6481fe4d-2766-409b-8fe9-824589333c89" />
 
 </details>
 
 <details>
-<summary><h3>Create</h3></summary>
+<summary><h4>Create</h4></summary>
 
-#### Create
 <img width="987" height="1189" alt="Create" src="https://github.com/user-attachments/assets/20ea7c24-5319-48b7-a3e3-c97eea61c199" />
 
 </details>
 
 <details>
-<summary><h3>Read (첨부 파일 삭제는 아직 Update를 하지 않아서 일단 조회에서 동작하도록 함.)</h3></summary>
+<summary><h4>Read (첨부 파일 삭제는 아직 Update를 하지 않아서 일단 조회에서 동작하도록 함.)</h4></summary>
 
-#### Read
 <img width="1509" height="1040" alt="Read" src="https://github.com/user-attachments/assets/6622088d-49d7-402e-99f5-2c6ba00054a6" />
 
 </details>
