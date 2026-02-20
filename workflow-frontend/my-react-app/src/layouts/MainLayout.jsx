@@ -19,11 +19,22 @@ export default function MainLayout() {
   console.log("현재 경로:", pathname);
 
   // 경로별 헤더 타이틀 매핑
-  const titleMap = {
-    "/": "Dashboard",
-    "/tasks/**": "Tasks"
-  };
-  const title = titleMap[pathname] ?? "WorkFlow"; // 매칭 없으면 기본값
+  const routes = [
+    { path: "/", title: "Dashboard", exact: true },
+    { path: "/tasks", title: "My Tasks", exact: false },
+    // { path: "/projects", title: "Projects", exact: false },
+    // { path: "/team", title: "Team", exact: false },
+    // { path: "/calendar", title: "Calendar", exact: false },
+    // { path: "/reports", title: "Reports", exact: false },
+    // { path: "/settings", title: "Settings", exact: false },
+  ];
+
+  // 현재 경로와 매칭되는 타이틀 찾기
+  const matched = routes.find(route =>
+    route.exact ? pathname === route.path : pathname.startsWith(route.path)
+  );
+
+  const title = matched?.title ?? "WorkFlow"; // 매칭 없으면 기본값
 
   // 경로 변경 시 문서 타이틀 갱신
   useEffect(() => {

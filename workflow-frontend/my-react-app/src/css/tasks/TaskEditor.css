@@ -39,3 +39,24 @@
   display: flex;
   flex-direction: column;
 }
+
+/* ============================= */
+/* 영상(iframe) 스타일 확장 */
+/* ============================= */
+
+.ql-video-wrapper {
+  display: block;
+  position: relative;
+  min-width: 200px;
+  min-height: 112px;
+  margin: 12px 0;
+  resize: both;       /* 브라우저 기본 드래그 가능 */
+  overflow: hidden;
+}
+
+.ql-video-wrapper iframe {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+}
+

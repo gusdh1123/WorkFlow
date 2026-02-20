@@ -33,6 +33,22 @@ const EMPTY_PAGE = {
   last: true,         // 마지막 페이지 여부
 };
 
+/**
+ * 유튜브 URL → 썸네일 URL 변환
+ * iframe 대신 리스트 카드에서는 이미지 미리보기로 사용
+ * @param url - 유튜브 영상 URL
+ * @returns 썸네일 이미지 URL
+ */
+const getVideoThumbnail = (url) => {
+  try {
+    // https://www.youtube.com/watch?v=ID
+    const vid = new URL(url).searchParams.get("v") || url.split("/").pop();
+    return vid ? `https://img.youtube.com/vi/${vid}/0.jpg` : null;
+  } catch {
+    return null;
+  }
+};
+
 export default function Tasks() {
   // 로그인 사용자 정보 가져오기
   const { user } = useAuth(); // eslint-disable-line no-unused-vars
@@ -93,15 +109,11 @@ export default function Tasks() {
    */
   const updateParams = useCallback(
     (next, { replace = true } = {}) => {
-      // 현재 URL 쿼리 객체
       const cur = Object.fromEntries(sp.entries());
       const merged = { ...cur, ...next };
-
-      // 값이 빈 문자열/null이면 삭제
       Object.keys(merged).forEach((k) => {
         if (merged[k] === "" || merged[k] == null) delete merged[k];
       });
-
       setSp(merged, { replace });
     },
     [sp, setSp]
@@ -111,7 +123,7 @@ export default function Tasks() {
   const onChangeScope = (v) => {
     const nextScope = SCOPES.includes(v) ? v : "all";
     setScope(nextScope);
-    setPage(0); // 범위 변경 시 페이지 초기화
+    setPage(0); 
     updateParams({ scope: nextScope, page: 0 });
   };
 
@@ -119,7 +131,7 @@ export default function Tasks() {
   const onChangeStatus = (v) => {
     const nextStatus = v && STATUSES.includes(v) ? v : "";
     setStatus(nextStatus);
-    setPage(0); // 상태 변경 시 페이지 초기화
+    setPage(0); 
     updateParams({ status: nextStatus, page: 0 });
   };
 
@@ -128,47 +140,31 @@ export default function Tasks() {
     updateParams({ page }, { replace: true });
   }, [page, updateParams]);
 
-  /**
-   * 페이지네이션 버튼 계산
-   * 최대 7개 버튼만 화면에 표시
-   */
   const buildPageButtons = (current, total) => {
     if (total <= 1) return [0];
-
     const maxButtons = 7;
     const half = Math.floor(maxButtons / 2);
-
     let start = Math.max(0, current - half);
     let end = Math.min(total - 1, current + half);
-
     const count = end - start + 1;
     if (count < maxButtons) {
       const remaining = maxButtons - count;
       start = Math.max(0, start - remaining);
       end = Math.min(total - 1, end + (maxButtons - (end - start + 1)));
     }
-
     const pages = [];
     for (let i = start; i <= end; i++) pages.push(i);
     return pages;
   };
 
-  /**
-   * HTML에서 텍스트만 추출
-   * 에디터에서 HTML로 저장된 description → 순수 텍스트
-   */
   const stripHtml = (html = "") => {
     const doc = new DOMParser().parseFromString(html, "text/html");
     return (doc.body.textContent || "").trim();
   };
 
-  /**
-   * HTML 기반 이미지/영상 존재 여부 판단
-   */
   const hasImageInHtml = (html = "") => /<img\b/i.test(html);
   const hasVideoInHtml = (html = "") => /<iframe\b/i.test(html);
 
-  // 업무 중요도 수치화 (프론트 정렬용)
   const priorityRank = (p) => {
     if (p === "HIGH") return 3;
     if (p === "MEDIUM") return 2;
@@ -176,11 +172,6 @@ export default function Tasks() {
     return 0;
   };
 
-  /**
-   * 서버 응답 구조 통일
-   * @param data - 서버에서 받은 페이지 혹은 배열
-   * @returns PageResponse 구조
-   */
   const normalizePageResponse = (data) => {
     if (data && Array.isArray(data.content)) {
       return {
@@ -204,26 +195,14 @@ export default function Tasks() {
     return { ...EMPTY_PAGE };
   };
 
-  /**
-   * 서버에서 업무 목록 조회
-   * scope, status, page, size 기준
-   */
   const fetchTasks = useCallback(async () => {
     setLoading(true);
     try {
-      const params = {
-        scope: scope || "all",
-        page,
-        size,
-      };
+      const params = { scope: scope || "all", page, size };
       if (status) params.status = status;
-
       const res = await api.get("/api/tasks", { params });
-
       const normalized = normalizePageResponse(res.data);
       setPageData(normalized);
-
-      // 서버가 페이지 정보를 다르게 보내면 페이지 동기화
       if (Number.isFinite(normalized.page) && normalized.page !== page) {
         setPage(normalized.page);
         updateParams({ page: normalized.page }, { replace: true });
@@ -236,21 +215,14 @@ export default function Tasks() {
     }
   }, [scope, status, page, size, updateParams]);
 
-  // scope/status/page 바뀌면 자동 조회
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
 
-  // 페이지네이션 버튼 배열 계산
   const pageButtons = useMemo(() => buildPageButtons(page, totalPages), [page, totalPages]);
 
-  /**
-   * 업무 목록 프론트 정렬
-   * sort: createdAtDesc | dueDateAsc | dueDateDesc | priorityDesc
-   */
   const sortedTasks = useMemo(() => {
     const arr = [...(pageData.content ?? [])];
-
     if (sort === "createdAtDesc") {
       return arr.sort((a, b) => {
         const da = a.createdAt ? new Date(a.createdAt).getTime() : 0;
@@ -259,7 +231,6 @@ export default function Tasks() {
         return (b.id ?? 0) - (a.id ?? 0);
       });
     }
-
     if (sort === "dueDateAsc") {
       return arr.sort((a, b) => {
         const da = parseLocalDate(a.dueDate)?.getTime() ?? Number.POSITIVE_INFINITY;
@@ -267,7 +238,6 @@ export default function Tasks() {
         return da - db;
       });
     }
-
     if (sort === "dueDateDesc") {
       return arr.sort((a, b) => {
         const da = parseLocalDate(a.dueDate)?.getTime() ?? Number.NEGATIVE_INFINITY;
@@ -275,43 +245,23 @@ export default function Tasks() {
         return db - da;
       });
     }
-
     if (sort === "priorityDesc") {
       return arr.sort((a, b) => priorityRank(b.priority) - priorityRank(a.priority));
     }
-
     return arr;
   }, [pageData.content, sort]);
 
-  /**
-   * 페이지 이동 함수
-   */
-  const goFirst = () => {
-    if (!pageData.first) setPage(0);
-  };
-  const goPrev = () => {
-    if (!pageData.first) setPage((p) => Math.max(0, p - 1));
-  };
-  const goNext = () => {
-    if (!pageData.last) setPage((p) => Math.min(totalPages - 1, p + 1));
-  };
-  const goLast = () => {
-    if (!pageData.last) setPage(Math.max(0, totalPages - 1));
-  };
+  const goFirst = () => { if (!pageData.first) setPage(0); };
+  const goPrev = () => { if (!pageData.first) setPage((p) => Math.max(0, p - 1)); };
+  const goNext = () => { if (!pageData.last) setPage((p) => Math.min(totalPages - 1, p + 1)); };
+  const goLast = () => { if (!pageData.last) setPage(Math.max(0, totalPages - 1)); };
   const goPage = (p) => setPage(p);
 
-  /**
-   * attachments 정보 요약
-   * @param t - 단일 업무 객체
-   * @returns {count, hasAnyFile, hasImage, hasVideo}
-   */
   const getAttachSummary = (t) => {
     const atts = Array.isArray(t?.attachments) ? t.attachments : [];
     const count = Number.isFinite(t?.attachmentsCount) ? t.attachmentsCount : atts.length;
-
     const hasAnyFile = count > 0;
 
-    // attachments가 있으면 파일 타입 판정
     const hasImageFile = atts.some((a) => {
       const ct = (a?.contentType || "").toLowerCase();
       const name = (a?.originalFilename || "").toLowerCase();
@@ -324,16 +274,28 @@ export default function Tasks() {
       return ct.startsWith("video/") || /\.(mp4|mov|webm|mkv|avi)$/i.test(name);
     });
 
-    // description 기반 이미지/영상 존재 여부
     const rawHtml = t?.description || "";
     const hasImgInDesc = hasImageInHtml(rawHtml);
     const hasVideoInDesc = hasVideoInHtml(rawHtml);
+
+    // 추가: 카드용 미리보기용 썸네일 URL 반환
+    let previewImage = null;
+    if (hasImgInDesc) {
+      const doc = new DOMParser().parseFromString(rawHtml, "text/html");
+      const img = doc.querySelector("img");
+      if (img) previewImage = img.src;
+    } else if (hasVideoInDesc) {
+      const doc = new DOMParser().parseFromString(rawHtml, "text/html");
+      const iframe = doc.querySelector("iframe");
+      if (iframe) previewImage = getVideoThumbnail(iframe.src); // 유튜브 썸네일
+    }
 
     return {
       count,
       hasAnyFile,
       hasImage: hasImageFile || hasImgInDesc,
       hasVideo: hasVideoFile || hasVideoInDesc,
+      previewImage, // 추가: 카드에서 보여줄 미리보기
     };
   };
 

@@ -199,8 +199,14 @@ public class FileStorageService {
             "$1"
         );
 
-        // 깨진 a 태그 찌꺼기 제거
-        out = out.replaceAll("(?is)\"\\s*>\\s*(?=<iframe)", "");
+//        // 깨진 a 태그 찌꺼기 제거
+//        out = out.replaceAll("(?is)\"\\s*>\\s*(?=<iframe)", "");
+        
+        // 깨진 <a> 태그 제거 (iframe 아닌 빈 <a>)
+        out = out.replaceAll("(?is)<a[^>]*></a>", "");
+
+        // 필요하면 공백/엔터 정리
+        out = out.trim();
 
         return out;
     }

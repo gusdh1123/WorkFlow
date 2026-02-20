@@ -164,7 +164,7 @@ export default function AttachmentInput({ value = [], onChange }) {
         )}
 
         {/* 프론트 검증 안내 */}
-        <div className="taskform__help">서버 정책과 동일하게 프론트에서도 검증합니다.</div>
+        <div className="taskform__help">파일 형식 및 용량은 서비스 정책에 따라 제한될 수 있습니다.</div>
       </div>
     </div>
   );

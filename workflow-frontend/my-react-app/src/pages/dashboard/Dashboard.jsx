@@ -82,9 +82,6 @@ export default function Dashboard() {
           <div className="card__title">My Tasks Table</div>
           <div className="muted">
             <p>My Tasks Table</p>
-            <p>My Tasks Table</p>
-            <p>My Tasks Table</p>
-            <p>My Tasks Table</p>
           </div>
         </div>
 
@@ -92,8 +89,6 @@ export default function Dashboard() {
         <div className="card card__activity">
           <div className="card__title">Activity Log</div>
           <div className="muted">
-            <p>Activity Log</p>
-            <p>Activity Log</p>
             <p>Activity Log</p>
           </div>
         </div>

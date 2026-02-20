@@ -1,22 +1,28 @@
-// Quill 에디터 전역 설정
-// - 이미지 리사이즈 모듈 등록
+// quillSetup.js
+// - Quill 전역 설정
+// - 이미지 + iframe 리사이즈 모듈 등록
 // - 중복 등록 방지
+// - ESM / CommonJS 대응
 
 import Quill from "quill";
 import ImageResize from "quill-image-resize-module-rebuild";
+import ResizeModule from "quill-resize-module";
+import VideoBlot from "./blots/VideoBlot";
 
-// Quill 생성자 호환 처리 (ESM 번들 / CommonJS 차이)
 const QuillCtor = Quill?.default ?? Quill;
 
-// Quill 모듈 전역 등록 (1회만)
 export function setupQuill() {
+  if (!QuillCtor) return;
+  if (QuillCtor.__registered) return;
 
-  if (!QuillCtor) return;          // Quill 불러오기 실패 시 중단
-  if (QuillCtor.__registered) return; // 이미 등록됐으면 중단
-
-  // 이미지 리사이즈 모듈 등록
+  // 이미지 전용 리사이즈 모듈
   QuillCtor.register("modules/imageResize", ImageResize);
 
-  // 등록 완료 표시
+  // iframe 포함 resize 모듈
+  QuillCtor.register("modules/resize", ResizeModule);
+
+  // 비디오 블롯 등록
+  QuillCtor.register(VideoBlot, true);
+
   QuillCtor.__registered = true;
 }
