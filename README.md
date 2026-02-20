@@ -145,9 +145,8 @@
 ## 📷 시연 이미지
 
 <details>
-<summary>Login</summary>
+<summary><h3>Login</h3></summary>
 
-### Login
 <img width="1121" height="720" alt="Login" src="https://github.com/user-attachments/assets/d6787074-980c-4925-8645-d554256935a9" />
 
 </details>
