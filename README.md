@@ -160,7 +160,7 @@
 </details>
 
 <details>
-<summary><h3>TASKS</h3></summary>
+<summary><h3>Tasks</h3></summary>
 
 <details>
 <summary><h4>List</h4></summary>
