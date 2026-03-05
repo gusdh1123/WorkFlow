@@ -162,6 +162,7 @@
 <details>
 <summary><b>Tasks</b></summary>
 
+<ul>
 <li>
 <details>
 <summary><b>List</b></summary>
@@ -188,6 +189,7 @@
 
 </details>
 </li>
+</ul>
 </details>
 
 ---
