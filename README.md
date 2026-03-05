@@ -146,38 +146,38 @@
 ## 📷 시연 이미지
 
 <details>
-<summary><h3>Login</h3></summary>
+<summary><b>Login<b></summary>
 
 <img width="1121" height="720" alt="Login" src="https://github.com/user-attachments/assets/d6787074-980c-4925-8645-d554256935a9" />
 
 </details>
 
 <details>
-<summary><h3>Dashboard</h3></summary>
+<summary><b>Dashboard</b></summary>
 
 <img width="2060" height="1226" alt="dashboard" src="https://github.com/user-attachments/assets/b0ceb778-389e-4e2e-a55f-30d250a7504e" />
 
 </details>
 
 <details>
-<summary><h3>Tasks</h3></summary>
+<summary><b>Tasks</b></summary>
 
 <details>
-<summary><h4>List</h4></summary>
+<summary><b>List</b></summary>
 
 <img width="2060" height="1227" alt="List" src="https://github.com/user-attachments/assets/6481fe4d-2766-409b-8fe9-824589333c89" />
 
 </details>
 
 <details>
-<summary><h4>Create</h4></summary>
+<summary><b>Create</b></summary>
 
 <img width="987" height="1189" alt="Create" src="https://github.com/user-attachments/assets/20ea7c24-5319-48b7-a3e3-c97eea61c199" />
 
 </details>
 
 <details>
-<summary><h4>Read (첨부 파일 삭제는 아직 Update를 하지 않아서 일단 조회에서 동작하도록 함.)</h4></summary>
+<summary><b>Read (첨부 파일 삭제는 아직 Update를 하지 않아서 일단 조회에서 동작하도록 함.)</b></summary>
 
 <img width="1509" height="1040" alt="Read" src="https://github.com/user-attachments/assets/6622088d-49d7-402e-99f5-2c6ba00054a6" />
 
