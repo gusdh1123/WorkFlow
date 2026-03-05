@@ -3,9 +3,11 @@ import { useMemo, useRef } from "react";
 import ReactQuill from "react-quill-new";
 import Quill from "quill";
 import "react-quill-new/dist/quill.snow.css";
-import VideoBlot from "../../editor/blots/VideoBlot";
 import { uploadEditorImage } from "../../api/uploads";
 import { validateEditorImage } from "../../utils/fileUtils";
+import { setupQuill } from "../../editor/quillSetup";
+
+setupQuill();
 
 export default function TaskEditor({ value, onChange }) {
   const quillRef = useRef(null);
@@ -71,12 +73,8 @@ export default function TaskEditor({ value, onChange }) {
       ],
       handlers: { image: imageHandler, video: videoHandler },
     },
-    resize: {
-      modules: ["Resize", "DisplaySize", "Toolbar"],
-      embedTags: ["IFRAME", "IMG"],
-    },
     imageResize: {
-      parchment: Quill.import("parchment"),
+      // parchment: Quill.import("parchment"),
       modules: ["Resize", "DisplaySize", "Toolbar"],
     },
   }), []);

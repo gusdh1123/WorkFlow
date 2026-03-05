@@ -11,10 +11,10 @@ import "./index.css";
 // - App: 앱 전체 컴포넌트 (라우팅 포함)
 // =========================
 ReactDOM.createRoot(document.getElementById("root")).render(
-  // StrictMode: 개발 모드에서 추가 검사 (주석 처리됨)
-  // <React.StrictMode>
+  // StrictMode: 개발 모드에서 추가 검사
+   <React.StrictMode>
     <BrowserRouter>
       <App />
     </BrowserRouter>
-  // </React.StrictMode>
+   </React.StrictMode>
 );

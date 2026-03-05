@@ -48,7 +48,7 @@ export default function AuthProvider({ children }) {
     const boot = async () => {
       try {
         // 로그인/회원가입 페이지에서는 refresh 시도 금지
-        if (window.location.pathname === "/login" || window.location.pathname === "/signup") {
+        if (window.location.pathname === "/login" /* || window.location.pathname === "/signup" */ ) {
         if (mounted) setAuthReady(true); // 인증 준비 완료 표시
         return;
       }

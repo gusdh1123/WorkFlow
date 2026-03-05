@@ -71,12 +71,14 @@ public class AuthService {
     @Transactional
     public Tokens refresh(String refreshToken) {
 
+    	// 토큰 확인
         if (refreshToken == null)
             throw new ApiException(ErrorCode.UNAUTHORIZED, "인증 정보가 유효하지 않습니다.");
 
         try {
             Claims claims = jwtProvider.parseAndValidate(refreshToken);
 
+            // 토큰 타입 확인
             if (!jwtProvider.isRefreshToken(claims)) {
                 throw new ApiException(ErrorCode.UNAUTHORIZED, "리프레시 토큰 타입이 아닙니다.");
             }
@@ -90,10 +92,12 @@ public class AuthService {
 
             LocalDateTime now = LocalDateTime.now();
 
+            // 만료 확인
             if (auth.getExpiresAt() != null && auth.getExpiresAt().isBefore(now)) {
                 throw new ApiException(ErrorCode.UNAUTHORIZED, "리프레시 토큰이 만료되었습니다.");
             }
 
+            // 사용자 일치 확인
             if (!auth.getUser().getId().equals(userId)) {
                 throw new ApiException(ErrorCode.UNAUTHORIZED, "토큰 사용자가 불일치합니다.");
             }
@@ -116,6 +120,7 @@ public class AuthService {
                 null
             );
 
+            // 새 엑세스 토큰 발급
             String newAccessToken = jwtProvider.createAccessToken(user);
 
             return new Tokens(newAccessToken, newRefreshToken);
@@ -143,6 +148,7 @@ public class AuthService {
 
             UserEntity user = auth.getUser();
 
+            // 토큰 전부 폐기
             authRepository.revokeAllActiveByUser(user, now);
 
             user.setStatus(UserStatus.OFFLINE);

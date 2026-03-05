@@ -15,7 +15,7 @@ public record LoginRequest(
 
         // 공백 불가 + 최소 길이 제한
         @NotBlank(message = "비밀번호는 필수입니다.")
-        @Size(min = 4, message = "비밀번호는 최소 8자 이상이어야 합니다.")
+        @Size(min = 4, message = "비밀번호는 최소 4자 이상이어야 합니다.")
         String password
 
 ) {}

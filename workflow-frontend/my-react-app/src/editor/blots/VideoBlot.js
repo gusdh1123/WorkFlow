@@ -79,5 +79,7 @@ class VideoBlot extends BlockEmbed {
 }
 
 // Quill에 등록
-Quill.register(VideoBlot, true);
+// Quill.register(VideoBlot, true);
+// Quill.register({"formats/video" : VideoBlot});
+
 export default VideoBlot;

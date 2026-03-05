@@ -30,25 +30,14 @@ public class AuthController {
     // 로그인
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request, HttpServletResponse res) {
-        try {
-            // 로그인 수행 후 access + refresh 토큰 발급
-            Tokens tokens = authService.login(request.email(), request.password());
+        // 로그인 수행 후 access + refresh 토큰 발급
+        Tokens tokens = authService.login(request.email(), request.password());
 
-            // refreshToken 쿠키 저장 (HttpOnly + Secure + SameSite 필요)
-            CookieUtil.addHttpOnlyCookie(res, "refreshToken", tokens.refreshToken(), 10080);
+        // refreshToken 쿠키 저장 (HttpOnly + Secure + SameSite 필요)
+        CookieUtil.addHttpOnlyCookie(res, "refreshToken", tokens.refreshToken(), 10080);
 
-            // accessToken 반환
-            return ResponseEntity.ok(Map.of("accessToken", tokens.accessToken()));
-
-        } catch (ApiException e) {
-            // ApiException 발생 시 ErrorCode 기반으로 상태와 메시지 반환
-            return ResponseEntity
-                    .status(e.getErrorCode().getStatus())
-                    .body(Map.of(
-                        "error", e.getErrorCode().name(),
-                        "message", e.getErrorCode().getDefaultMessage()
-                    ));
-        }
+        // accessToken 반환
+        return ResponseEntity.ok(Map.of("accessToken", tokens.accessToken()));
     }
 
     // 토큰 갱신
@@ -60,38 +49,18 @@ public class AuthController {
 
         // 쿠키 자체가 없으면 = 비로그인 상태
         if (refreshToken == null) {
-            // UNAUTHORIZED 상태와 메시지 반환
-            ErrorCode error = ErrorCode.UNAUTHORIZED;
-            return ResponseEntity
-                    .status(error.getStatus())
-                    .body(Map.of(
-                        "error", error.name(),
-                        "message", error.getDefaultMessage()
-                    ));
+            // ApiException을 던져서 글로벌 핸들러에서 처리
+            throw new ApiException(ErrorCode.UNAUTHORIZED);
         }
 
-        try {
-            // refreshToken 유효하면 회전된 access + refresh 발급
-            Tokens tokens = authService.refresh(refreshToken);
+        // refreshToken 유효하면 회전된 access + refresh 발급
+        Tokens tokens = authService.refresh(refreshToken);
 
-            // 새 refresh 쿠키 재설정
-            CookieUtil.addHttpOnlyCookie(res, "refreshToken", tokens.refreshToken(), 10080);
+        // 새 refresh 쿠키 재설정
+        CookieUtil.addHttpOnlyCookie(res, "refreshToken", tokens.refreshToken(), 10080);
 
-            // 새로운 accessToken 반환
-            return ResponseEntity.ok(Map.of("accessToken", tokens.accessToken()));
-
-        } catch (ApiException e) {
-            // refresh 실패 시 쿠키 제거 (탈취된 토큰이 계속 시도되는 것 방지)
-            CookieUtil.deleteCookie(res, "refreshToken");
-
-            // ErrorCode 기반 상태와 메시지 반환
-            return ResponseEntity
-                    .status(e.getErrorCode().getStatus())
-                    .body(Map.of(
-                        "error", e.getErrorCode().name(),
-                        "message", e.getErrorCode().getDefaultMessage()
-                    ));
-        }
+        // 새로운 accessToken 반환
+        return ResponseEntity.ok(Map.of("accessToken", tokens.accessToken()));
     }
 
     // 로그아웃
@@ -106,17 +75,7 @@ public class AuthController {
 
         // DB에서 refreshToken 논리적 제거
         if (refreshToken != null) {
-            try {
-                authService.logout(refreshToken);
-            } catch (ApiException e) {
-                // 로그아웃 실패 시 ErrorCode 기반으로 상태와 메시지 반환
-                return ResponseEntity
-                        .status(e.getErrorCode().getStatus())
-                        .body(Map.of(
-                            "error", e.getErrorCode().name(),
-                            "message", e.getErrorCode().getDefaultMessage()
-                        ));
-            }
+            authService.logout(refreshToken);
         }
 
         // 204 넘겨줄 값이 없으므로 noContent 반환

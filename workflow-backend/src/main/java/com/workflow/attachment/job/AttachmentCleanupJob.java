@@ -26,19 +26,28 @@ public class AttachmentCleanupJob {
     @Value("${app.attachment-cleanup.enabled:true}")
     private boolean enabled; // 청소 기능 활성 여부
 
-    @Value("${app.attachment-cleanup.retention-days:1}")
+//    @Value("${app.attachment-cleanup.retention-days:1}")
+    @Value("${app.attachment-cleanup.retention-minutes:10}")
     private int retentionDays; // soft delete 후 보관 일수
 
     // 매일 새벽 3시 실행(cron = "0 0 3 * * *")
+    // fixedRate: 이전 시작 시점 기준 10분마다 실행
+    // fixedDelay: 이전 종료 시점 기준 10분마다 실행
     // fixedDelay = 10000 10초마다 실행
     // fixedDelay = 60000 1분
     // fixedDelay = 600000 10분
     @Scheduled(fixedDelay = 600000) // 10분마다 실행
     @Transactional
     public void cleanupDeletedAttachments() {
+    	
+    	System.out.println("Cleanup 실행");
 
         if (!enabled) return; // 기능 비활성화 시 바로 종료
 
+        // 분단위 테스트용
+        // LocalDateTime cutoff = LocalDateTime.now().minusMinutes(retentionDays);
+        
+        // day 기준 
         LocalDateTime cutoff = LocalDateTime.now().minusDays(retentionDays); 
         // retentionDays 이전 삭제된 첨부만 대상
 

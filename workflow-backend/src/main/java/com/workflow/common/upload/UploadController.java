@@ -14,7 +14,8 @@ import com.workflow.common.file.FileStorageService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
-// 이미지 업로드용 REST 컨트롤러
+// 이미지 업로드 REST 컨트롤러
+// 나중에 프로필 사진이나 다른 것들 추가 될 수 있음.
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/uploads")

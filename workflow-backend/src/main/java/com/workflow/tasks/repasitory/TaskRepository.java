@@ -15,6 +15,8 @@ import com.workflow.tasks.enums.TaskStatus;
 public interface TaskRepository extends JpaRepository<TaskEntity, Long> {
 
 	// @EntityGraph: 연관 엔티티를 한 번에 같이 조회하라고 강제하는 옵션(N+1 문제 방지용 + Lazy 로딩 최적화)
+	// A를 가져올때 B도 같이 가져와
+	// 단, 즉시
 
 	// 기본 목록/필터
 	@EntityGraph(attributePaths = { "createdBy", "assignee" })
