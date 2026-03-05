@@ -163,7 +163,6 @@
 <summary><b>Tasks</b></summary>
 
 <li>
-<li>
 <details>
 <summary><b>List</b></summary>
 
@@ -188,7 +187,6 @@
 <img width="1509" height="1040" alt="Read" src="https://github.com/user-attachments/assets/6622088d-49d7-402e-99f5-2c6ba00054a6" />
 
 </details>
-</li>
 </li>
 </details>
 
