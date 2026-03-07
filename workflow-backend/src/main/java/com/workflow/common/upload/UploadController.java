@@ -31,6 +31,7 @@ public class UploadController {
     ) {
 
         // tmp 폴더에 파일 저장 후 상대 경로 반환
+    	// 나중에 다른 거 업로드 할때는 "tasks" 이 부분만 모듈화해서 만들면 됨. 아님 화면단에 받아와서 처리하던가.
         String path = fileStorageService.storeEditorImageToTmp(file, "tasks");
 
         // 클라이언트에서 접근 가능한 전체 URL 생성

@@ -123,7 +123,7 @@ CREATE TABLE attachments(
 
 CREATE TABLE audit_logs(
     id BIGSERIAL PRIMARY KEY,
-    task_id BIGINT NOT NULL,
+    task_id BIGINT NULL,
     actor_id BIGINT NOT NULL,
     action_type VARCHAR(30) NOT NULL,
     field_name VARCHAR(50) NULL,
@@ -131,7 +131,7 @@ CREATE TABLE audit_logs(
     after_value TEXT NULL,
     reason TEXT NULL,
     created_at timestamp(6) without time zone NOT NULL DEFAULT NOW(),
-    FOREIGN KEY (task_id) REFERENCES tasks(id),
+    FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE SET NULL,
     FOREIGN KEY (actor_id) REFERENCES users(id)
 );
 

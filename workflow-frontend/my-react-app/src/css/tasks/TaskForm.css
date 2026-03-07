@@ -63,6 +63,21 @@
   box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.18);
 }
 
+.taskform__section--reason {
+  grid-column: 1 / -1;
+}
+
+.taskform__section--reason textarea {
+  width: 97%;
+  height: 60px;
+  resize: none;
+}
+
+.taskform__section--reason textarea::placeholder {
+  text-align: center;
+  color: #94a3b8;
+}
+
 /* ==========================
    Quill Editor
 ========================== */

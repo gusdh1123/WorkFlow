@@ -1,5 +1,6 @@
 package com.workflow.tasks.repasitory;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -163,4 +164,8 @@ public interface TaskRepository extends JpaRepository<TaskEntity, Long> {
 												  @Param("userId") Long	userId,
 												  @Param("deptId") Long	deptId);
     // 특정 Task 상세 조회: 로그인 사용자가 접근 가능한 Task만, 작성자/담당자/공개/부서 포함
+	
+	// soft-deleted Task 조회용
+	List<TaskEntity> findByIsDeletedTrue();
+	
 }

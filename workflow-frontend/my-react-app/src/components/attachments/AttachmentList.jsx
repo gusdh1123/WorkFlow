@@ -30,6 +30,7 @@ const fileIcon = (name = "") => {
 export default function AttachmentList({
   attachments = [],
   onDeleted,
+  readOnly = true, // 기본값 false
 }) {
   // attachments가 배열이 아닐 경우 대비
   const list = useMemo(
@@ -116,7 +117,8 @@ export default function AttachmentList({
                 >
                   다운로드
                 </button>
-
+            
+            {!readOnly && (
                 <button
                   type="button"
                   className="taskdetail__btn taskdetail__btn--danger"
@@ -125,6 +127,7 @@ export default function AttachmentList({
                 >
                   {busyId === att.id ? "삭제중..." : "삭제"}
                 </button>
+            )}
               </div>
             </li>
           ))}

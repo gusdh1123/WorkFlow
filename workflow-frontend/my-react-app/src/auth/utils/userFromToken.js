@@ -16,6 +16,7 @@ export function userFromToken(token) {
       email: decoded.email, // 이메일
       role: decoded.role,   // 권한/역할
       name: decoded.name,   // 사용자 이름
+      department: decoded.department,
     };
 
   } catch (e) {

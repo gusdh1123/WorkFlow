@@ -76,6 +76,7 @@ public class JwtProvider {
 				// 추가 사용자 정보 (프론트에서 활용 가능)
 				.claim("name", userEntity.getName())
 				.claim("email", userEntity.getEmail())
+				.claim("department", userEntity.getDepartment().getName())
 
 				// 발급 시간
 				.issuedAt(now)

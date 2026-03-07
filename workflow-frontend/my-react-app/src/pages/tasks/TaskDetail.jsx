@@ -6,6 +6,10 @@ import { api } from "../../api/api.js";
 import { visibilityLabel } from "../../utils/taskUtils";
 import { formatRelativeDateTime, ddayLabel } from "../../utils/dateUtils";
 
+// 토큰 정보 가져오기
+import { userFromToken } from "../../auth/utils/userFromToken.js"
+import { useAuth } from "../../auth/hooks/useAuth";
+
 import ImageModal from "../../components/common/ImageModal";
 
 // 첨부 모듈 분리
@@ -19,6 +23,10 @@ export default function TaskDetail() {
   const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
+
+  //엑세스 토큰에서 유저 정보 꺼내기
+  const { accessToken } = useAuth();
+  const loginUser = accessToken ? userFromToken(accessToken) : null;
 
   // 모달 기능
   const descRef = useRef(null);
@@ -143,6 +151,35 @@ export default function TaskDetail() {
 
   const priorityKey = (task?.priority || "").toLowerCase();
 
+// 수정/삭제 버튼 표시 여부
+const canEdit =
+  task && loginUser && (
+    Number(task.createdById) === Number(loginUser.id) ||       // 작성자
+    (task.assigneeId && Number(task.assigneeId) === Number(loginUser.id)) || // 담당자
+    loginUser.role === "ADMIN" ||                             // 관리자
+    (loginUser.role === "MANAGER" &&
+      loginUser.department?.trim().toLowerCase() ===
+      task.workDepartmentName?.trim().toLowerCase())          // 매니저: 자기 부서
+  );
+
+  // 삭제 버튼
+const handleDelete = async () => {
+  const reason = window.prompt("삭제 사유를 입력하세요:");
+  if (!reason) return;
+
+  if (!window.confirm("정말로 삭제하시겠습니까?")) return;
+
+  try {
+    // 쿼리 파라미터로 reason 전달
+    await api.delete(`/api/tasks/${task.id}?reason=${encodeURIComponent(reason)}`);
+    alert("업무가 삭제되었습니다.");
+    nav("/tasks"); // 삭제 후 리스트로 이동
+  } catch (error) {
+    console.error(error);
+    alert("삭제에 실패했습니다.");
+  }
+};
+
   return (
     <div className="taskdetail">
 
@@ -169,6 +206,7 @@ export default function TaskDetail() {
               목록으로
             </NavLink>
 
+          {canEdit && (
             <NavLink
               className="taskdetail__btn"
               to={`/tasks/${id}/edit`}
@@ -177,15 +215,18 @@ export default function TaskDetail() {
             >
               수정
             </NavLink>
+          )}
 
+          {canEdit && (
             <button
               type="button"
               className="taskdetail__btn taskdetail__btn--danger"
+              onClick={handleDelete}
             >
               삭제
             </button>
+        )}
           </div>
-
         </div>
 
         {/* 상태, 범위, 중요도, 마감, D-Day */}
@@ -240,6 +281,7 @@ export default function TaskDetail() {
           <AttachmentList
             attachments={attachments}
             onDeleted={onAttachmentDeleted}
+            readOnly={true}
           />
 
         </div>

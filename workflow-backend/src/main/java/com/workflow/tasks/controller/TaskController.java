@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.workflow.common.dto.PageResponse;
 import com.workflow.tasks.dto.TaskCreateRequest;
 import com.workflow.tasks.dto.TaskResponse;
+import com.workflow.tasks.dto.TaskUpdateRequest;
 import com.workflow.tasks.enums.TaskStatus;
 import com.workflow.tasks.service.TaskCommandService;
 import com.workflow.tasks.service.TaskQueryService;
@@ -74,13 +76,27 @@ public class TaskController {
 	@PutMapping("/{id}")
 	public ResponseEntity<TaskResponse> update(
 	        @PathVariable("id") Long id,                  // 수정할 업무 ID
-	        @Valid @RequestBody TaskCreateRequest req,   // 기존 DTO 그대로 사용
+	        @Valid @RequestBody TaskUpdateRequest req,   // 기존 DTO 그대로 사용
 	        @AuthenticationPrincipal UserDetails principal // 로그인 사용자 정보
 	) {
 	    if (principal == null) return ResponseEntity.status(401).build();
 
 	    Long userId = Long.parseLong(principal.getUsername()); // username에 id 들어있음
 	    return ResponseEntity.ok(taskCommandService.update(id, req, userId));
+	}
+	
+	// 업무 삭제
+	@DeleteMapping("/{id}")
+	public ResponseEntity<TaskResponse> delete(
+	        @PathVariable("id") Long id,
+	        @RequestParam(name="reason", required=false) String reason,
+	        @AuthenticationPrincipal UserDetails principal
+	) {
+	    if (principal == null) return ResponseEntity.status(401).build();
+
+	    Long userId = Long.parseLong(principal.getUsername());
+	    TaskResponse deletedTask = taskCommandService.softDeleteTask(id, userId, reason); // reason 전달
+	    return ResponseEntity.ok(deletedTask);
 	}
 
 }

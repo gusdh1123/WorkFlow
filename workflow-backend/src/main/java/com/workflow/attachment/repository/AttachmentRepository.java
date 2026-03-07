@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.workflow.attachment.entity.AttachmentEntity;
 
@@ -65,4 +66,8 @@ public interface AttachmentRepository extends JpaRepository<AttachmentEntity, Lo
     
     // taskId에 속하면서 삭제되지 않은 첨부파일 개수 조회 // 추가
     int countByTaskIdAndIsDeletedFalse(Long taskId);
+    
+    // 특정 Task에 연결된 첨부파일 DB에서 삭제
+    @Transactional
+    void deleteByTaskId(Long taskId);
 }

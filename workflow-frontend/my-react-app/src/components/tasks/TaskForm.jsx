@@ -45,6 +45,7 @@ export default function TaskForm({ mode = "create", initialData }) {
   const [dueDate, setDueDate] = useState(initialData?.dueDate || defaultToday()); // 날짜
   const [visibility, setVisibility] = useState(initialData?.visibility || "DEPARTMENT"); // 부서
   const [assigneeId, setAssigneeId] = useState(initialData?.assigneeId?.toString() || ""); // 담당자
+  const [reason, setReason] = useState(""); // 수정 사유
   const [users, setUsers] = useState([]); // 담당자 목록
 
   // **첨부파일 초기값 처리**
@@ -77,6 +78,7 @@ export default function TaskForm({ mode = "create", initialData }) {
     if (title.length > 200) return "제목은 200자까지만 작성 가능합니다.";
     if (!status) return "상태를 선택해 주세요.";
     if (!visibility) return "공개 범위를 선택해 주세요.";
+    if (isEdit && !reason.trim()) return "수정 사유를 입력하세요.";
     return null;
   };
 
@@ -123,6 +125,7 @@ export default function TaskForm({ mode = "create", initialData }) {
       visibility,
       dueDate: dueDate || null,
       assigneeId: assigneeId ? Number(assigneeId) : null,
+      reason: isEdit ? reason.trim() : null,
     };
 
     try {
@@ -271,6 +274,20 @@ export default function TaskForm({ mode = "create", initialData }) {
               </button>
             </div>
           </div>
+
+          {isEdit && (
+            <div className="taskform__section taskform__section--reason">
+              <label className="taskform__label">수정 사유</label>
+              <textarea
+                className="taskform__input"
+                rows={2}
+                maxLength={200}
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="수정 사유를 입력하세요."
+                />
+                </div>
+          )}
 
         </div>
 

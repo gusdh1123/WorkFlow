@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { api } from "../../api/api"
 import TaskForm from "../../components/tasks/TaskForm";
+import { NavLink } from "react-router-dom";
+import "../../css/tasks/TaskEdit.css";
 
 
 export default function TaskEdit() {
@@ -38,7 +40,19 @@ export default function TaskEdit() {
   // TaskForm 컴포넌트를 edit 모드로 렌더링
   // - mode="edit" : 기존 Task 데이터를 불러와 수정 가능
   // - TaskForm 내부에서 API 호출, 검증, 제출 처리 모두 담당
-  return (
-    <TaskForm mode="edit" initialData={task} />
-  );
+return (
+  <div className="taskcreate">
+    {/* 상단 헤더: 제목 + 목록으로 이동 링크 */}
+    <div className="taskcreate__header">
+      <h2 className="taskcreate__title">업무 수정</h2>
+      <NavLink to="/tasks" className="taskcreate__back">
+        목록으로
+      </NavLink>
+    </div>
+
+    <div className="taskcreate__content">
+      <TaskForm mode="edit" initialData={task} />
+  </div>
+  </div>
+);
 }

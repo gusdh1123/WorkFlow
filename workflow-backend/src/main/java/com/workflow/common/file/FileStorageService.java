@@ -184,10 +184,8 @@ public class FileStorageService {
     
     // 이미지 즉시 삭제 (수정 시)
     public void deleteEditorImage(String url, String module) {
+    	
         if (url == null || url.isBlank()) return;
-
-        // module 검증 (폴더가 없으면 생성, 여기서는 tasks 등)
-        editorDir(module);
 
         try {
             // URL -> 서버 상대 경로 추출
