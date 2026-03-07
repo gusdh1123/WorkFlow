@@ -11,17 +11,20 @@ import {
 
 // AttachmentInput 컴포넌트
 // - 드래그&드롭 + 파일 선택 + 검증 + 리스트 표시 + 삭제
-// - value: 현재 선택된 File 배열
+// - value: 현재 선택된 File 배열 (File 객체 또는 서버 파일 객체)
 // - onChange: value 변경 콜백
-export default function AttachmentInput({ value = [], onChange }) {
+// - onDelete: 기존 서버 파일 삭제 콜백 추가
+export default function AttachmentInput({ value = [], onChange, onDelete }) {
   const inputRef = useRef(null);  // 숨겨진 파일 input 접근용 ref
   const [error, setError] = useState(""); // 검증 오류 메시지 상태
 
   // 선택된 파일 총 용량 계산
-  const totalBytes = useMemo(
-    () => (value || []).reduce((sum, f) => sum + (f?.size || 0), 0),
-    [value]
-  );
+  // 기존 + 새로 올린 파일 용량 계산
+const totalBytes = useMemo(
+  () =>
+    (value || []).reduce((sum, f) => sum + (f.file?.size ?? f.size ?? 0), 0),
+  [value]
+);
 
   // 파일 선택창 열기
   const openPicker = () => inputRef.current?.click();
@@ -31,27 +34,32 @@ export default function AttachmentInput({ value = [], onChange }) {
     const incoming = Array.from(incomingFileList || []);
     if (incoming.length === 0) return;
 
-    // 기존 파일 + 신규 파일 합치기
-    const merged = [...(value || []), ...incoming];
+    // 기존 서버 파일 유지
+    const existingFiles = (value || []).filter(f => f.isExisting);
 
-    // 파일 검증
-    // - 최대 개수, 개별/총 용량, 확장자
-    const check = validateAttachments(merged, {
-      maxFiles: ATTACH_MAX_FILES,
+    // 기존 선택된 새 파일 유지
+    const existingNewFiles = (value || []).filter(f => !f.isExisting);
+
+    // 새로 선택한 File 객체는 {file,name,size} 형태로 변환
+    const newFiles = incoming.map(f => ({ file: f, name: f.name, size: f.size }));
+
+    // 새 파일 검증 (개수, 용량, 확장자)
+    const check = validateAttachments(newFiles, {
+      maxFiles: ATTACH_MAX_FILES - existingFiles.length - existingNewFiles.length,
       maxFileBytes: ATTACH_MAX_FILE_BYTES,
       maxTotalBytes: ATTACH_MAX_TOTAL_BYTES,
       allowedExts: ATTACH_ALLOWED_EXTS,
     });
 
-    // 검증 실패 시 오류 상태 설정
     if (!check.ok) {
       setError(check.message);
       return;
     }
 
-    // 검증 성공 → 오류 초기화 + 부모 콜백
     setError("");
-    onChange?.(check.files);
+    // 기존 서버 파일 + 기존 새 파일 + 이번 새 파일 합치기
+    const merged = [...existingFiles, ...existingNewFiles, ...newFiles];
+    onChange?.(merged);
   };
 
   // 파일 input onChange
@@ -62,15 +70,27 @@ export default function AttachmentInput({ value = [], onChange }) {
 
   // 특정 인덱스 파일 제거
   const removeAt = (idx) => {
-    const next = (value || []).filter((_, i) => i !== idx);
-    setError("");
-    onChange?.(next);
+    const f = value[idx];
+    if (f.isExisting && onDelete) {
+      // 서버 파일 삭제 요청
+      onDelete(f);
+    } else {
+      // 새 파일 프론트에서 제거
+      const next = (value || []).filter((_, i) => i !== idx);
+      setError("");
+      onChange?.(next);
+    }
   };
 
   // 전체 파일 삭제
   const clearAll = () => {
+    const serverFiles = value.filter(f => f.isExisting);
+    serverFiles.forEach(f => onDelete?.(f));
+
+    const newFiles = value.filter(f => !f.isExisting);
+    onChange?.(newFiles);
+
     setError("");
-    onChange?.([]);
   };
 
   // 드래그&드롭 처리
@@ -80,7 +100,6 @@ export default function AttachmentInput({ value = [], onChange }) {
     applyFiles(e.dataTransfer.files);
   };
 
-  // 드래그 오버 시 브라우저 기본 동작 방지
   const onDragOver = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -91,18 +110,16 @@ export default function AttachmentInput({ value = [], onChange }) {
       <div className="taskform__section">
         <label className="taskform__label">첨부 파일</label>
 
-        {/* 숨겨진 파일 input */}
         <input
           ref={inputRef}
           className="taskform__file"
           type="file"
           multiple
-          accept={ATTACH_ALLOWED_EXTS.map((e) => `.${e}`).join(",")}
+          accept={ATTACH_ALLOWED_EXTS.map(e => `.${e}`).join(",")}
           onChange={onPick}
           style={{ display: "none" }}
         />
 
-        {/* 드래그&드롭 영역 */}
         <div
           className="attach__drop"
           onClick={openPicker}
@@ -110,60 +127,44 @@ export default function AttachmentInput({ value = [], onChange }) {
           onDragOver={onDragOver}
           role="button"
           tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") openPicker();
-          }}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") openPicker(); }}
           title="클릭 또는 드래그&드롭"
         >
           <div className="attach__dropTitle">클릭 또는 드래그&드롭</div>
           <div className="attach__dropHelp">
-            최대 {ATTACH_MAX_FILES}개 / 개별 {formatBytes(ATTACH_MAX_FILE_BYTES)} / 총합{" "}
-            {formatBytes(ATTACH_MAX_TOTAL_BYTES)}
+            최대 {ATTACH_MAX_FILES}개 / 개별 {formatBytes(ATTACH_MAX_FILE_BYTES)} / 총합 {formatBytes(ATTACH_MAX_TOTAL_BYTES)}
           </div>
           <div className="attach__dropHelp">허용 확장자: {ATTACH_ALLOWED_EXTS.join(", ")}</div>
         </div>
 
-        {/* 검증 오류 표시 */}
         {error && <div className="taskform__error">{error}</div>}
 
-        {/* 선택된 파일 리스트 */}
         {(value?.length ?? 0) > 0 && (
           <div className="attach__listWrap">
             <div className="attach__summary">
-              <span>
-                {value.length}개 선택됨 (총 {formatBytes(totalBytes)})
-              </span>
-
-              {/* 전체 삭제 버튼 */}
-              <button type="button" className="attach__clear" onClick={clearAll}>
-                전체 삭제
-              </button>
+              <span>{value.length}개 선택됨 (총 {formatBytes(totalBytes)})</span>
+              <button type="button" className="attach__clear" onClick={clearAll}>전체 삭제</button>
             </div>
 
             <ul className="attach__list">
               {value.map((f, idx) => (
                 <li key={`${f.name}-${f.size}-${idx}`} className="attach__item">
                   <div className="attach__meta">
-                    <div className="attach__name">{f.name}</div>
-                    <div className="attach__size">{formatBytes(f.size)}</div>
+                    <div className="attach__name">{f.name} {f.isExisting ? "(기존 파일)" : ""}</div>
+                    <div className="attach__size">{formatBytes(f.file?.size ?? f.size)}</div>
                   </div>
-
-                  {/* 개별 파일 삭제 버튼 */}
                   <button
                     type="button"
                     className="attach__remove"
                     onClick={() => removeAt(idx)}
                     aria-label="파일 삭제"
-                  >
-                    ✕
-                  </button>
+                  >✕</button>
                 </li>
               ))}
             </ul>
           </div>
         )}
 
-        {/* 프론트 검증 안내 */}
         <div className="taskform__help">파일 형식 및 용량은 서비스 정책에 따라 제한될 수 있습니다.</div>
       </div>
     </div>
@@ -171,7 +172,8 @@ export default function AttachmentInput({ value = [], onChange }) {
 }
 
 // AttachmentInput 역할 요약
-// - 사용자가 파일 선택/드래그&드롭 가능
-// - 프론트에서 파일 개수/용량/확장자 검증
+// - 파일 선택/드래그&드롭 가능
+// - 프론트에서 새 파일만 검증
 // - 선택된 파일 리스트 표시 + 삭제
-// - 부모 컴포넌트와 value/onChange로 상태 공유
+// - 기존 서버 파일 삭제(onDelete 콜백) + 새 파일 프론트 제거
+// - value/onChange로 부모 상태 공유

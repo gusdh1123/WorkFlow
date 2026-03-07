@@ -16,3 +16,18 @@ export async function uploadEditorImage(file) {
   // 서버에서 반환한 URL (클라이언트에서 접근 가능한 경로)
   return res.data?.url;
 }
+
+// 에디터 이미지 삭제
+// - url: 삭제할 이미지 URL (/uploads/...)
+// - module: 서버에서 사용하는 모듈명 ("tasks", "profile" 등)
+export async function deleteEditorImage(url, module = "tasks") {
+  try {
+    await api.post("/api/uploads/images/delete", null, {
+      params: { url, module },
+    });
+    return true;
+  } catch (err) {
+    console.error("이미지 삭제 실패", url, err);
+    return false;
+  }
+}

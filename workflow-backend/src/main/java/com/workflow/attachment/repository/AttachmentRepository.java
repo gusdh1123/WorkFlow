@@ -59,4 +59,10 @@ public interface AttachmentRepository extends JpaRepository<AttachmentEntity, Lo
     long countActiveByTaskId(@Param("taskId") Long taskId);
     // - 업무 내 남아있는 첨부 파일 수 확인
     // - UI에서 파일 아이콘/카운트 표시 등에 사용
+    
+    // taskId에 속하면서 삭제되지 않은 첨부파일 조회 // 추가
+    List<AttachmentEntity> findByTaskIdAndIsDeletedFalse(Long taskId);
+    
+    // taskId에 속하면서 삭제되지 않은 첨부파일 개수 조회 // 추가
+    int countByTaskIdAndIsDeletedFalse(Long taskId);
 }

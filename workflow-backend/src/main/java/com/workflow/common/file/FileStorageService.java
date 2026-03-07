@@ -2,6 +2,7 @@ package com.workflow.common.file;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
 import java.util.regex.*;
@@ -20,7 +21,7 @@ public class FileStorageService {
     private final Path root;
 
     public FileStorageService(@Value("${app.upload-dir}") String uploadDir) {
-        this.root = Paths.get(uploadDir).normalize(); // 업로드 루트 디렉토리 설정, 안전하게 절대 경로로 변환
+        this.root = Paths.get(uploadDir).toAbsolutePath().normalize(); // 업로드 루트 디렉토리 설정, 안전하게 절대 경로로 변환
     }
 
     private String editorDir(String module) {
@@ -179,6 +180,43 @@ public class FileStorageService {
         updated = normalizeQuillHtml(updated);
 
         return updated;
+    }
+    
+    // 이미지 즉시 삭제 (수정 시)
+    public void deleteEditorImage(String url, String module) {
+        if (url == null || url.isBlank()) return;
+
+        // module 검증 (폴더가 없으면 생성, 여기서는 tasks 등)
+        editorDir(module);
+
+        try {
+            // URL -> 서버 상대 경로 추출
+            String prefix = "/uploads/"; // URL에서 업로드 경로 시작점
+            int idx = url.indexOf(prefix);
+            if (idx < 0) throw new ApiException(ErrorCode.INTERNAL_ERROR, "잘못된 이미지 경로: " + url);
+
+            // URL 디코딩
+            String relativePath = java.net.URLDecoder.decode(url.substring(idx + prefix.length()), StandardCharsets.UTF_8);
+
+            // uploadRoot가 없으면 생성
+            if (!Files.exists(root)) {
+                Files.createDirectories(root);
+            }
+
+            // 실제 삭제할 경로 계산
+            Path path = root.resolve(relativePath).normalize(); 
+            System.out.println("삭제 대상: " + path.toAbsolutePath());
+
+            // 존재하면 삭제
+            if (Files.exists(path)) {
+                Files.delete(path);
+            } else {
+                System.out.println("삭제 대상 파일이 존재하지 않음: " + path.toAbsolutePath());
+            }
+
+        } catch (IOException e) {
+            throw new ApiException(ErrorCode.INTERNAL_ERROR, "이미지 삭제 실패: " + url);
+        }
     }
 
     // 유튜브 iframe을 링크(a)로 감싸서 깨진 HTML 정리

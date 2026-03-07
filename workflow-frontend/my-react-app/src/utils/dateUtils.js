@@ -35,7 +35,7 @@ export const ddayLabel = (dueDateStr) => {
   if (diff === null) return null;
   if (diff === 0) return "D-DAY";
   if (diff > 0) return `D-${diff}`;
-  return `OVERDUE ${Math.abs(diff)}d`;
+  return `D+${Math.abs(diff)}`;
 };
 
 // 마감 임박 / 초과 상태 CSS 클래스

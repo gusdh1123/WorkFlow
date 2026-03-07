@@ -133,7 +133,7 @@ export default function AttachmentList({
 
       {/* 프론트 안내: soft delete */}
       <div className="taskform__help" style={{ marginTop: 10 }}>
-        삭제는 soft delete로 처리됩니다.
+        삭제된 항목은 휴지통에서 확인 및 복구할 수 있습니다.
       </div>
     </div>
   );

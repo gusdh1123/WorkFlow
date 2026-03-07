@@ -108,8 +108,9 @@ public class AttachmentService {
         a.setDeletedAt(LocalDateTime.now());
         attachmentRepository.save(a);
     }
-
+    
     // 다운로드용: 엔티티 + 실제 디스크 경로 반환
+    // 파일 정보 반환
     @Transactional(readOnly = true)
     public DownloadInfo getDownloadInfo(Long attachmentId, Long requesterId) {
 

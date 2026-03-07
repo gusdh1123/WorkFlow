@@ -55,8 +55,8 @@ class VideoBlot extends BlockEmbed {
     const iframe = document.createElement("iframe");
     iframe.setAttribute("src", convertYoutubeUrl(src)); // 자동 변환
     iframe.setAttribute("frameborder", "0");
-    iframe.setAttribute("allowfullscreen", "true");
-    iframe.setAttribute("allow", "autoplay; fullscreen");
+    // iframe.setAttribute("allowfullscreen", "true"); // 구 브라우저
+    iframe.setAttribute("allow", "autoplay; fullscreen"); // 신 브라우저
     Object.assign(iframe.style, {
       width: "100%",
       height: "100%",

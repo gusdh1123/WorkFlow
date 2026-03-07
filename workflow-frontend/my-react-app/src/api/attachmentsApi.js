@@ -1,17 +1,21 @@
 import { api } from "./api";
 
 // 첨부파일 업로드 (taskId에 귀속)
-// - files는 File 객체 배열
-// - FormData로 변환 후 multipart/form-data로 전송
-export async function uploadTaskAttachments(taskId, files) {
+// - value에서 file.file 객체만 서버로 FormData 전송
+export async function uploadTaskAttachments(taskId, value) {
   const formData = new FormData();
-  for (const f of files) formData.append("files", f); // FormData에 파일 추가
+
+  // 새로 선택된 파일만 append
+  const newFiles = (value || []).filter(f => !f.isExisting);
+  newFiles.forEach(f => formData.append("files", f.file)); // 반드시 File 객체
+
+  if (newFiles.length === 0) return []; // 새 파일 없으면 업로드 스킵
 
   const res = await api.post(`/api/tasks/${taskId}/attachments`, formData, {
-    headers: { "Content-Type": "multipart/form-data" }, // 반드시 multipart/form-data
+    headers: { "Content-Type": "multipart/form-data" },
   });
 
-  return res.data; // 서버에서 반환한 AttachmentResponse 배열
+  return res.data; // 서버에서 AttachmentResponse 배열 반환
 }
 
 // 첨부 삭제(soft delete)

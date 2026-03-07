@@ -8,6 +8,7 @@ import com.workflow.tasks.enums.TaskPriority;
 import com.workflow.tasks.enums.TaskStatus;
 import com.workflow.tasks.enums.TaskVisibility;
 import com.workflow.user.entity.UserEntity;
+import com.workflow.user.enums.Role;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -120,5 +121,27 @@ public class TaskEntity {
     @PreUpdate
     void preUpdate() {
         updatedAt = LocalDateTime.now(); // 수정 시 updatedAt 갱신
+    }
+    
+    public boolean canEdit(UserEntity user) {
+        if (user == null) return false;
+
+        // 작성자는 수정 가능
+        if (this.createdBy.getId().equals(user.getId())) return true;
+
+        // 담당자는 수정 가능
+        if (this.assignee != null && this.assignee.getId().equals(user.getId())) return true;
+
+        // 관리자: 모든 업무 수정 가능
+        if (user.getRole() == Role.ADMIN) return true;
+
+        // 매니저: 자기 부서 업무만 수정 가능
+        if (user.getRole() == Role.MANAGER && user.getDepartment() != null) {
+            if (this.workDepartment != null && this.workDepartment.getId().equals(user.getDepartment().getId())) {
+                return true;
+            }
+        }
+
+        return false; // 그 외는 수정 불가
     }
 }

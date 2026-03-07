@@ -34,7 +34,7 @@ public class AuthController {
         Tokens tokens = authService.login(request.email(), request.password());
 
         // refreshToken 쿠키 저장 (HttpOnly + Secure + SameSite 필요)
-        CookieUtil.addHttpOnlyCookie(res, "refreshToken", tokens.refreshToken(), 10080);
+        CookieUtil.addHttpOnlyCookie(res, "refreshToken", tokens.refreshToken(), 20160);
 
         // accessToken 반환
         return ResponseEntity.ok(Map.of("accessToken", tokens.accessToken()));

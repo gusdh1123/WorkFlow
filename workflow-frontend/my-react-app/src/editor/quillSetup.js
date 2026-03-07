@@ -22,8 +22,8 @@ export function setupQuill() {
   // QuillCtor.register("modules/resize", ResizeModule);
 
   // 비디오 블롯 등록
-  // Quill.register(VideoBlot, true);
-  QuillCtor.register({ "formats/video": VideoBlot });
+  Quill.register(VideoBlot, true);
+  // QuillCtor.register({ "formats/video": VideoBlot });
 
   QuillCtor.__registered = true;
 }

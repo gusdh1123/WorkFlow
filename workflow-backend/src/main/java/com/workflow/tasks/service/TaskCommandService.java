@@ -95,4 +95,58 @@ public class TaskCommandService {
         // DTO로 변환 후 반환
     }
 
+    // 업무 수정
+    @Transactional
+    public TaskResponse update(Long taskId, TaskCreateRequest req, Long loginUserId) {
+        if (loginUserId == null) throw new ApiException(ErrorCode.UNAUTHORIZED, "로그인이 필요합니다.");
+
+        TaskEntity task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "업무를 찾을 수 없습니다. id=" + taskId));
+
+        UserEntity loginUser = userRepository.findById(loginUserId)
+                .orElseThrow(() -> new ApiException(ErrorCode.UNAUTHORIZED, "사용자가 존재하지 않습니다."));
+
+        // 수정 권한 체크: 작성자, 담당자, 관리자/매니저 등
+        if (!task.canEdit(loginUser)) {
+            throw new ApiException(ErrorCode.UNAUTHORIZED, "수정 권한이 없습니다.");
+        }
+
+        // 제목 공백 제거
+        String title = req.titleTrimmed();
+        if (title == null || title.isEmpty()) {
+            throw new ApiException(ErrorCode.BAD_REQUEST, "제목은 필수입니다.");
+        }
+
+        // 담당자 존재 여부 확인
+        UserEntity assignee = (req.assigneeId() == null) ? null
+                : userRepository.findById(req.assigneeId())
+                    .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "담당자를 찾을 수 없습니다."));
+
+        // 가시성/우선순위 기본값 처리
+        TaskVisibility visibility = req.visibilityOrDefault();
+        TaskPriority priority = req.priorityOrDefault();
+
+        if (visibility == TaskVisibility.PUBLIC) {
+            Role role = loginUser.getRole();
+            if (role == null || (role != Role.MANAGER && role != Role.ADMIN)) {
+                throw new ApiException(ErrorCode.UNAUTHORIZED, "PUBLIC 업무는 매니저/관리자만 수정할 수 있습니다.");
+            }
+        }
+
+        // 기존 TaskEntity 필드 업데이트
+        task.setTitle(title);
+        task.setPriority(priority);
+        task.setVisibility(visibility);
+        task.setAssignee(assignee);
+        task.setDueDate(req.dueDate());
+
+        // 본문 description 처리
+        String descriptionFinal = fileStorageService.commitEditorImagesInContent(req.description(), "tasks", task.getId());
+        task.setDescription(descriptionFinal);
+
+        taskRepository.save(task); // 업데이트 반영
+
+        return TaskResponse.from(task);
+    }
+
 }

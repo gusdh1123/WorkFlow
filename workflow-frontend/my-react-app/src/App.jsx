@@ -7,6 +7,7 @@ import ProtectedRoute from "./auth/components/ProtectedRoute";
 import Tasks from "./pages/tasks/TaskMain";
 import TaskCreate from "./pages/tasks/TaskCreate";
 import TaskDetail from "./pages/tasks/TaskDetail";
+import TaskEdit from "./pages/tasks/TaskEdit";
 
 export default function App() {
   return (
@@ -36,6 +37,9 @@ export default function App() {
 
             {/* 업무 상세 페이지 (URL 파라미터 :id 사용) */}
             <Route path="/tasks/:id" element={<TaskDetail />} />
+
+            {/* 업무 수정 페이지 (URL 파라미터 :id 사용) */}
+            <Route path="/tasks/:id/edit" element={<TaskEdit />} />
           </Route>
         </Route>
 

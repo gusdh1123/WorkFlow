@@ -6,27 +6,18 @@ import "../../css/tasks/TaskForm.css";
 
 import { PRIORITIES, STATUSES } from "../../constants/taskOptions";
 import AttachmentInput from "../attachments/AttachmentInput";
-import { uploadTaskAttachments } from "../../api/attachmentsApi";
+import { uploadTaskAttachments, deleteAttachment } from "../../api/attachmentsApi";
 
 // TaskForm 컴포넌트
 // - 업무 생성 / 수정 폼
 // - 제목, 상태, 우선순위, 마감일, 담당자, 공개 범위, 내용, 첨부파일 포함
-export default function TaskForm({ mode = "create" }) {
+// - initialData를 받아서 Edit 모드에서 state 초기화에 사용
+export default function TaskForm({ mode = "create", initialData }) {
 
   const nav = useNavigate(); // 페이지 이동용
+  const isEdit = mode === "edit"; // edit 모드 여부
 
-  // 기본 필드 state
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [status, setStatus] = useState("TODO");
-  const [priority, setPriority] = useState("MEDIUM");
-
-  const isEdit = mode === "edit";
-
-  // 상태 옵션
-  // - 생성 시 TODO만, 수정 시 전체 상태 허용
-  const statusOptions = isEdit ? STATUSES : ["TODO"];
-
+  // 상수 / 함수 정의
   // 기본 마감일: 오늘 +7일
   const defaultToday = () => {
     const day = new Date();
@@ -42,20 +33,36 @@ export default function TaskForm({ mode = "create" }) {
     return day.toISOString().split("T")[0];
   })();
 
-  const [dueDate, setDueDate] = useState(defaultToday());
+  // 상태 옵션
+  // - 생성 시 TODO만, 수정 시 전체 상태 허용
+  const statusOptions = isEdit ? STATUSES : ["TODO"];
 
-  // 공개 범위
-  const [visibility, setVisibility] = useState("DEPARTMENT");
+  // 상태(state) 정의
+  const [title, setTitle] = useState(initialData?.title || ""); // 제목
+  const [description, setDescription] = useState(initialData?.description || ""); // 글 내용
+  const [status, setStatus] = useState(initialData?.status || "TODO"); // 상태
+  const [priority, setPriority] = useState(initialData?.priority || "MEDIUM"); // 중요도
+  const [dueDate, setDueDate] = useState(initialData?.dueDate || defaultToday()); // 날짜
+  const [visibility, setVisibility] = useState(initialData?.visibility || "DEPARTMENT"); // 부서
+  const [assigneeId, setAssigneeId] = useState(initialData?.assigneeId?.toString() || ""); // 담당자
+  const [users, setUsers] = useState([]); // 담당자 목록
 
-  // 담당자
-  const [assigneeId, setAssigneeId] = useState("");
-  const [users, setUsers] = useState([]);
+  // **첨부파일 초기값 처리**
+  // - Edit 모드이면 서버 첨부파일을 AttachmentInput/AttachmentList가 기대하는 형태로 변환
+  const [attachFiles, setAttachFiles] = useState(
+    isEdit && initialData?.attachments
+      ? initialData.attachments.map(att => ({
+          id: att.id,                // 서버 첨부파일 ID
+          name: att.originalFilename, // 표시할 파일명
+          size: att.sizeBytes || 0,   // 서버에서 size 없으면 0
+          file: null,                 // 실제 File 객체는 없음
+          url: att.url || null,       // 필요 시 미리보기용
+          isExisting: true,           // 기존 서버 파일 표시용
+        }))
+      : []
+  );
 
-  // 검증 에러
-  const [errors, setErrors] = useState({});
-
-  // 첨부파일 state (검증 통과한 파일만)
-  const [attachFiles, setAttachFiles] = useState([]);
+  const [errors, setErrors] = useState({}); // 검증 에러
 
   // 담당자 목록 로딩 (마운트 시)
   useEffect(() => {
@@ -73,7 +80,32 @@ export default function TaskForm({ mode = "create" }) {
     return null;
   };
 
-  // 폼 제출
+  // 첨부파일 삭제 핸들러 (서버 연동)
+  const handleAttachmentDelete = async (att) => {
+    if (!att?.id || !att.isExisting) {
+      // 새로 선택한 파일이면 프론트에서만 제거
+      setAttachFiles(prev => prev.filter(f => f !== att));
+      return;
+    }
+
+    const ok = window.confirm(`첨부파일을 삭제할까요?\n${att.name}`);
+    if (!ok) return;
+
+    try {
+      await deleteAttachment(att.id);
+      setAttachFiles(prev => prev.filter(f => f.id !== att.id));
+    } catch (e) {
+      const msg =
+        e?.response?.status === 403
+          ? "삭제 권한이 없습니다."
+          : e?.response?.status === 404
+          ? "이미 삭제되었거나 파일이 없습니다."
+          : "첨부파일 삭제에 실패했습니다.";
+      alert(msg);
+    }
+  };
+
+  // 폼 제출 핸들러
   const onSubmit = async (e) => {
     e.preventDefault();
     setErrors({});
@@ -94,23 +126,30 @@ export default function TaskForm({ mode = "create" }) {
     };
 
     try {
-      // 1) 업무 생성
-      const res = await api.post("/api/tasks/create", payload);
+      let res;
+
+      if (isEdit && initialData?.id) {
+        // 수정 모드: PUT 요청
+        res = await api.put(`/api/tasks/${initialData.id}`, payload);
+      } else {
+        // 생성 모드: POST 요청
+        res = await api.post("/api/tasks/create", payload);
+      }
 
       // 2) 첨부파일 업로드
-      const taskId = res.data?.id;
+      const taskId = res.data?.id || initialData?.id;
       try {
-        if (taskId && attachFiles.length > 0) {
-          await uploadTaskAttachments(taskId, attachFiles);
+        // 새로 선택한 파일만 업로드
+        const filesToUpload = attachFiles.filter(f => f.file instanceof File);
+        if (taskId && filesToUpload.length > 0) {
+          await uploadTaskAttachments(taskId, filesToUpload);
         }
       } catch (e) {
         console.error("첨부 업로드 실패", e);
-        alert(
-          "업무는 저장됐지만 첨부 업로드에 실패했습니다. 상세에서 다시 올려주세요."
-        );
+        alert("업무는 저장됐지만 첨부 업로드에 실패했습니다. 상세에서 다시 올려주세요.");
       }
 
-      // 생성 완료 후 목록 페이지 이동
+      // 완료 후 목록 페이지 이동
       nav("/tasks");
 
     } catch (err) {
@@ -123,6 +162,7 @@ export default function TaskForm({ mode = "create" }) {
     }
   };
 
+  // JSX 렌더링
   return (
     <div className="taskform__stack">
 
@@ -150,6 +190,7 @@ export default function TaskForm({ mode = "create" }) {
               className="taskform__select"
               value={status}
               onChange={(e) => setStatus(e.target.value)}
+              disabled={isEdit}
             >
               {statusOptions.map((s) => (
                 <option key={s} value={s}>{s}</option>
@@ -237,7 +278,7 @@ export default function TaskForm({ mode = "create" }) {
         <div className="taskform__section">
           <label className="taskform__label">업무 내용</label>
           <div className="taskform__editor">
-            <TaskEditor value={description} onChange={setDescription} />
+            <TaskEditor value={description} onChange={setDescription} mode={mode} /* 모드 전달 */ />
           </div>
         </div>
 
@@ -253,30 +294,9 @@ export default function TaskForm({ mode = "create" }) {
 
       </form>
 
-      {/* 첨부파일 입력 */}
-      <AttachmentInput value={attachFiles} onChange={setAttachFiles} />
-
-      {/* 선택된 파일 목록 표시 */}
-      {attachFiles.length > 0 && (
-        <div className="taskform taskform--attach">
-          <div className="taskform__section">
-            <div className="taskform__label">선택된 파일</div>
-            <ul style={{ margin: 0, paddingLeft: 18 }}>
-              {attachFiles.map((f) => (
-                <li key={`${f.name}-${f.size}`}>{f.name}</li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
+        {/* 첨부파일 입력 */}
+        <AttachmentInput value={attachFiles} onChange={setAttachFiles} onDelete={handleAttachmentDelete} />
 
     </div>
   );
 }
-
-// TaskForm 역할 요약
-// - 업무 생성/수정 폼
-// - 클라이언트 검증 포함
-// - 첨부파일 업로드
-// - TaskEditor 포함
-// - 상태, 우선순위, 마감일, 담당자, 공개 범위 선택 가능

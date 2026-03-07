@@ -42,4 +42,14 @@ public class UploadController {
         // {"url": "http://host:port/uploads/tasks/tmp/파일명"} 형식으로 반환
         return ResponseEntity.ok(Map.of("url", base + path));
     }
+    
+    // 이미지 즉시 삭제(수정 시)
+    @PostMapping("/images/delete")
+    public ResponseEntity<?> deleteImage(
+            @RequestParam("url") String url,
+            @RequestParam("module") String module
+    ) {
+        fileStorageService.deleteEditorImage(url, module);
+        return ResponseEntity.ok(Map.of("success", true));
+    }
 }

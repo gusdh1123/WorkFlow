@@ -172,6 +172,8 @@ export default function TaskDetail() {
             <NavLink
               className="taskdetail__btn"
               to={`/tasks/${id}/edit`}
+              // Detail → Edit 갈 때 데이터를 state로 전달
+              state={{task}}
             >
               수정
             </NavLink>

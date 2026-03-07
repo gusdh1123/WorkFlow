@@ -34,7 +34,7 @@ public class UploadCleanupScheduler {
     }
 
     // 10분마다 실행, tmp 파일 정리
-    @Scheduled(fixedDelayString = "PT10M") 
+    @Scheduled(fixedDelay = 600000)
     public void cleanupOldTmpFiles() {
 
         // 삭제 기준 시각 = 현재 시각 - ttlHours
