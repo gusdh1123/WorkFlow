@@ -12,6 +12,7 @@
 | **개발 인원** | 2명 |
 | **주요 기술** | **Java, Spring Security, JWT, JPA, React, PostgreSQL, GitHub Actions CI, Spring Boot, Gradle** |
 | **프로젝트 주소** |  |
+
 📌 처음 사용하는 기술 스택을 학습하기 위해 시작한 프로젝트로, 현재도 기능을 확장하며 지속적으로 개발을 진행하고 있습니다.
 ---
 
