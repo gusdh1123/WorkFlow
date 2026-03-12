@@ -17,10 +17,13 @@ public enum ErrorCode {
 
     // 404 Not Found 관련
     NOT_FOUND(HttpStatus.NOT_FOUND, "요청한 리소스를 찾을 수 없습니다."), // 데이터 존재하지 않을 때
+    
+    // 409 Conflict 관련 (동시 수정 등)
+    CONFLICT(HttpStatus.CONFLICT, "다른 사용자가 이미 수정했습니다. 페이지를 새로고침 후 다시 시도하세요."),
 
     // 500 Internal Server Error 관련
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다."); // 서버 내부 문제
-
+	
     private final HttpStatus status; // HTTP 상태 코드
     private final String defaultMessage; // 기본 사용자 메시지 (커스텀 메시지 없을 때 사용)
 

@@ -23,6 +23,9 @@ export default function TaskDetail() {
   const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [showAllLogs, setShowAllLogs] = useState([]); // 카드별 더보기 상태 배열
+  const [showAllAuditLogs, setShowAllAuditLogs] = useState(false); // 전체 Audit Log 더보기 상태
 
   //엑세스 토큰에서 유저 정보 꺼내기
   const { accessToken } = useAuth();
@@ -75,10 +78,22 @@ export default function TaskDetail() {
       setErr("");
 
       try {
+
+        // Task 가져오기
         const res = await api.get(`/api/tasks/${id}`, {
           signal: controller.signal, // 스위치 연결
         });
         setTask(res.data);
+
+        // Audit Log 가져오기 (task가 로드된 후)
+        const logRes = await api.get(`/api/audit/${id}/audit-logs`, {
+          signal: controller.signal,
+        });
+        setAuditLogs(logRes.data);
+
+        // 카드별 showAllLogs 상태 초기화 (false)
+        setShowAllLogs(logRes.data.map(() => false));
+
       } catch (e) {
         if (e.name === "CanceledError" || e.code === "ERR_CANCELED") return;
 
@@ -151,34 +166,37 @@ export default function TaskDetail() {
 
   const priorityKey = (task?.priority || "").toLowerCase();
 
-// 수정/삭제 버튼 표시 여부
-const canEdit =
-  task && loginUser && (
-    Number(task.createdById) === Number(loginUser.id) ||       // 작성자
-    (task.assigneeId && Number(task.assigneeId) === Number(loginUser.id)) || // 담당자
-    loginUser.role === "ADMIN" ||                             // 관리자
-    (loginUser.role === "MANAGER" &&
-      loginUser.department?.trim().toLowerCase() ===
-      task.workDepartmentName?.trim().toLowerCase())          // 매니저: 자기 부서
-  );
+  // 수정/삭제 버튼 표시 여부
+  const canEdit =
+    task && loginUser && (
+      Number(task.createdById) === Number(loginUser.id) ||       // 작성자
+      (task.assigneeId && Number(task.assigneeId) === Number(loginUser.id)) || // 담당자
+      loginUser.role === "ADMIN" ||                             // 관리자
+      (loginUser.role === "MANAGER" &&
+        loginUser.department?.trim().toLowerCase() ===
+        task.workDepartmentName?.trim().toLowerCase())          // 매니저: 자기 부서
+    );
 
   // 삭제 버튼
-const handleDelete = async () => {
-  const reason = window.prompt("삭제 사유를 입력하세요:");
-  if (!reason) return;
+  const handleDelete = async () => {
+    const reason = window.prompt("삭제 사유를 입력하세요:");
+    if (!reason) return;
 
-  if (!window.confirm("정말로 삭제하시겠습니까?")) return;
+    if (!window.confirm("정말로 삭제하시겠습니까?")) return;
 
-  try {
-    // 쿼리 파라미터로 reason 전달
-    await api.delete(`/api/tasks/${task.id}?reason=${encodeURIComponent(reason)}`);
-    alert("업무가 삭제되었습니다.");
-    nav("/tasks"); // 삭제 후 리스트로 이동
-  } catch (error) {
-    console.error(error);
-    alert("삭제에 실패했습니다.");
-  }
-};
+    try {
+      // 쿼리 파라미터로 reason 전달
+      await api.delete(`/api/tasks/${task.id}?reason=${encodeURIComponent(reason)}`);
+      alert("업무가 삭제되었습니다.");
+      nav("/tasks"); // 삭제 후 리스트로 이동
+    } catch (error) {
+      console.error(error);
+      alert("삭제에 실패했습니다.");
+    }
+  };
+
+  // 처음 3개만 보여주고 전체 더보기 처리
+  const visibleAuditLogs = showAllAuditLogs ? auditLogs : auditLogs.slice(0, 3);
 
   return (
     <div className="taskdetail">
@@ -206,26 +224,26 @@ const handleDelete = async () => {
               목록으로
             </NavLink>
 
-          {canEdit && (
-            <NavLink
-              className="taskdetail__btn"
-              to={`/tasks/${id}/edit`}
-              // Detail → Edit 갈 때 데이터를 state로 전달
-              state={{task}}
-            >
-              수정
-            </NavLink>
-          )}
+            {canEdit && (
+              <NavLink
+                className="taskdetail__btn"
+                to={`/tasks/${id}/edit`}
+                // Detail → Edit 갈 때 데이터를 state로 전달
+                state={{task}}
+              >
+                수정
+              </NavLink>
+            )}
 
-          {canEdit && (
-            <button
-              type="button"
-              className="taskdetail__btn taskdetail__btn--danger"
-              onClick={handleDelete}
-            >
-              삭제
-            </button>
-        )}
+            {canEdit && (
+              <button
+                type="button"
+                className="taskdetail__btn taskdetail__btn--danger"
+                onClick={handleDelete}
+              >
+                삭제
+              </button>
+            )}
           </div>
         </div>
 
@@ -295,35 +313,99 @@ const handleDelete = async () => {
         />
 
         {/* 오른쪽: 정보 */}
-        <div className="taskdetail__card taskdetail__card--meta">
+        <div className="taskdetail__metaColumn">
 
-          <div className="taskdetail__metaRow">
-            <div className="taskdetail__metaKey">작성자</div>
-            <div className="taskdetail__metaVal">
-              {task.createdByName ?? task.creatorName ?? "-"}
+          <h3 className="taskdetail__card taskdetail__card--title">업무 정보</h3>
+
+          {/* 메타 카드 */}
+          <div className="taskdetail__card taskdetail__card--meta">
+
+            {/* 작성자 / 담당자 / 마감일 / 작성일 */}
+            <div className="taskdetail__metaRow">
+              <div className="taskdetail__metaKey">작성자</div>
+              <div className="taskdetail__metaVal">{task.createdByName ?? task.creatorName ?? "-"}</div>
             </div>
+
+            <div className="taskdetail__metaRow">
+              <div className="taskdetail__metaKey">담당자</div>
+              <div className="taskdetail__metaVal">{task.assigneeName ?? "-"}</div>
+            </div>
+
+            <div className="taskdetail__metaRow">
+              <div className="taskdetail__metaKey">마감일</div>
+              <div className="taskdetail__metaVal">{task.dueDate ?? "-"} {dday && `(${dday})`}</div>
+            </div>
+
+            <div className="taskdetail__metaRow">
+              <div className="taskdetail__metaKey">작성일</div>
+              <div className="taskdetail__metaVal">{createdAtLabel}</div>
+            </div>
+
           </div>
 
-          <div className="taskdetail__metaRow">
-            <div className="taskdetail__metaKey">담당자</div>
-            <div className="taskdetail__metaVal">
-              {task.assigneeName ?? "-"}
-            </div>
-          </div>
+          {/* 수정 이력: 카드별로 나누고 접기/더보기 적용 */}
+          <h3 className="taskdetail__card taskdetail__card--title">Audit Log</h3>
+          {visibleAuditLogs.map((log, idx) => (
+            <div key={idx} className="taskdetail__card taskdetail__card--log">
 
-          <div className="taskdetail__metaRow">
-            <div className="taskdetail__metaKey">마감일</div>
-            <div className="taskdetail__metaVal">
-              {task.dueDate ?? "-"} {dday && `(${dday})`}
-            </div>
-          </div>
 
-          <div className="taskdetail__metaRow">
-            <div className="taskdetail__metaKey">작성일</div>
-            <div className="taskdetail__metaVal">
-              {createdAtLabel}
+              <div className={`taskdetail__logItem ${log.isRecent ? 'taskdetail__logItem--recent' : ''}`}>
+
+                <div className="taskdetail__metaRow">
+                  <div className="taskdetail__metaKey">수정자</div>
+                  <div className="taskdetail__metaVal">{log.actorName}</div>
+                </div>
+
+                <div className="taskdetail__metaRow">
+                  <div className="taskdetail__metaKey">수정 시간</div>
+                  <div className="taskdetail__metaVal">{formatRelativeDateTime(log.modifiedAt)}</div>
+                </div>
+
+                {/* changedFields 접기/더보기 */}
+                { (showAllLogs[idx] ? log.changedFields : log.changedFields.slice(0, 3)).map((field, i) => (
+                  <div key={i} className="taskdetail__metaRow">
+                    <div className="taskdetail__metaKey">{field === "status" ? "상태 변경" : "수정 필드"}</div>
+                    <div className="taskdetail__metaVal">
+                      {field === "status" ? `${log.statusBefore} → ${log.statusAfter}` : `${field} 변경됨`}
+                    </div>
+                  </div>
+                ))}
+
+                {log.reason && (
+                  <div className="taskdetail__metaRow">
+                    <div className="taskdetail__metaKey">사유</div>
+                    <div className="taskdetail__metaVal">{log.reason}</div>
+                  </div>
+                )}
+
+              </div>
+
+              {/* changedFields 접기/더보기 버튼 */}
+              {log.changedFields.length > 3 && (
+                <button
+                  className="taskdetail__btn taskdetail__btn--ghost"
+                  onClick={() => {
+                    const newState = [...showAllLogs];
+                    newState[idx] = !newState[idx];
+                    setShowAllLogs(newState);
+                  }}
+                >
+                  {showAllLogs[idx] ? "접기" : "더보기"}
+                </button>
+              )}
+
             </div>
-          </div>
+          ))}
+
+          {/* 전체 Audit Log 더보기 버튼 */}
+          {auditLogs.length > 3 && (
+            <button
+              className="taskdetail__btn taskdetail__btn--ghost"
+              onClick={() => setShowAllAuditLogs(!showAllAuditLogs)}
+            >
+              {showAllAuditLogs ? "접기" : "더보기"}
+            </button>
+          )}
 
         </div>
 

@@ -7,6 +7,8 @@ import "../../css/tasks/TaskForm.css";
 import { PRIORITIES, STATUSES } from "../../constants/taskOptions";
 import AttachmentInput from "../attachments/AttachmentInput";
 import { uploadTaskAttachments, deleteAttachment } from "../../api/attachmentsApi";
+import { useAuth } from "../../auth/hooks/useAuth";
+import { userFromToken } from "../../auth/utils/userFromToken.js";
 
 // TaskForm 컴포넌트
 // - 업무 생성 / 수정 폼
@@ -16,6 +18,9 @@ export default function TaskForm({ mode = "create", initialData }) {
 
   const nav = useNavigate(); // 페이지 이동용
   const isEdit = mode === "edit"; // edit 모드 여부
+
+  const { accessToken } = useAuth();
+  const loginUser = accessToken ? userFromToken(accessToken) : null;
 
   // 상수 / 함수 정의
   // 기본 마감일: 오늘 +7일
@@ -32,10 +37,6 @@ export default function TaskForm({ mode = "create", initialData }) {
     day.setFullYear(day.getFullYear() + 10);
     return day.toISOString().split("T")[0];
   })();
-
-  // 상태 옵션
-  // - 생성 시 TODO만, 수정 시 전체 상태 허용
-  const statusOptions = isEdit ? STATUSES : ["TODO"];
 
   // 상태(state) 정의
   const [title, setTitle] = useState(initialData?.title || ""); // 제목
@@ -105,6 +106,47 @@ export default function TaskForm({ mode = "create", initialData }) {
           : "첨부파일 삭제에 실패했습니다.";
       alert(msg);
     }
+  };
+
+  // 상태 옵션 계산 (권한/상태 전이)
+  const getStatusOptions = () => {
+    if (!initialData) return ["TODO"];
+
+    const userRole = loginUser?.role;
+    const isCreatorOrAssignee =
+      Number(initialData.createdById) === Number(loginUser?.id) ||
+      (initialData.assigneeId && Number(initialData.assigneeId) === Number(loginUser?.id));
+
+    const currentStatus = initialData.status;
+
+    // 관리자 / CEO
+    if (userRole === "ADMIN" || userRole === "CEO") {
+      return STATUSES; // 전부 가능
+    }
+
+    // 부서장 (본인 부서 업무)
+    if (userRole === "MANAGER" && loginUser?.department?.toLowerCase() === initialData.workDepartmentName?.toLowerCase()) {
+      return STATUSES; // 모든 상태 가능
+    }
+
+    // 작성자 / 담당자
+    if (isCreatorOrAssignee) {
+      switch (currentStatus) {
+        case "TODO":
+          return ["TODO", "IN_PROGRESS", "ON_HOLD"];
+        case "IN_PROGRESS":
+          return ["IN_PROGRESS", "TODO", "ON_HOLD", "REVIEW"];
+        case "REVIEW":
+          return ["REVIEW", "IN_PROGRESS"];
+        case "ON_HOLD":
+          return ["ON_HOLD", "TODO", "IN_PROGRESS"];
+        default:
+          return [currentStatus]; // DONE, CANCELED 등은 변경 불가
+      }
+    }
+
+    // 나머지는 상태 변경 불가
+    return [currentStatus];
   };
 
   // 폼 제출 핸들러
@@ -193,9 +235,9 @@ export default function TaskForm({ mode = "create", initialData }) {
               className="taskform__select"
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              disabled={isEdit}
+              disabled={!isEdit} // 편집 모드만 활성화
             >
-              {statusOptions.map((s) => (
+              {getStatusOptions().map((s) => (
                 <option key={s} value={s}>{s}</option>
               ))}
             </select>
@@ -284,9 +326,10 @@ export default function TaskForm({ mode = "create", initialData }) {
                 maxLength={200}
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                placeholder="수정 사유를 입력하세요."
-                />
-                </div>
+                placeholder="
+수정 사유를 입력하세요.(최대 200자)"
+              />
+            </div>
           )}
 
         </div>
@@ -311,8 +354,8 @@ export default function TaskForm({ mode = "create", initialData }) {
 
       </form>
 
-        {/* 첨부파일 입력 */}
-        <AttachmentInput value={attachFiles} onChange={setAttachFiles} onDelete={handleAttachmentDelete} />
+      {/* 첨부파일 입력 */}
+      <AttachmentInput value={attachFiles} onChange={setAttachFiles} onDelete={handleAttachmentDelete} />
 
     </div>
   );

@@ -3,6 +3,7 @@ package com.workflow.tasks.dto;
 import java.time.LocalDate;
 
 import com.workflow.tasks.enums.TaskPriority;
+import com.workflow.tasks.enums.TaskStatus;
 import com.workflow.tasks.enums.TaskVisibility;
 
 public record TaskUpdateRequest(
@@ -10,6 +11,7 @@ public record TaskUpdateRequest(
     String description,
     TaskPriority priority,
     TaskVisibility visibility,
+    TaskStatus status,
     Long assigneeId,
     LocalDate dueDate,
     String reason

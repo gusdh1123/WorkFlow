@@ -98,6 +98,14 @@ export default function TaskEditor({ value, onChange, mode = "create" }) {
     const editor = quillRef.current?.getEditor();
     if (!editor) return;
 
+    // 마지막 줄 뒤에 빈 줄 넣기 : 동영상 안지워져서 넣음.
+    const length = editor.getLength();
+    const lastLine = editor.getLine(length - 1)[0];
+    if (lastLine && lastLine.domNode.innerHTML !== "<br>") {
+    editor.insertText(length, "\n", "user"); // 마지막 블록 뒤에 빈 줄 추가
+    }
+
+    // 이미지 삭제 감지 로직
     const parser = new DOMParser();
     let oldImages = new Set();
 

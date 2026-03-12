@@ -8,6 +8,7 @@ export const SCOPES = [
   "team",     // 팀/부서
   "created",  // 내가 생성한 업무
   "assigned", // 내가 담당인 업무
+  "private", // 개인 업무
 ];
 
 // 상태 옵션

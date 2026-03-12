@@ -38,12 +38,15 @@ public class TaskController {
 	public ResponseEntity<PageResponse<TaskResponse>> list(
 	    @RequestParam(name = "scope", required = false, defaultValue = "all") String scope, // 조회 범위(all, my, dept 등)
 	    @RequestParam(name = "status", required = false) TaskStatus status, // 필터: 업무 상태
+        @RequestParam(name = "deptId", required = false) Long deptId, // 부서 아이디
 	    @RequestParam(name = "page", required = false, defaultValue = "0") int page, // 페이지 번호(0부터 시작)
 	    @RequestParam(name = "size", required = false, defaultValue = "9") int size, // 한 페이지에 보여줄 개수
 	    @AuthenticationPrincipal UserDetails principal // Spring Security 인증 정보
 	) {
 		Long userId = Long.parseLong(principal.getUsername()); // username에 실제 userId 저장
-		Page<TaskResponse> result = taskQueryService.list(scope, status, userId, page, size); // 서비스 호출
+		Page<TaskResponse> result = taskQueryService.list(scope, status, userId, deptId, page, size); // 서비스 호출
+		
+		System.out.println("deptId : " + deptId);
 		
 		return ResponseEntity.ok(PageResponse.from(result)); // 페이징 응답 포맷 변환 후 반환
 	}

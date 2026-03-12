@@ -95,6 +95,9 @@ public class TaskEntity {
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt; // 최종 수정 시점
+    
+    @Version
+    private Long version; // 낙관적 락 적용
 
     // 엔티티 저장 직전 기본값 및 부서 세팅
     @PrePersist
@@ -123,6 +126,7 @@ public class TaskEntity {
         updatedAt = LocalDateTime.now(); // 수정 시 updatedAt 갱신
     }
     
+    // 권한 체크
     public boolean canEdit(UserEntity user) {
         if (user == null) return false;
 

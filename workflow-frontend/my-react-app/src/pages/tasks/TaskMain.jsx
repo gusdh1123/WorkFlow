@@ -33,25 +33,25 @@ const EMPTY_PAGE = {
   last: true,         // 마지막 페이지 여부
 };
 
-/**
- * 유튜브 URL → 썸네일 URL 변환
- * iframe 대신 리스트 카드에서는 이미지 미리보기로 사용
- * @param url - 유튜브 영상 URL
- * @returns 썸네일 이미지 URL
- */
-const getVideoThumbnail = (url) => {
-  try {
-    // https://www.youtube.com/watch?v=ID
-    const vid = new URL(url).searchParams.get("v") || url.split("/").pop();
-    return vid ? `https://img.youtube.com/vi/${vid}/0.jpg` : null;
-  } catch {
-    return null;
-  }
-};
+// /**
+//  * 유튜브 URL → 썸네일 URL 변환
+//  * iframe 대신 리스트 카드에서는 이미지 미리보기로 사용
+//  * @param url - 유튜브 영상 URL
+//  * @returns 썸네일 이미지 URL
+//  */
+// const getVideoThumbnail = (url) => {
+//   try {
+//     // https://www.youtube.com/watch?v=ID
+//     const vid = new URL(url).searchParams.get("v") || url.split("/").pop();
+//     return vid ? `https://img.youtube.com/vi/${vid}/0.jpg` : null;
+//   } catch {
+//     return null;
+//   }
+// };
 
 export default function Tasks() {
   // 로그인 사용자 정보 가져오기
-  const { user } = useAuth(); // eslint-disable-line no-unused-vars
+  const { user } = useAuth();
 
   // URL 쿼리 파라미터 읽기/쓰기
   const [sp, setSp] = useSearchParams();
@@ -60,6 +60,7 @@ export default function Tasks() {
   const qpScope = sp.get("scope") || "all";  
   const qpStatus = sp.get("status") || "";   
   const qpPageRaw = sp.get("page");          
+  const qpDept = sp.get("dept") || "";      
 
   // page는 문자열 → 숫자로 변환, 유효하지 않으면 0으로 초기화
   const qpPage = useMemo(() => {
@@ -76,11 +77,13 @@ export default function Tasks() {
     () => (qpStatus === "" || STATUSES.includes(qpStatus) ? qpStatus : ""),
     [qpStatus]
   );
+  const normalizedDept = useMemo(() => qpDept, [qpDept]);
 
   // 화면에서 선택한 scope/status/page 상태
   const [scope, setScope] = useState(normalizedScope);
   const [status, setStatus] = useState(normalizedStatus);
   const [page, setPage] = useState(qpPage);
+  const [deptId, setDeptId] = useState(normalizedDept);
 
   // 로딩 상태 관리
   const [loading, setLoading] = useState(false);
@@ -99,8 +102,9 @@ export default function Tasks() {
   useEffect(() => {
     setScope(normalizedScope);
     setStatus(normalizedStatus);
+    setDeptId(normalizedDept);
     setPage(qpPage);
-  }, [normalizedScope, normalizedStatus, qpPage]);
+  }, [normalizedScope, normalizedStatus, normalizedDept, qpPage]);
 
   /**
    * URL 쿼리 업데이트
@@ -133,6 +137,13 @@ export default function Tasks() {
     setStatus(nextStatus);
     setPage(0); 
     updateParams({ status: nextStatus, page: 0 });
+  };
+
+  // 부서별 변경
+  const onChangeDept = (id) => {
+    setDeptId(id);
+    setPage(0);
+    updateParams({ dept: id, page: 0 });
   };
 
   // 페이지 변경 시 URL 동기화
@@ -200,6 +211,7 @@ export default function Tasks() {
     try {
       const params = { scope: scope || "all", page, size };
       if (status) params.status = status;
+      if (deptId) params.deptId = deptId;
       const res = await api.get("/api/tasks", { params });
       const normalized = normalizePageResponse(res.data);
       setPageData(normalized);
@@ -213,7 +225,7 @@ export default function Tasks() {
     } finally {
       setLoading(false);
     }
-  }, [scope, status, page, size, updateParams]);
+  }, [scope, status, page, size, deptId, updateParams]);
 
   useEffect(() => {
     fetchTasks();
@@ -278,26 +290,33 @@ export default function Tasks() {
     const hasImgInDesc = hasImageInHtml(rawHtml);
     const hasVideoInDesc = hasVideoInHtml(rawHtml);
 
-    // 추가: 카드용 미리보기용 썸네일 URL 반환
-    let previewImage = null;
-    if (hasImgInDesc) {
-      const doc = new DOMParser().parseFromString(rawHtml, "text/html");
-      const img = doc.querySelector("img");
-      if (img) previewImage = img.src;
-    } else if (hasVideoInDesc) {
-      const doc = new DOMParser().parseFromString(rawHtml, "text/html");
-      const iframe = doc.querySelector("iframe");
-      if (iframe) previewImage = getVideoThumbnail(iframe.src); // 유튜브 썸네일
-    }
+    // // 추가: 카드용 미리보기용 썸네일 URL 반환
+    // let previewImage = null;
+    // if (hasImgInDesc) {
+    //   const doc = new DOMParser().parseFromString(rawHtml, "text/html");
+    //   const img = doc.querySelector("img");
+    //   if (img) previewImage = img.src;
+    // } else if (hasVideoInDesc) {
+    //   const doc = new DOMParser().parseFromString(rawHtml, "text/html");
+    //   const iframe = doc.querySelector("iframe");
+    //   // if (iframe) previewImage = getVideoThumbnail(iframe.src); // 유튜브 썸네일
+    // }
 
     return {
       count,
       hasAnyFile,
       hasImage: hasImageFile || hasImgInDesc,
       hasVideo: hasVideoFile || hasVideoInDesc,
-      previewImage, // 추가: 카드에서 보여줄 미리보기
+      // previewImage, // 추가: 카드에서 보여줄 미리보기
     };
   };
+
+  // TODO: departments 배열 API 호출/상수 필요
+  const departments = [
+    { id: "1", name: "기획팀" },
+    { id: "2", name: "개발팀" },
+    { id: "3", name: "디자인팀" },
+  ];
 
   return (
     <div className="tasks">
@@ -350,9 +369,26 @@ export default function Tasks() {
             >
               담당 업무
             </button>
+
+            <button
+              type="button"
+              className={`tasks__tab ${scope === "private" ? "is-active" : ""}`}
+              onClick={() => onChangeScope("private")}
+            >
+              개인 업무
+            </button>
+
           </div>
 
           <div className="tasks__filters">
+            <div className="tasks__filters">
+            {user?.role == "ADMIN" && !["team", "created", "assigned"].includes(scope) && (
+            <select className="tasks__select" value={deptId} onChange={(e) => onChangeDept(e.target.value)}>
+              <option value="">전체 부서</option>
+              {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+            </select>
+            )}
+
             <select className="tasks__select" value={status} onChange={(e) => onChangeStatus(e.target.value)}>
               <option value="">전체</option>
               {STATUSES.map((s) => (
@@ -368,6 +404,7 @@ export default function Tasks() {
               <option value="dueDateDesc">마감 늦은순</option>
               <option value="priorityDesc">우선순위 높은순</option>
             </select>
+          </div>
           </div>
         </div>
       </div>

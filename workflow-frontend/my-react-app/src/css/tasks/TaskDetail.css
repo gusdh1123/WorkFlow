@@ -44,6 +44,12 @@
   padding: 16px 18px;
 }
 
+.taskdetail__card--title {
+  margin-bottom: 0px;
+  margin-top: 1px;
+
+}
+
 /* ==========================
    Header Top Row
 ========================== */
@@ -293,6 +299,13 @@
 .taskdetail__v {
   color: #111827;
   font-weight: 700;
+}
+
+/* Meta Card Column */
+.taskdetail__metaColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 14px; /* 카드 사이 간격 */
 }
 
 /* Meta Card Title */

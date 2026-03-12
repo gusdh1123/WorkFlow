@@ -176,8 +176,9 @@ public class FileStorageService {
             updated = updated.replace(tmpPath, finalPath); // URL 치환
         }
 
+        // 이제 필요 없을듯 커스텀해서 써서
         // 유튜브 iframe 태그 감싼 a 태그 제거
-        updated = normalizeQuillHtml(updated);
+        // updated = normalizeQuillHtml(updated);
 
         return updated;
     }
@@ -217,6 +218,8 @@ public class FileStorageService {
         }
     }
 
+    
+    // 이제 필요 없을듯?
     // 유튜브 iframe을 링크(a)로 감싸서 깨진 HTML 정리
     private String normalizeQuillHtml(String html) {
         if (html == null) return null;
@@ -246,6 +249,8 @@ public class FileStorageService {
 
         return out;
     }
+    
+    
 
     // /uploads/... -> {app.upload-dir}/... 로 변환
     public Path resolveUploadPath(String storagePath) {

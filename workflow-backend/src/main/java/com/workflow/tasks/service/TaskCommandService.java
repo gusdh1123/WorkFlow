@@ -132,13 +132,13 @@ public class TaskCommandService {
                 : userRepository.findById(req.assigneeId())
                     .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "담당자를 찾을 수 없습니다."));
 
-
-        if (req.visibility() == TaskVisibility.PUBLIC) {
-            Role role = loginUser.getRole();
-            if (role == null || (role != Role.MANAGER && role != Role.ADMIN)) {
-                throw new ApiException(ErrorCode.UNAUTHORIZED, "PUBLIC 업무는 매니저/관리자만 수정할 수 있습니다.");
-            }
-        }
+// 생각해 보니까 퍼블릭 업무도 담당자이거나 작성자이면 일반 유저도 수정 가능해야 함.
+//        if (req.visibility() == TaskVisibility.PUBLIC) {
+//            Role role = loginUser.getRole();
+//            if (role == null || (role != Role.MANAGER && role != Role.ADMIN)) {
+//                throw new ApiException(ErrorCode.UNAUTHORIZED, "PUBLIC 업무는 매니저/관리자만 수정할 수 있습니다.");
+//            }
+//        }
         
         // 수정 사유 확인
         if (req.reason() == null || req.reason().isBlank()) {
@@ -156,6 +156,10 @@ public class TaskCommandService {
 
         // 본문 description 처리
         String descriptionFinal = fileStorageService.commitEditorImagesInContent(req.description(), "tasks", task.getId());
+        
+        // 상태 전이 검증 처리
+        TaskStatus newStatus = validateAndGetNewStatus(task, req.status(), loginUser);
+        task.setStatus(newStatus);
         
         // TaskEntity 업데이트
         task.setTitle(title);
@@ -244,6 +248,64 @@ public class TaskCommandService {
                 .forEach(a -> attachmentService.softDelete(a.getId(), loginUserId));
 
         return TaskResponse.from(task);
+    }
+    
+    // 상태 전이 허용 여부 체크 후 반환
+    private TaskStatus validateAndGetNewStatus(TaskEntity task, TaskStatus requestedStatus, UserEntity loginUser) {
+        if (requestedStatus == null || requestedStatus == task.getStatus()) {
+            return task.getStatus(); // 변경 없음
+        }
+
+        Role role = loginUser.getRole();
+        Long loginUserId = loginUser.getId();
+        boolean isCreatorOrAssignee = (task.getAssignee() != null && task.getAssignee().getId().equals(loginUserId))
+                                      || task.getCreatedBy().getId().equals(loginUserId);
+        boolean isManagerOfDept = role == Role.MANAGER
+                                  && loginUser.getDepartment() != null
+                                  && loginUser.getDepartment().getName().equals(task.getWorkDepartment().getName());
+
+        if (role == Role.ADMIN || isManagerOfDept) {
+            return requestedStatus; // 모든 상태 허용
+        }
+
+        if (isCreatorOrAssignee) {
+            // 작성자/담당자: 제한된 상태 전이
+            switch (task.getStatus()) {
+                case TODO:
+                    if (requestedStatus == TaskStatus.TODO ||
+                        requestedStatus == TaskStatus.IN_PROGRESS ||
+                        requestedStatus == TaskStatus.ON_HOLD) {
+                        return requestedStatus;
+                    }
+                    break;
+                case IN_PROGRESS:
+                    if (requestedStatus == TaskStatus.TODO ||
+                        requestedStatus == TaskStatus.IN_PROGRESS ||
+                        requestedStatus == TaskStatus.ON_HOLD ||
+                        requestedStatus == TaskStatus.REVIEW) {
+                        return requestedStatus;
+                    }
+                    break;
+                case REVIEW:
+                    if (requestedStatus == TaskStatus.REVIEW ||
+                        requestedStatus == TaskStatus.IN_PROGRESS) {
+                        return requestedStatus;
+                    }
+                    break;
+                case ON_HOLD:
+                    if (requestedStatus == TaskStatus.ON_HOLD ||
+                        requestedStatus == TaskStatus.TODO ||
+                        requestedStatus == TaskStatus.IN_PROGRESS) {
+                        return requestedStatus;
+                    }
+                    break;
+                default:
+                    break;
+            }
+            throw new ApiException(ErrorCode.UNAUTHORIZED, "작성자/담당자는 현재 상태에서 해당 상태로 변경할 수 없습니다.");
+        }
+
+        throw new ApiException(ErrorCode.UNAUTHORIZED, "상태 변경 권한이 없습니다.");
     }
 
 }
