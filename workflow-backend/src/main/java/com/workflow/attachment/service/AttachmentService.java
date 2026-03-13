@@ -18,6 +18,10 @@ import com.workflow.common.exception.ApiException;
 import com.workflow.common.exception.ErrorCode;
 import com.workflow.common.file.FileStorageService;
 import com.workflow.common.file.StoredAttachment;
+import com.workflow.tasks.entity.TaskEntity;
+import com.workflow.tasks.repasitory.TaskRepository;
+import com.workflow.user.entity.UserEntity;
+import com.workflow.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,7 +31,9 @@ public class AttachmentService {
 
     private final AttachmentRepository attachmentRepository;
     private final FileStorageService fileStorageService;
-
+    private final UserRepository userRepository;
+    private final TaskRepository taskRepository;
+    
     // 첨부파일 제한 상수
     private static final int MAX_FILES = 10;
     private static final long MAX_TOTAL_SIZE = 50L * 1024 * 1024; // 50MB
@@ -65,6 +71,17 @@ public class AttachmentService {
         if (total > MAX_TOTAL_SIZE) {
             throw new ApiException(ErrorCode.BAD_REQUEST, "첨부파일 총합은 50MB 이하만 가능합니다.");
         }
+        
+        // 권한 체크
+        UserEntity loginUser = userRepository.findById(uploaderId)
+                .orElseThrow(() -> new ApiException(ErrorCode.UNAUTHORIZED, "사용자가 존재하지 않습니다."));
+
+        TaskEntity task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "업무를 찾을 수 없습니다."));
+
+        if (!task.canEdit(loginUser)) {
+            throw new ApiException(ErrorCode.FORBIDDEN, "업로드 권한이 없습니다.");
+        }
 
         List<AttachmentResponse> out = new ArrayList<>();
 
@@ -95,18 +112,32 @@ public class AttachmentService {
 
     // soft delete 처리
     @Transactional
-    public void softDelete(Long attachmentId, Long requesterId) {
+    public void softDelete(Long taskId, List<Long> attachmentIds, Long requesterId) {
 
-        AttachmentEntity a = attachmentRepository.findByIdAndIsDeletedFalse(attachmentId)
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "첨부파일이 없습니다."));
+        // 요청자 정보 가져오기
+        UserEntity loginUser = userRepository.findById(requesterId)
+                .orElseThrow(() -> new ApiException(ErrorCode.UNAUTHORIZED, "사용자가 존재하지 않습니다."));
 
-        if (!a.getUploaderId().equals(requesterId)) {
-            throw new ApiException(ErrorCode.FORBIDDEN, "삭제 권한이 없습니다.");
+        for (Long attachmentId : attachmentIds) {
+            // 첨부 파일 조회
+            AttachmentEntity a = attachmentRepository.findByIdAndIsDeletedFalse(attachmentId)
+                    .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "첨부파일이 없습니다."));
+
+            // Task 조회 (컨트롤러에서 받은 taskId 사용)
+            TaskEntity task = taskRepository.findById(taskId)
+                    .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "업무를 찾을 수 없습니다."));
+
+            // 권한 체크
+            if (!task.canEdit(loginUser)) {
+                throw new ApiException(ErrorCode.UNAUTHORIZED, "삭제 권한이 없습니다.");
+            }
+
+            // soft delete 처리
+            a.setDeleted(true);
+            a.setDeletedAt(LocalDateTime.now());
+
+            attachmentRepository.save(a);
         }
-
-        a.setDeleted(true);
-        a.setDeletedAt(LocalDateTime.now());
-        attachmentRepository.save(a);
     }
     
     // 다운로드용: 엔티티 + 실제 디스크 경로 반환
@@ -116,6 +147,17 @@ public class AttachmentService {
 
         AttachmentEntity a = attachmentRepository.findByIdAndIsDeletedFalse(attachmentId)
                 .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "첨부파일이 없습니다."));
+        
+        // 권한 체크
+        UserEntity loginUser = userRepository.findById(requesterId)
+                .orElseThrow(() -> new ApiException(ErrorCode.UNAUTHORIZED, "사용자가 존재하지 않습니다."));
+
+        TaskEntity task = taskRepository.findById(a.getTaskId())
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "업무를 찾을 수 없습니다."));
+
+        if (!task.canEdit(loginUser)) {
+            throw new ApiException(ErrorCode.FORBIDDEN, "다운로드 권한이 없습니다.");
+        }
 
         Path filePath = fileStorageService.resolveUploadPath(a.getStoragePath());
 

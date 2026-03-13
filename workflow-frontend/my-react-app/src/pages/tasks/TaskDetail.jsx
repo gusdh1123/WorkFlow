@@ -7,16 +7,27 @@ import { visibilityLabel } from "../../utils/taskUtils";
 import { formatRelativeDateTime, ddayLabel } from "../../utils/dateUtils";
 
 // 토큰 정보 가져오기
-import { userFromToken } from "../../auth/utils/userFromToken.js"
+import { userFromToken } from "../../auth/utils/userFromToken.js";
 import { useAuth } from "../../auth/hooks/useAuth";
 
+// 이미지 모달
 import ImageModal from "../../components/common/ImageModal";
 
-// 첨부 모듈 분리
+// 첨부 목록
 import AttachmentList from "../../components/attachments/AttachmentList";
 
-export default function TaskDetail() {
+// HTML 태그 제거 함수
+const stripHtml = (html) => {
+  if (!html) return "";
+  const tmp = document.createElement("DIV");
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || "";
+};
 
+// 내용/제목 줄임 + 길이 체크
+const trimText = (text) => (text && text.length > 30 ? text.slice(0, 30) + "…" : text);
+
+export default function TaskDetail() {
   const { id } = useParams();
   const nav = useNavigate();
 
@@ -24,25 +35,16 @@ export default function TaskDetail() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [auditLogs, setAuditLogs] = useState([]);
-  const [showAllLogs, setShowAllLogs] = useState([]); // 카드별 더보기 상태 배열
+  const [showAllLogs, setShowAllLogs] = useState([]); // 카드별 더보기 상태
   const [showAllAuditLogs, setShowAllAuditLogs] = useState(false); // 전체 Audit Log 더보기 상태
 
-  //엑세스 토큰에서 유저 정보 꺼내기
   const { accessToken } = useAuth();
   const loginUser = accessToken ? userFromToken(accessToken) : null;
 
-  // 모달 기능
   const descRef = useRef(null);
 
-  const [imgModal, setImgModal] = useState({
-    open: false,
-    src: "",
-    alt: "",
-  });
-
-  const closeModal = () => {
-    setImgModal({ open: false, src: "", alt: "" });
-  };
+  const [imgModal, setImgModal] = useState({ open: false, src: "", alt: "" });
+  const closeModal = () => setImgModal({ open: false, src: "", alt: "" });
 
   // 이미지 클릭 시 모달 오픈
   useEffect(() => {
@@ -64,12 +66,7 @@ export default function TaskDetail() {
     return () => el.removeEventListener("click", onClick);
   }, [task?.description]);
 
-  // useEffect(() => {...},[id]);
-  // 최초 렌더링 시 1번 실행
-  // id 변경 시마다 실행
-  // 실행 전에 이전 effect cleanup 먼저 실행
-  // 마지막에 호출안하면 실행안됨(useEffect은 타이밍 트리거 일뿐)
-  // 여기선 Task API 호출에 사용하며 AbortController로 요청 취소 가능
+  // Task + Audit Log 조회
   useEffect(() => {
     const controller = new AbortController();
 
@@ -78,30 +75,22 @@ export default function TaskDetail() {
       setErr("");
 
       try {
-
-        // Task 가져오기
-        const res = await api.get(`/api/tasks/${id}`, {
-          signal: controller.signal, // 스위치 연결
-        });
+        const res = await api.get(`/api/tasks/${id}`, { signal: controller.signal });
         setTask(res.data);
 
-        // Audit Log 가져오기 (task가 로드된 후)
-        const logRes = await api.get(`/api/audit/${id}/audit-logs`, {
-          signal: controller.signal,
-        });
+        const logRes = await api.get(`/api/audit/${id}/audit-logs`, { signal: controller.signal });
         setAuditLogs(logRes.data);
 
-        // 카드별 showAllLogs 상태 초기화 (false)
         setShowAllLogs(logRes.data.map(() => false));
-
       } catch (e) {
         if (e.name === "CanceledError" || e.code === "ERR_CANCELED") return;
 
-        // 상태코드별 사용자 친화적 에러 메시지
         const msg =
-          e?.response?.status === 404 ? "업무를 찾을 수 없습니다."
-            : e?.response?.status === 401 ? "로그인이 필요합니다."
-              : "조회에 실패했습니다.";
+          e?.response?.status === 404
+            ? "업무를 찾을 수 없습니다."
+            : e?.response?.status === 401
+            ? "로그인이 필요합니다."
+            : "조회에 실패했습니다.";
 
         setErr(msg);
       } finally {
@@ -109,33 +98,22 @@ export default function TaskDetail() {
       }
     })();
 
-    // 페이지 이동/언마운트 시 요청 취소
     return () => controller.abort();
   }, [id]);
 
-  // 작성일 라벨
-  const createdAtLabel = useMemo(
-    () => formatRelativeDateTime(task?.createdAt),
-    [task?.createdAt]
-  );
+  const createdAtLabel = useMemo(() => formatRelativeDateTime(task?.createdAt), [task?.createdAt]);
 
-  // DONE 상태면 D-Day 라벨 숨김
   const dday = useMemo(() => {
     if (!task?.dueDate) return null;
-
-    // 완료/취소 업무는 마감 강조 불필요
     if (task?.status === "DONE" || task?.status === "CANCELED") return null;
-
     return ddayLabel(task.dueDate);
   }, [task?.dueDate, task?.status]);
 
-  // 첨부 목록 (백엔드가 task.attachments로 내려준다는 전제)
   const attachments = useMemo(() => {
     const arr = task?.attachments || [];
     return Array.isArray(arr) ? arr : [];
   }, [task?.attachments]);
 
-  // 첨부 삭제 후 화면 즉시 반영
   const onAttachmentDeleted = (deletedId) => {
     setTask((prev) => {
       if (!prev) return prev;
@@ -146,17 +124,13 @@ export default function TaskDetail() {
     });
   };
 
-  if (loading)
-    return <div className="taskdetail__state">불러오는 중...</div>;
+  if (loading) return <div className="taskdetail__state">불러오는 중...</div>;
 
   if (err)
     return (
       <div className="taskdetail__state">
         <div className="taskdetail__error">{err}</div>
-        <button
-          className="taskdetail__btn taskdetail__btn--ghost"
-          onClick={() => nav(-1)}
-        >
+        <button className="taskdetail__btn taskdetail__btn--ghost" onClick={() => nav(-1)}>
           뒤로가기
         </button>
       </div>
@@ -166,191 +140,120 @@ export default function TaskDetail() {
 
   const priorityKey = (task?.priority || "").toLowerCase();
 
-  // 수정/삭제 버튼 표시 여부
   const canEdit =
-    task && loginUser && (
-      Number(task.createdById) === Number(loginUser.id) ||       // 작성자
-      (task.assigneeId && Number(task.assigneeId) === Number(loginUser.id)) || // 담당자
-      loginUser.role === "ADMIN" ||                             // 관리자
+    task &&
+    loginUser &&
+    (Number(task.createdById) === Number(loginUser.id) ||
+      (task.assigneeId && Number(task.assigneeId) === Number(loginUser.id)) ||
+      loginUser.role === "ADMIN" ||
       (loginUser.role === "MANAGER" &&
-        loginUser.department?.trim().toLowerCase() ===
-        task.workDepartmentName?.trim().toLowerCase())          // 매니저: 자기 부서
-    );
+        loginUser.department?.trim().toLowerCase() === task.workDepartmentName?.trim().toLowerCase()));
 
-  // 삭제 버튼
   const handleDelete = async () => {
     const reason = window.prompt("삭제 사유를 입력하세요:");
     if (!reason) return;
-
     if (!window.confirm("정말로 삭제하시겠습니까?")) return;
 
     try {
-      // 쿼리 파라미터로 reason 전달
       await api.delete(`/api/tasks/${task.id}?reason=${encodeURIComponent(reason)}`);
       alert("업무가 삭제되었습니다.");
-      nav("/tasks"); // 삭제 후 리스트로 이동
+      nav("/tasks");
     } catch (error) {
       console.error(error);
       alert("삭제에 실패했습니다.");
     }
   };
 
-  // 처음 3개만 보여주고 전체 더보기 처리
   const visibleAuditLogs = showAllAuditLogs ? auditLogs : auditLogs.slice(0, 3);
 
   return (
     <div className="taskdetail">
-
-      {/* 헤더 카드 */}
       <div className="taskdetail__card taskdetail__card--header">
-
         <div className="taskdetail__topRow">
-
           <div>
-            <div className="taskdetail__eyebrow">
-              {createdAtLabel}
-            </div>
-
-            <h2 className="taskdetail__title">
-              {task.title}
-            </h2>
+            <div className="taskdetail__eyebrow">{createdAtLabel}</div>
+            <h2 className="taskdetail__title">{task.title}</h2>
           </div>
 
           <div className="taskdetail__actions">
-            <NavLink
-              className="taskdetail__btn taskdetail__btn--ghost"
-              to="/tasks"
-            >
+            <NavLink className="taskdetail__btn taskdetail__btn--ghost" to="/tasks">
               목록으로
             </NavLink>
 
             {canEdit && (
-              <NavLink
-                className="taskdetail__btn"
-                to={`/tasks/${id}/edit`}
-                // Detail → Edit 갈 때 데이터를 state로 전달
-                state={{task}}
-              >
+              <NavLink className="taskdetail__btn" to={`/tasks/${id}/edit`} state={{ task }}>
                 수정
               </NavLink>
             )}
 
             {canEdit && (
-              <button
-                type="button"
-                className="taskdetail__btn taskdetail__btn--danger"
-                onClick={handleDelete}
-              >
+              <button type="button" className="taskdetail__btn taskdetail__btn--danger" onClick={handleDelete}>
                 삭제
               </button>
             )}
           </div>
         </div>
 
-        {/* 상태, 범위, 중요도, 마감, D-Day */}
         <div className="taskdetail__badges">
-
           <span className={`taskdetail__badge taskdetail__badge--${(task.status || "").toLowerCase()}`}>
             {task.status ?? "-"}
           </span>
 
-          <span className="taskdetail__badge taskdetail__badge--visibility">
-            {visibilityLabel(task.visibility)}
-          </span>
+          <span className="taskdetail__badge taskdetail__badge--visibility">{visibilityLabel(task.visibility)}</span>
 
           <span className={`taskdetail__badge taskdetail__badge--priority taskdetail__badge--priority-${priorityKey}`}>
             중요도: {task.priority ?? "-"}
           </span>
 
-          {task.dueDate && (
-            <span className="taskdetail__badge taskdetail__badge--due">
-              마감: {task.dueDate}
-            </span>
-          )}
+          {task.dueDate && <span className="taskdetail__badge taskdetail__badge--due">마감: {task.dueDate}</span>}
 
-          {/* DONE이면 자동으로 안 뜸 */}
-          {dday && (
-            <span className="taskdetail__badge taskdetail__badge--dday">
-              {dday}
-            </span>
-          )}
-
+          {dday && <span className="taskdetail__badge taskdetail__badge--dday">{dday}</span>}
         </div>
-
       </div>
 
-      {/* 내용 카드 */}
       <div className="taskdetail__grid">
-
-        {/* 왼쪽: 설명 + 첨부 */}
         <div className="taskdetail__card">
-
           {task.description ? (
-            <div
-              ref={descRef}
-              className="taskdetail__desc"
-              dangerouslySetInnerHTML={{ __html: task.description }}
-            />
+            <div ref={descRef} className="taskdetail__desc" dangerouslySetInnerHTML={{ __html: task.description }} />
           ) : (
             <div className="taskdetail__empty">설명이 없습니다.</div>
           )}
 
-          {/* 첨부파일 (모듈 분리 컴포넌트) */}
-          <AttachmentList
-            attachments={attachments}
-            onDeleted={onAttachmentDeleted}
-            readOnly={true}
-          />
-
+          <AttachmentList attachments={attachments} onDeleted={onAttachmentDeleted} readOnly />
         </div>
 
-        {/* 모달 (공용 컴포넌트) */}
-        <ImageModal
-          open={imgModal.open}
-          src={imgModal.src}
-          alt={imgModal.alt}
-          onClose={closeModal}
-        />
+        <ImageModal open={imgModal.open} src={imgModal.src} alt={imgModal.alt} onClose={closeModal} />
 
-        {/* 오른쪽: 정보 */}
         <div className="taskdetail__metaColumn">
-
           <h3 className="taskdetail__card taskdetail__card--title">업무 정보</h3>
 
-          {/* 메타 카드 */}
           <div className="taskdetail__card taskdetail__card--meta">
-
-            {/* 작성자 / 담당자 / 마감일 / 작성일 */}
             <div className="taskdetail__metaRow">
               <div className="taskdetail__metaKey">작성자</div>
               <div className="taskdetail__metaVal">{task.createdByName ?? task.creatorName ?? "-"}</div>
             </div>
-
             <div className="taskdetail__metaRow">
               <div className="taskdetail__metaKey">담당자</div>
               <div className="taskdetail__metaVal">{task.assigneeName ?? "-"}</div>
             </div>
-
             <div className="taskdetail__metaRow">
               <div className="taskdetail__metaKey">마감일</div>
-              <div className="taskdetail__metaVal">{task.dueDate ?? "-"} {dday && `(${dday})`}</div>
+              <div className="taskdetail__metaVal">
+                {task.dueDate ?? "-"} {dday && `(${dday})`}
+              </div>
             </div>
-
             <div className="taskdetail__metaRow">
               <div className="taskdetail__metaKey">작성일</div>
               <div className="taskdetail__metaVal">{createdAtLabel}</div>
             </div>
-
           </div>
 
-          {/* 수정 이력: 카드별로 나누고 접기/더보기 적용 */}
+          {visibleAuditLogs.length > 0 &&(
           <h3 className="taskdetail__card taskdetail__card--title">Audit Log</h3>
+          )}
           {visibleAuditLogs.map((log, idx) => (
             <div key={idx} className="taskdetail__card taskdetail__card--log">
-
-
-              <div className={`taskdetail__logItem ${log.isRecent ? 'taskdetail__logItem--recent' : ''}`}>
-
+              <div className={`taskdetail__logItem ${log.isRecent ? "taskdetail__logItem--recent" : ""}`}>
                 <div className="taskdetail__metaRow">
                   <div className="taskdetail__metaKey">수정자</div>
                   <div className="taskdetail__metaVal">{log.actorName}</div>
@@ -361,29 +264,78 @@ export default function TaskDetail() {
                   <div className="taskdetail__metaVal">{formatRelativeDateTime(log.modifiedAt)}</div>
                 </div>
 
-                {/* changedFields 접기/더보기 */}
-                { (showAllLogs[idx] ? log.changedFields : log.changedFields.slice(0, 3)).map((field, i) => (
-                  <div key={i} className="taskdetail__metaRow">
-                    <div className="taskdetail__metaKey">{field === "status" ? "상태 변경" : "수정 필드"}</div>
-                    <div className="taskdetail__metaVal">
-                      {field === "status" ? `${log.statusBefore} → ${log.statusAfter}` : `${field} 변경됨`}
-                    </div>
-                  </div>
-                ))}
+                {/* 수정 필드 출력 */}
+                {(() => {
+                  const fields = Array.isArray(log.changes) ? log.changes : [];
+                  const showAll = showAllLogs[idx];
 
+                  return (showAll ? fields : fields.slice(0, 3)).map((change, i) => {
+                    const field = change.field;
+                    let oldVal = field === "description" ? stripHtml(change.beforeValue) : change.beforeValue;
+                    let newVal = field === "description" ? stripHtml(change.afterValue) : change.afterValue;
+
+                    let label = "";
+                    let valueText = "";
+
+                    if (field === "attachment_add") {
+                      label = "첨부파일 추가";
+                      valueText = `${newVal ?? ""}`;
+                    } else if (field === "attachment_delete") {
+                      label = "첨부파일 삭제";
+                      valueText = `${oldVal ?? ""}`;
+                    } else {
+                      const fieldNameMap = {
+                        title: "제목",
+                        description: "내용",
+                        assignee_id: "담당자",
+                        priority: "우선순위",
+                        visibility: "공개 범위",
+                        due_date: "마감일",
+                        status: "진행도",
+                      };
+                      label = fieldNameMap[field] ? `${fieldNameMap[field]} 변경` : "수정 필드";
+
+                      // 로그 안에서 제목/내용만 길이 체크 후 trimText 적용
+                      if (field === "title" || field === "description") {
+                        const isLong =
+                          (oldVal?.length || 0) > 30 || (newVal?.length || 0) > 30;
+                        if (!showAll && isLong) {
+                          oldVal = trimText(oldVal);
+                          newVal = trimText(newVal);
+                        }
+                      }
+
+                      valueText = `${oldVal ?? ""} → ${newVal ?? ""}`;
+                    }
+
+                    return (
+                      <div key={i} className="taskdetail__metaRow">
+                        <div className="taskdetail__metaKey">{label}</div>
+                        <div className="taskdetail__metaVal">{valueText}</div>
+                      </div>
+                    );
+                  });
+                })()}
+
+                {/* 수정 사유 */}
                 {log.reason && (
                   <div className="taskdetail__metaRow">
                     <div className="taskdetail__metaKey">사유</div>
                     <div className="taskdetail__metaVal">{log.reason}</div>
                   </div>
                 )}
-
               </div>
 
-              {/* changedFields 접기/더보기 버튼 */}
-              {log.changedFields.length > 3 && (
+              {/* 카드별 더보기 버튼: 기존 3개 초과 + title/description 30자 이상이면 버튼 표시 */}
+              {(log.changes?.length > 3 ||
+                log.changes?.some(
+                  (c) =>
+                    (c.field === "title" || c.field === "description") &&
+                    ((stripHtml(c.beforeValue || "")?.length || 0) > 30 ||
+                      (stripHtml(c.afterValue || "")?.length || 0) > 30)
+                )) && (
                 <button
-                  className="taskdetail__btn taskdetail__btn--ghost"
+                  className="taskdetail__btn taskdetail__btn--ghost taskdetail__btn--metaRight"
                   onClick={() => {
                     const newState = [...showAllLogs];
                     newState[idx] = !newState[idx];
@@ -393,7 +345,6 @@ export default function TaskDetail() {
                   {showAllLogs[idx] ? "접기" : "더보기"}
                 </button>
               )}
-
             </div>
           ))}
 
@@ -406,11 +357,8 @@ export default function TaskDetail() {
               {showAllAuditLogs ? "접기" : "더보기"}
             </button>
           )}
-
         </div>
-
       </div>
-
     </div>
   );
 }

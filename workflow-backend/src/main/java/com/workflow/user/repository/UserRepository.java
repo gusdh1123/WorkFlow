@@ -22,4 +22,11 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 			  join fetch u.department
 			""")
 	List<UserEntity> findAllWithDepartment();
+	
+	// 부서 ID로 사용자 조회
+    List<UserEntity> findByDepartment_Id(Long departmentId);
+	
+	
+	
+	
 }

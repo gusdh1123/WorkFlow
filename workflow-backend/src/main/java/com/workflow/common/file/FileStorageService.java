@@ -221,34 +221,34 @@ public class FileStorageService {
     
     // 이제 필요 없을듯?
     // 유튜브 iframe을 링크(a)로 감싸서 깨진 HTML 정리
-    private String normalizeQuillHtml(String html) {
-        if (html == null) return null;
-
-        String out = html;
-
-        // href 안에 iframe HTML이 통째로 들어가버렸을때
-        out = out.replaceAll(
-            "(?is)<a\\s+[^>]*href\\s*=\\s*\"<iframe[\\s\\S]*?</iframe>\"[^>]*>\\s*(<iframe[\\s\\S]*?</iframe>)\\s*</a>",
-            "$1"
-        );
-
-        // iframe을 <a>로 감싼 경우 제거
-        out = out.replaceAll(
-            "(?is)<a[^>]*>\\s*(<iframe[\\s\\S]*?</iframe>)\\s*</a>",
-            "$1"
-        );
-
-//        // 깨진 a 태그 찌꺼기 제거
-//        out = out.replaceAll("(?is)\"\\s*>\\s*(?=<iframe)", "");
-        
-        // 깨진 <a> 태그 제거 (iframe 아닌 빈 <a>)
-        out = out.replaceAll("(?is)<a[^>]*></a>", "");
-
-        // 필요하면 공백/엔터 정리
-        out = out.trim();
-
-        return out;
-    }
+//    private String normalizeQuillHtml(String html) {
+//        if (html == null) return null;
+//
+//        String out = html;
+//
+//        // href 안에 iframe HTML이 통째로 들어가버렸을때
+//        out = out.replaceAll(
+//            "(?is)<a\\s+[^>]*href\\s*=\\s*\"<iframe[\\s\\S]*?</iframe>\"[^>]*>\\s*(<iframe[\\s\\S]*?</iframe>)\\s*</a>",
+//            "$1"
+//        );
+//
+//        // iframe을 <a>로 감싼 경우 제거
+//        out = out.replaceAll(
+//            "(?is)<a[^>]*>\\s*(<iframe[\\s\\S]*?</iframe>)\\s*</a>",
+//            "$1"
+//        );
+//
+////        // 깨진 a 태그 찌꺼기 제거
+////        out = out.replaceAll("(?is)\"\\s*>\\s*(?=<iframe)", "");
+//        
+//        // 깨진 <a> 태그 제거 (iframe 아닌 빈 <a>)
+//        out = out.replaceAll("(?is)<a[^>]*></a>", "");
+//
+//        // 필요하면 공백/엔터 정리
+//        out = out.trim();
+//
+//        return out;
+//    }
     
     
 

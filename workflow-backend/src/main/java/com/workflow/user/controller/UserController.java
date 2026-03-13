@@ -28,7 +28,8 @@ public class UserController {
 	            .map(u -> new UserSimpleResponse(
 	                u.getId(),
 	                u.getName(),
-	                u.getDepartment().getName()
+	                u.getDepartment().getName(),
+	                u.getRole()
 	            ))
 	            .toList();
 	}

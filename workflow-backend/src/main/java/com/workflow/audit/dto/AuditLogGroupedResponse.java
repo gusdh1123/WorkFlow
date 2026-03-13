@@ -17,9 +17,7 @@ public class AuditLogGroupedResponse {
     private List<String> changedFields; // 변경된 필드 목록 (status 포함)
     private String reason;              // 수정/삭제 사유
 
-    // 상태 변경 전/후 값
-    private String statusBefore;        
-    private String statusAfter;         
+    private List<FieldChange> changes;  // 변경 필드 리스트   
 
     private boolean isRecent;           // 최신 3개 표시용 플래그
 

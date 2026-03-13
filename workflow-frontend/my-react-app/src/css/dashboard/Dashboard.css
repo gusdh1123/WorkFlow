@@ -83,7 +83,7 @@
 /* Muted Text */
 .muted {
   color: var(--muted);
-  font-size: 14px;
+  font-size: 18px;
   line-height: 1.4;
 }
 
@@ -141,3 +141,199 @@
 .card.DONE { border-top: 3px solid #16a34a; }
 .card.ON_HOLD { border-top: 3px solid #7c3aed; }
 .card.CANCELED { border-top: 3px solid #dc2626; }
+
+/* ==========================
+   My Tasks Table Styling
+========================== */
+.tasks__table {
+  width: 100%;
+  border-collapse: collapse; /* 테두리 겹침 제거 */
+  table-layout: fixed;        /* 컬럼 고정 폭으로 균등 배치 */
+}
+
+.tasks__table th,
+.tasks__table td {
+  padding: 10px 12px;          /* 좌우 여백 */
+  text-align: left;            /* 왼쪽 정렬 */
+  white-space: nowrap;         /* 줄바꿈 방지 */
+  overflow: hidden;
+  text-overflow: ellipsis;     /* 내용 길면 ... 처리 */
+  border-bottom: 1px solid #e5e7eb; /* 행 구분선 */
+  font-size: 14px;
+  vertical-align: middle;      /* 세로 중앙 정렬 */
+}
+
+.tasks__table th {
+  background-color: #f3f4f6;   /* 헤더 배경색 */
+  font-weight: 700;
+}
+
+.tasks__table td {
+  background-color: #fff;
+}
+
+/* 컬럼별 최소 너비 지정 */
+.tasks__table th:nth-child(1),
+.tasks__table td:nth-child(1) { min-width: 150px; } /* 제목 */
+.tasks__table th:nth-child(2),
+.tasks__table td:nth-child(2) { min-width: 90px; }  /* 상태 */
+.tasks__table th:nth-child(3),
+.tasks__table td:nth-child(3) { min-width: 90px; }  /* 우선순위 */
+.tasks__table th:nth-child(4),
+.tasks__table td:nth-child(4) { min-width: 120px; } /* 마감일 */
+.tasks__table th:nth-child(5),
+.tasks__table td:nth-child(5) { min-width: 100px; } /* 남은 기간 */
+.tasks__table th:nth-child(6),
+.tasks__table td:nth-child(6) { min-width: 100px; } /* 담당자 */
+.tasks__table th:nth-child(7),
+.tasks__table td:nth-child(7) { min-width: 120px; } /* 담당 부서 */
+.tasks__table th:nth-child(8),
+.tasks__table td:nth-child(8) { min-width: 120px; } /* 작성자 */
+.tasks__table th:nth-child(9),
+.tasks__table td:nth-child(9) { min-width: 120px; } /* 작성자 부서 */
+.tasks__table th:nth-child(10),
+.tasks__table td:nth-child(10) { min-width: 120px; } /* 작성일 */
+
+/* 테이블 스크롤 */
+.card__tasks .muted {
+  overflow-x: auto;  /* 가로 스크롤 가능 */
+}
+
+.tasks__table tr.selected {
+  background-color: #f0f4ff; /* 기존 연한 파란색 */
+  border-left: 4px solid #2563eb; /* 왼쪽 강조선 추가 */
+  font-weight: 600; /* 글씨 약간 강조 */
+}
+.tasks__table tr:hover {
+  background-color: #eef2f7; /* 마우스 오버 효과 */
+}
+
+/* ==========================
+   activity__logs Styling
+========================== */
+.activity__logs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.activity__logItem {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  background: #f9fafb;
+}
+
+.activity__logHeader {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.activity__logChanges {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 8px;
+}
+
+.activity__logChange {
+  display: flex;
+  gap: 4px;
+  white-space: nowrap;       /* 기본 한 줄 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.activity__logChange.expanded {
+  white-space: normal;       /* 줄바꿈 허용 */
+  overflow: visible;
+  text-overflow: clip;
+  flex-wrap: wrap;
+}
+
+.activity__field {
+  font-weight: 500;
+}
+.activity__before {
+  color: #6b7280;
+}
+.activity__arrow {
+  margin: 0 2px;
+}
+.activity__after {
+  font-weight: 600;
+}
+
+.activity__logReason {
+  margin-top: 4px;
+  padding-left: 8px;
+  font-style: italic;
+  color: #374151;
+}
+
+/* 공통 btn-more 스타일 */
+.btn-more {
+  display: inline-block;
+  padding: 4px 10px;           /* 조금 더 넉넉한 패딩 */
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;           /* 모서리 둥글게 */
+  border: 1px solid #2563eb;    /* 파란 테두리 */
+  background-color: #ffffff;    /* 흰색 배경 */
+  color: #2563eb;
+  cursor: pointer;
+  transition: all 0.2s ease;    /* hover 애니메이션 */
+}
+
+/* hover 효과 */
+.btn-more:hover {
+  background-color: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+/* 기존 각 로그별 더보기 버튼 */
+.activity__logItem > .btn-more {
+  display: block;          /* 블록 요소로 변경 */
+  margin-left: auto;       /* 왼쪽 여백 자동 → 오른쪽 끝 정렬 */
+  margin-top: 4px;
+  background: none;
+  border: none;
+  color: #2563eb;
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 12px;
+}
+
+/* 전체 로그 더보기 버튼 (카드 하단) */
+.activity__logs > .btn-more {
+  display: block;          /* 블록 요소 */
+  margin-left: auto;       /* 오른쪽 끝 정렬 */
+  margin-top: 8px;         /* 위쪽 여백 */
+  background: none;
+  border: none;
+  color: #2563eb;
+  cursor: pointer;
+  padding: 4px 6px;
+  font-size: 13px;
+}
+
+/* 전체 로그 더보기 버튼 (카드 하단) */
+.activity__logs__footer {
+  margin-top: 8px;       /* 위쪽 여백 */
+  text-align: right;      /* 오른쪽 끝 정렬 */
+}
+
+.activity__logs__footer > .btn-more {
+  background: none;
+  border: none;
+  color: #2563eb;
+  cursor: pointer;
+  padding: 4px 6px;
+  font-size: 15px;
+  display: inline-block;  /* 텍스트 정렬이 적용되도록 */
+}

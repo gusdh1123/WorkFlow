@@ -45,6 +45,8 @@ public class TaskResponse {
 
     private List<AttachmentResponse> attachments; // 첨부파일 리스트
     private long attachmentsCount;                // 첨부파일 개수, 목록/상세 공통
+    
+    private Long version; // 버전
 
     // 정적 빌더 변환 메서드
     
@@ -100,6 +102,8 @@ public class TaskResponse {
 
                 .attachments(attachments != null ? attachments : List.of())
                 .attachmentsCount(Math.max(0, attachmentsCount)) // 음수 방어
+                
+                .version(t.getVersion()) // 버전 추가
                 .build();
     }
 

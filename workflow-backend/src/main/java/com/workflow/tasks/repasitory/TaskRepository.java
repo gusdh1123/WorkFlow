@@ -30,7 +30,7 @@ public interface TaskRepository extends JpaRepository<TaskEntity, Long> {
     // 삭제되지 않은 Task 중 특정 상태(status)를 가진 것만 조회
 
 	// created 탭: 내가 만든 것만
-	@EntityGraph(attributePaths = { "createdBy", "assignee" })
+	@EntityGraph(attributePaths = { "createdBy", "assignee"})
 	Page<TaskEntity> findByIsDeletedFalseAndCreatedBy_Id(Long createdById, Pageable pageable);
     // 특정 사용자가 생성한 삭제되지 않은 Task 조회
 
@@ -232,5 +232,4 @@ public interface TaskRepository extends JpaRepository<TaskEntity, Long> {
 	                                                   @Param("createdById") Long createdById,
 	                                                   @Param("assigneeId") Long assigneeId,
 	                                                   Pageable pageable);
-	
 }

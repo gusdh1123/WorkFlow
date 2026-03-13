@@ -2,10 +2,14 @@ package com.workflow.tasks.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.workflow.attachment.entity.AttachmentEntity;
 import com.workflow.attachment.repository.AttachmentRepository;
 import com.workflow.attachment.service.AttachmentService;
 import com.workflow.audit.enums.AuditActionType;
@@ -43,41 +47,44 @@ public class TaskCommandService {
     // 업무 작성
     public TaskResponse create(TaskCreateRequest req, Long loginUserId) {
 
+    	// 로그인 사용자 체크
         if (loginUserId == null) throw new ApiException(ErrorCode.UNAUTHORIZED, "로그인이 필요합니다.");
-        // 로그인 사용자 체크
 
-        String title = req.titleTrimmed();
         // 제목 공백 제거
+        String title = req.titleTrimmed();
 
+        // 제목 필수 체크
         if (title == null || title.isEmpty()) {
             throw new ApiException(ErrorCode.BAD_REQUEST, "제목은 필수입니다.");
         }
-        // 제목 필수 체크
 
+        // 작성자 정보 조회
         UserEntity creator = userRepository.findById(loginUserId)
                 .orElseThrow(() -> new ApiException(ErrorCode.UNAUTHORIZED, "사용자가 존재하지 않습니다."));
-        // 작성자 정보 조회
 
+        // 담당자 존재 여부 확인
         UserEntity assignee = (req.assigneeId() == null) ? null
                 : userRepository.findById(req.assigneeId())
                     .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "담당자를 찾을 수 없습니다."));
-        // 담당자 존재 여부 확인
+        
+        // 담당자 유효성 체크
+        validateAssignee(creator, assignee);
 
+        // 진행도/중요도 기본값 처리
         TaskVisibility visibility = req.visibilityOrDefault();
         TaskPriority priority = req.priorityOrDefault();
-        // 가시성/우선순위 기본값 처리
 
+        // PUBLIC 업무 생성 권한 체크
         if (visibility == TaskVisibility.PUBLIC) {
             Role role = creator.getRole();
             if (role == null || (role != Role.MANAGER && role != Role.ADMIN)) {
                 throw new ApiException(ErrorCode.UNAUTHORIZED, "PUBLIC 업무는 매니저/관리자만 생성할 수 있습니다.");
             }
         }
-        // PUBLIC 업무 생성 권한 체크
 
+        // 소유 부서 vs 업무 부서 결정
         DepartmentEntity ownerDept = creator.getDepartment();
         DepartmentEntity workDept = (assignee != null) ? assignee.getDepartment() : ownerDept;
-        // 소유 부서 vs 업무 부서 결정
 
         // 저장해서 아이디 생성
         TaskEntity task = TaskEntity.builder()
@@ -99,11 +106,11 @@ public class TaskCommandService {
         String descriptionFinal = fileStorageService.commitEditorImagesInContent(task.getDescription(), "tasks", task.getId());
         task.setDescription(descriptionFinal);
 
-        taskRepository.save(task);
         // 수정된 description 재저장
+        taskRepository.save(task);
 
-        return TaskResponse.from(task);
         // DTO로 변환 후 반환
+        return TaskResponse.from(task);
     }
 
     // 업무 수정
@@ -120,6 +127,11 @@ public class TaskCommandService {
         if (!task.canEdit(loginUser)) {
             throw new ApiException(ErrorCode.UNAUTHORIZED, "수정 권한이 없습니다.");
         }
+        
+        // 낙관적 락 체크 추가
+        if (!Objects.equals(task.getVersion(), req.version())) {
+            throw new ApiException(ErrorCode.CONFLICT, "다른 사용자가 먼저 수정했습니다. 다시 새로고침 후 시도하세요.");
+        }
 
         // 제목 공백 제거
         String title = req.titleTrimmed();
@@ -131,14 +143,9 @@ public class TaskCommandService {
         UserEntity assignee = (req.assigneeId() == null) ? null
                 : userRepository.findById(req.assigneeId())
                     .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "담당자를 찾을 수 없습니다."));
-
-// 생각해 보니까 퍼블릭 업무도 담당자이거나 작성자이면 일반 유저도 수정 가능해야 함.
-//        if (req.visibility() == TaskVisibility.PUBLIC) {
-//            Role role = loginUser.getRole();
-//            if (role == null || (role != Role.MANAGER && role != Role.ADMIN)) {
-//                throw new ApiException(ErrorCode.UNAUTHORIZED, "PUBLIC 업무는 매니저/관리자만 수정할 수 있습니다.");
-//            }
-//        }
+        
+        // 담당자 유효성 체크
+        validateAssignee(loginUser, assignee);
         
         // 수정 사유 확인
         if (req.reason() == null || req.reason().isBlank()) {
@@ -172,6 +179,13 @@ public class TaskCommandService {
 
         taskRepository.save(task); // 업데이트 반영
         
+        // 수정에서 추가/삭제된 첨부 조회
+        List<AttachmentEntity> addedAttachments = req.addedAttachmentIds() == null ? List.of() :
+                attachmentRepository.findAllById(req.addedAttachmentIds());
+
+        List<AttachmentEntity> deletedAttachments = req.deletedAttachmentIds() == null ? List.of() :
+                attachmentRepository.findAllById(req.deletedAttachmentIds());
+        
         // 변경 이력 인서트
         auditLogService.saveTaskUpdateLogs(
                 task,
@@ -185,7 +199,9 @@ public class TaskCommandService {
                 oldPriority,
                 oldStatus,
                 AuditActionType.TASK_UPDATE,
-                req.reason() 
+                req.reason(),
+                addedAttachments,
+                deletedAttachments
         );
         
         return TaskResponse.from(task);
@@ -240,12 +256,18 @@ public class TaskCommandService {
                 task.getPriority(),
                 task.getStatus(),
                 AuditActionType.TASK_DELETE,
-                deleteReason // 삭제 사유
+                deleteReason, // 삭제 사유
+                null, // 추가된 첨부파일 없음
+                null  // 삭제된 첨부파일도 별도로 기록 안함
         );
 
-        // Attachment soft delete
-        attachmentRepository.findByTaskIdAndIsDeletedFalse(taskId)
-                .forEach(a -> attachmentService.softDelete(a.getId(), loginUserId));
+        // Attachment soft delete(list로 바꿈)
+        List<Long> attachmentIds = attachmentRepository.findByTaskIdAndIsDeletedFalse(taskId)
+                .stream()
+                .map(AttachmentEntity::getId)
+                .collect(Collectors.toList());
+        
+        attachmentService.softDelete(taskId, attachmentIds, loginUserId);
 
         return TaskResponse.from(task);
     }
@@ -306,6 +328,33 @@ public class TaskCommandService {
         }
 
         throw new ApiException(ErrorCode.UNAUTHORIZED, "상태 변경 권한이 없습니다.");
+    }
+    
+    
+    // 로그인 유저가 담당자로 지정할 수 있는 사용자 목록 반환
+    private List<UserEntity> getAssignableUsers(UserEntity loginUser) {
+        if (loginUser.getRole() == Role.ADMIN) {
+            // 관리자: 전사 모든 유저 가능
+            return userRepository.findAll();
+        } else {
+            // 매니저/일반: 자기 부서 유저만
+            DepartmentEntity dept = loginUser.getDepartment();
+            if (dept != null) {
+                return userRepository.findByDepartment_Id(dept.getId());
+            }
+            return List.of(); // 부서가 없는 경우
+        }
+    }
+
+    // 선택한 담당자가 로그인 유저 기준으로 유효한지 검증
+    private void validateAssignee(UserEntity loginUser, UserEntity assignee) {
+        if (assignee == null) return;
+
+        List<UserEntity> allowedUsers = getAssignableUsers(loginUser);
+        boolean allowed = allowedUsers.stream().anyMatch(u -> u.getId().equals(assignee.getId()));
+        if (!allowed) {
+            throw new ApiException(ErrorCode.UNAUTHORIZED, "선택한 담당자를 지정할 권한이 없습니다.");
+        }
     }
 
 }

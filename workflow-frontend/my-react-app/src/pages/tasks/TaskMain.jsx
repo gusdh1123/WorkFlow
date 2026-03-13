@@ -313,7 +313,7 @@ export default function Tasks() {
 
   // TODO: departments 배열 API 호출/상수 필요
   const departments = [
-    { id: "1", name: "기획팀" },
+    { id: "1", name: "운영팀" },
     { id: "2", name: "개발팀" },
     { id: "3", name: "디자인팀" },
   ];

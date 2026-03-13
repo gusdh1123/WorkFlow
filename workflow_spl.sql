@@ -20,7 +20,6 @@ DROP TABLE tasks;
 DROP TABLE users;
 DROP TABLE department;
 
-
 CREATE TABLE department (
 	id BIGSERIAL PRIMARY KEY,
 	name VARCHAR(100) UNIQUE NOT NULL,
@@ -54,14 +53,13 @@ CREATE TABLE tasks (
 	priority VARCHAR(20) NOT NULL,
 	visibility VARCHAR(20) NOT NULL DEFAULT 'DEPARTMENT',
 	due_date DATE NULL,
-	hold_reason TEXT NULL,
-	cancel_reason TEXT NULL,
 	is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
 	deleted_at TIMESTAMPTZ NULL,
 	created_by BIGINT NOT NULL,
 	assignee_id BIGINT NULL,
   	owner_department_id BIGINT NOT NULL, -- 작성자 부서
   	work_department_id BIGINT NOT NULL, -- 처리/ 담당 부서
+	version BIGINT NOT NULL DEFAULT 0, -- 낙관적 락 컬럼 추가
 	created_at timestamp(6) without time zone NOT NULL DEFAULT NOW(),
 	updated_at timestamp(6) without time zone NOT NULL DEFAULT NOW(),
 	FOREIGN KEY (created_by) REFERENCES users(id),

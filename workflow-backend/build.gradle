@@ -44,6 +44,9 @@ dependencies {
     
     // Apache에서 만든 보안·문자열 처리 표준 도구 모음
     implementation 'commons-codec:commons-codec:1.16.0'
+    
+    // HTML 파싱/태그 제거용 Jsoup
+    implementation 'org.jsoup:jsoup:1.16.1'
 }
 
 tasks.named('test') {

@@ -10,7 +10,20 @@ import com.workflow.tasks.enums.TaskVisibility;
 import com.workflow.user.entity.UserEntity;
 import com.workflow.user.enums.Role;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -56,12 +69,6 @@ public class TaskEntity {
 
     @Column(name = "due_date")
     private LocalDate dueDate; // 마감일
-
-    @Column(name = "hold_reason", columnDefinition = "TEXT")
-    private String holdReason; // ON_HOLD 상태일 때 사유
-
-    @Column(name = "cancel_reason", columnDefinition = "TEXT")
-    private String cancelReason; // CANCELED 상태일 때 사유
 
     @Column(name = "is_deleted", nullable = false)
     @Builder.Default
@@ -135,6 +142,14 @@ public class TaskEntity {
 
         // 담당자는 수정 가능
         if (this.assignee != null && this.assignee.getId().equals(user.getId())) return true;
+
+        // 전사 업무(PUBLIC)인데 일반 사원이라면 작성자/담당자가 아니면 수정 불가
+        if (this.visibility == TaskVisibility.PUBLIC 
+                && user.getRole() == Role.USER  // 일반 사원
+                && !this.createdBy.getId().equals(user.getId())
+                && (this.assignee == null || !this.assignee.getId().equals(user.getId()))) {
+            return false;
+        }
 
         // 관리자: 모든 업무 수정 가능
         if (user.getRole() == Role.ADMIN) return true;

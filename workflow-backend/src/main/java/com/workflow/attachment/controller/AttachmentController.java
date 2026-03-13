@@ -12,15 +12,16 @@ import org.springframework.http.MediaType;
 import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.workflow.attachment.dto.DeleteAttachmentsRequest;
 import com.workflow.attachment.dto.DownloadInfo;
 import com.workflow.attachment.service.AttachmentService;
 
@@ -45,16 +46,18 @@ public class AttachmentController {
         // AttachmentService에서 실제 파일 저장 처리 후 결과 반환
         return ResponseEntity.ok(attachmentService.uploadToTask(taskId, uploaderId, files));
     }
-
-    // 첨부파일 삭제 (soft delete)
-    @DeleteMapping("/attachments/{attachmentId}")
-    public ResponseEntity<?> delete(@PathVariable("attachmentId") Long attachmentId,
-                                    Authentication auth) {
+    
+    // 첨부파일 삭제 반영 (soft delete, 사유 없음)
+    @PostMapping("/tasks/{taskId}/attachments/delete") // // 기존 DeleteMapping 대신 POST로 통합
+    public ResponseEntity<?> delete(
+            @PathVariable("taskId") Long taskId,
+            @RequestBody DeleteAttachmentsRequest req,
+            Authentication auth) {
 
         Long requesterId = Long.valueOf(auth.getName());
 
-        // 실제 삭제 로직은 softDelete 메서드에서 처리 (DB flag 변경)
-        attachmentService.softDelete(attachmentId, requesterId);
+        // 서비스에서 soft delete 처리
+        attachmentService.softDelete(taskId, req.ids(), requesterId);
 
         return ResponseEntity.ok().build();
     }
