@@ -165,7 +165,7 @@
 
 <li>
 <details>
-<summary><b>Udate</b></summary>
+<summary><b>Update</b></summary>
 
 <img width="1618" height="1226" alt="Update" src="https://github.com/user-attachments/assets/76add4f7-056a-455f-89c2-f6c907c8b196" />
 
