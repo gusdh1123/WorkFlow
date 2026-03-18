@@ -127,7 +127,7 @@
 <details>
 <summary><b>Dashboard</b></summary>
 
-<img width="2060" height="1226" alt="dashboard" src="https://github.com/user-attachments/assets/b0ceb778-389e-4e2e-a55f-30d250a7504e" />
+<img width="1924" height="1201" alt="DashBoard" src="https://github.com/user-attachments/assets/ffe9d8c1-fd5a-4b6d-92db-5d988dc779b0" />
 
 </details>
 
@@ -140,7 +140,7 @@
 <details>
 <summary><b>List</b></summary>
 
-<img width="2060" height="1227" alt="List" src="https://github.com/user-attachments/assets/6481fe4d-2766-409b-8fe9-824589333c89" />
+<img width="1816" height="1211" alt="List" src="https://github.com/user-attachments/assets/00d0d52e-51b0-4297-8b3d-0070fc9e4543" />
 
 </details>
 </li>
@@ -149,7 +149,7 @@
 <details>
 <summary><b>Create</b></summary>
 
-<img width="987" height="1189" alt="Create" src="https://github.com/user-attachments/assets/20ea7c24-5319-48b7-a3e3-c97eea61c199" />
+<img width="1811" height="1237" alt="Create" src="https://github.com/user-attachments/assets/b8d2984f-1f36-4328-9eb3-c99814bd01ae" />
 
 </details>
 </li>
@@ -158,7 +158,7 @@
 <details>
 <summary><b>Read</b></summary>
 
-<img width="1509" height="1040" alt="Read" src="https://github.com/user-attachments/assets/6622088d-49d7-402e-99f5-2c6ba00054a6" />
+<img width="1736" height="1212" alt="Read" src="https://github.com/user-attachments/assets/82d2bb5b-353d-4699-9edc-a8e85e0f2b2c" />
 
 </details>
 </li>
@@ -167,7 +167,7 @@
 <details>
 <summary><b>Udate</b></summary>
 
-이미지 넣기
+<img width="1618" height="1226" alt="Update" src="https://github.com/user-attachments/assets/76add4f7-056a-455f-89c2-f6c907c8b196" />
 
 </details>
 </li>
@@ -176,7 +176,7 @@
 <details>
 <summary><b>Delete</b></summary>
 
-이미지 넣기
+<img width="1629" height="1259" alt="Delete" src="https://github.com/user-attachments/assets/2f3a30de-310c-46b3-81ae-b75620bb73fd" />
 
 </details>
 </li>
