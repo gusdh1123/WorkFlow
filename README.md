@@ -66,22 +66,18 @@
 
 ### 3️⃣ 업무 상태 관리
 
-- **상태 정의**  
-  - 대기(TODO), 진행중(IN_PROGRESS), 검토중(REVIEW), 취소/중단(CANCELED), 보류(ON_HOLD), 완료(DONE)
-- **기본 흐름**  
-  - TODO → IN_PROGRESS → REVIEW → DONE  
-  - REVIEW → IN_PROGRESS (수정 요청)
-- **예외 흐름**  
-  - TODO / IN_PROGRESS → CANCELED  
-  - IN_PROGRESS → ON_HOLD → IN_PROGRESS
-- **제한**  
-  - DONE / CANCELED → 변경 불가
-- **정책**  
-  - 상태 전이 제한(Service 레벨)  
-  - Enum + 정책 클래스  
-  - 취소/보류 시 사유 필수  
-  - 검토 → 완료는 관리자/검토자만 가능  
-  - 모든 상태 변경은 이력 테이블 기록
+## 상태 정의
+- 대기(TODO), 진행중(IN_PROGRESS), 검토중(REVIEW), 보류(ON_HOLD), 취소(CANCELED), 완료(DONE)
+ 
+## 권한 정책
+- 작성자 또는 담당자는 제한된 상태 전이만 가능
+- 관리자(ADMIN) 및 팀장(MANAGER)은 모든 상태 변경 가능
+  
+## 상태 관리 정책
+- 상태 전이는 Service 레벨에서 검증
+- Enum 기반 상태 정의 및 상태 전이 규칙 적용
+- 업무 수정 시 변경 사유(reason) 입력 필수
+- 모든 상태 변경은 **Activity Log(이력 테이블)**에 기록
 
 
 ### 4️⃣ 댓글 / 커뮤니케이션
@@ -213,3 +209,5 @@
 <summary><b>v1.0 (2026-0-??)<b></summary>
 
 </details>
+
+---
