@@ -48,22 +48,20 @@
 
 ### 1️⃣ 사용자 / 권한
 
-- 직원 계정 로그인  
+- 로그인
 - 역할(Role) 관리
-  - 일반 직원
-  - 관리자(sm 계정)
-- 본인 정보 조회
-- **권한 기반 접근 제어**: Spring Security + JWT  
-- 역할별 기능 분기 설명 가능
+  - 일반 직원(User)
+  - 팀장(Manager)
+  - 관리자(Admin)
+- Spring Security + JWT 기반 인증
+  - Access Token / Refresh Token 구조
+  - Refresh Token Rotation 적용
 
 
 ### 2️⃣ 업무 관리
 
-- 업무 등록, 수정, 삭제(논리 삭제/휴지통 개념)  
-- 담당자 지정 및 변경  
-- 마감일 설정  
-- 담당자 변경 이력 기록  
-- **업무 엔티티 중심 설계**
+- 업무 등록 / 조회 / 수정 / 삭제(Soft Delete)
+- 상태, 우선순위, 마감일, 담당자, 공개 범위 설정 및 변경
 
 
 ### 3️⃣ 업무 상태 관리
@@ -208,3 +206,10 @@
 </details>
 
 ---
+
+## 📦 버전 기록
+
+<details>
+<summary><b>v1.0 (2026-0-??)<b></summary>
+
+</details>
