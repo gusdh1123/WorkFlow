@@ -7,11 +7,11 @@
 
 | 항목 | 내용 |
 |------|------|
-| **프로젝트명** | **WorkFlow - 사내 업무 관리 시스템** |
+| **프로젝트명** | **WorkFlow(v1.0) - 사내 업무 관리 시스템** |
 | **개발 기간** | 2026.01.25 ~ 진행 중 |
 | **개발 인원** | 2명 |
 | **주요 기술** | **Java, Spring Security, JWT, JPA, React, PostgreSQL, GitHub Actions CI, Spring Boot, Gradle** |
-| **프로젝트 주소** |  |
+| **프로젝트 주소** | GitHub Repository |
 
 📌 처음 사용하는 기술 스택을 학습하기 위해 시작한 프로젝트로, 기능을 확장하며 지속적으로 개발을 진행하고 있습니다.
 
@@ -32,8 +32,8 @@
 - Gradle
 
 ### 🖥️ Frontend
+- React / VS Code
 - HTML5 / CSS3
-- React
 - Quill
 
 ### 🗃️ Database
@@ -45,6 +45,10 @@
 ---
 
 # 📌 업무 관리 시스템 구현 목표
+
+🟢 완료
+🟡 진행 중
+⚪ 예정
 
 ## 1️⃣ 사용자 / 권한
 
@@ -187,12 +191,31 @@
 
 <li>
 <details>
-<summary><b>Read (첨부 파일 삭제는 아직 Update를 하지 않아서 일단 조회에서 동작하도록 함.)</b></summary>
+<summary><b>Read</b></summary>
 
 <img width="1509" height="1040" alt="Read" src="https://github.com/user-attachments/assets/6622088d-49d7-402e-99f5-2c6ba00054a6" />
 
 </details>
 </li>
+
+<li>
+<details>
+<summary><b>Udate</b></summary>
+
+이미지 넣기
+
+</details>
+</li>
+
+<li>
+<details>
+<summary><b>Delete</b></summary>
+
+이미지 넣기
+
+</details>
+</li>
+
 </ul>
 </details>
 
