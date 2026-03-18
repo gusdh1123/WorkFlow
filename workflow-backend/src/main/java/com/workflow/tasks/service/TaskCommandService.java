@@ -138,7 +138,7 @@ public class TaskCommandService {
         if (title == null || title.isEmpty()) {
             throw new ApiException(ErrorCode.BAD_REQUEST, "제목은 필수입니다.");
         }
-
+        
         // 담당자 존재 여부 확인
         UserEntity assignee = (req.assigneeId() == null) ? null
                 : userRepository.findById(req.assigneeId())
@@ -161,8 +161,11 @@ public class TaskCommandService {
         TaskPriority oldPriority = task.getPriority();
         TaskStatus oldStatus = task.getStatus();
 
-        // 본문 description 처리
+        // 글 내용에 있는 사진 템프에서 본 폴더로 이동 및 URL 치환
         String descriptionFinal = fileStorageService.commitEditorImagesInContent(req.description(), "tasks", task.getId());
+        
+        // 문자열 끝에 공백 제거
+        normalizeDescription(descriptionFinal);
         
         // 상태 전이 검증 처리
         TaskStatus newStatus = validateAndGetNewStatus(task, req.status(), loginUser);
@@ -274,14 +277,19 @@ public class TaskCommandService {
     
     // 상태 전이 허용 여부 체크 후 반환
     private TaskStatus validateAndGetNewStatus(TaskEntity task, TaskStatus requestedStatus, UserEntity loginUser) {
+    	
         if (requestedStatus == null || requestedStatus == task.getStatus()) {
             return task.getStatus(); // 변경 없음
         }
 
         Role role = loginUser.getRole();
         Long loginUserId = loginUser.getId();
+        
+        // 작성자, 담당자
         boolean isCreatorOrAssignee = (task.getAssignee() != null && task.getAssignee().getId().equals(loginUserId))
                                       || task.getCreatedBy().getId().equals(loginUserId);
+        
+        // 매니저, 관리자
         boolean isManagerOfDept = role == Role.MANAGER
                                   && loginUser.getDepartment() != null
                                   && loginUser.getDepartment().getName().equals(task.getWorkDepartment().getName());
@@ -355,6 +363,21 @@ public class TaskCommandService {
         if (!allowed) {
             throw new ApiException(ErrorCode.UNAUTHORIZED, "선택한 담당자를 지정할 권한이 없습니다.");
         }
+    }
+    
+    // 내용 수정할때 동영상 삭제 문제로 마지막에 공백 추가했던거 저장할때 삭제하는 메서드
+    // 문자열 끝에 붙은 <p><br></p> 전부 제거
+    private String normalizeDescription(String description) {
+    	
+    	if(description == null) return null;
+    	
+    	// (?!): 대소문자 무시
+    	// (<p><br></p>): 빈 문단(삭제할거)
+    	// +: 여러개 반복
+    	// $: 문자열 끝
+    	return description
+    			.replaceAll("(?!)(<p><br></p>)+$","")
+    			.trim();
     }
 
 }

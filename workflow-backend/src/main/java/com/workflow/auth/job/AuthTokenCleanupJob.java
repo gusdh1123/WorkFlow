@@ -22,7 +22,7 @@ public class AuthTokenCleanupJob {
 
     // revoked 토큰을 몇 일 보관 후 삭제할지 설정
     // 기본 1일
-    @Value("${app.token-cleanup.days:1}")
+    @Value("${app.token-cleanup.days:14}")
     private int days;
 
     public AuthTokenCleanupJob(AuthRepository authRepository) {
@@ -30,12 +30,12 @@ public class AuthTokenCleanupJob {
     }
 
     // 매일 새벽 3시 실행
-    // @Scheduled(cron = "0 0 3 * * ?")
+    // @Scheduled(cron = "0 0 3 * * *")
     // 10분
     // fixedDelay는 "이전 작업이 끝난 후" 지정 시간 뒤에 다시 실행
-    // 지금 설정은 600000ms = 10분마다 실행
+    // 지금 설정은 600000ms = 10분마다 실행(@Scheduled(fixedDelay = 600000))
     // 절대 시간 기준이 아니라 작업 완료 기준임
-    @Scheduled(fixedDelay = 600000)
+    @Scheduled(cron = "0 0 3 * * *")
     @Transactional
     public void cleanupRevokedTokens() {
 

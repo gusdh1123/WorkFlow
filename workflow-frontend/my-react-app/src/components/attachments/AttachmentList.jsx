@@ -1,5 +1,5 @@
 import "../../css/tasks/TaskDetail.css";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { formatBytes } from "../../utils/fileUtils";
 import { downloadAttachment, deleteAttachment } from "../../api/attachmentsApi";
 
@@ -33,10 +33,7 @@ export default function AttachmentList({
   readOnly = true, // 기본값 false
 }) {
   // attachments가 배열이 아닐 경우 대비
-  const list = useMemo(
-    () => (Array.isArray(attachments) ? attachments : []),
-    [attachments]
-  );
+  const list = Array.isArray(attachments) ? attachments : [];
 
   // 현재 삭제/처리 중인 attachmentId
   const [busyId, setBusyId] = useState(null);

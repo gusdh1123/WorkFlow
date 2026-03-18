@@ -189,42 +189,20 @@
 }
 
 /* 상태별 Badge */
-.taskdetail__badge--todo,
-.taskdetail__badge--in_progress {
-  color: #2563eb;
-  border-color: rgba(37, 99, 235, 0.25);
-  background: rgba(37, 99, 235, 0.08);
-}
+.taskdetail__badge--todo { background:#eef2ff; border-color:#d9e1ff; color:#2b4cff; }
 
-.taskdetail__badge--review {
-  color: #f59e0b;
-  border-color: rgba(245, 158, 11, 0.28);
-  background: rgba(245, 158, 11, 0.10);
-}
+.taskdetail__badge--review,
+.taskdetail__badge--in_progress { background:#f6f7fb; border-color:#e6e8ef; color:#374151; }
 
-.taskdetail__badge--done {
-  color: #16a34a;
-  border-color: rgba(22, 163, 74, 0.25);
-  background: rgba(22, 163, 74, 0.10);
-}
+.taskdetail__badge--done { background:#ecfdf3; border-color:#c7f0d3; color:#067647; }
 
-.taskdetail__badge--on_hold {
-  color: #7c3aed;
-  border-color: rgba(124, 58, 237, 0.25);
-  background: rgba(124, 58, 237, 0.10);
-}
+.taskdetail__badge--on_hold { background:#fff7ed; border-color:#fed7aa; color:#9a3412; }
 
-.taskdetail__badge--canceled {
-  color: #dc2626;
-  border-color: rgba(220, 38, 38, 0.25);
-  background: rgba(220, 38, 38, 0.10);
-}
+.taskdetail__badge--canceled { background:#fef2f2; border-color:#fecaca; color:#b91c1c; }
 
 /* D-Day Badge */
 .taskdetail__badge--dday {
-  border-color: rgba(37, 99, 235, 0.25);
-  background: rgba(37, 99, 235, 0.08);
-  color: #2563eb;
+  font-weight: 900;
 }
 
 /* Priority Badge */

@@ -31,9 +31,14 @@ export const daysDiffFromToday = (dueDateStr) => {
 // D-DAY / D-n / OVERDUE n d
 // 오늘이면 "D-DAY", 남은 날이면 "D-n", 지난 날이면 "OVERDUE n d"
 export const ddayLabel = (dueDateStr) => {
+  
+  if (!dueDateStr) return "";
   const diff = daysDiffFromToday(dueDateStr);
   if (diff === null) return null;
-  if (diff === 0) return "D-DAY";
+
+  if (diff === 0) return "D-day";
+  if (diff >= 100) return `D-99+`;
+  if (diff <= -100) return `D+99+`;
   if (diff > 0) return `D-${diff}`;
   return `D+${Math.abs(diff)}`;
 };

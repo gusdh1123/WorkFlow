@@ -35,133 +35,149 @@ public class TaskQueryService {
     private final AttachmentService attachmentService;
 
     // 업무 목록 조회
-    public Page<TaskResponse> list(String scope, TaskStatus status, Long userId, Long deptId, int page, int size) {
+    public Page<TaskResponse> list(String scope, TaskStatus status, Long userId, Long deptId, int page, int size, String sort) {
 
+        // 로그인 사용자 확인
         if (userId == null) {
             throw new ApiException(ErrorCode.UNAUTHORIZED, "로그인이 필요합니다.");
         }
-        // 로그인 사용자 확인
 
-        if (scope == null || scope.isBlank()) scope = "all";
         // 기본 scope 설정
+        if (scope == null || scope.isBlank()) scope = "all";
 
-        Pageable pageable = PageRequest.of(
-                Math.max(page, 0),
-                Math.min(Math.max(size, 1), 100),
-                Sort.by(Sort.Direction.DESC, "createdAt")
-        );
-        // 페이지네이션, 최소 1~최대 100 제한, 최신순 정렬
+        // priorityDesc 여부 확인
+        boolean usePrioritySort = "priorityDesc".equals(sort);
 
+        
+        // Pageable 객체 생성
+        Pageable pageable;
+        
+        // "priorityDesc" 정렬일 경우, DB 쿼리에서 우선순위 정렬을 처리하기 때문에
+        // Pageable에는 Sort를 따로 지정하지 않고 페이지 번호와 사이즈만 설정
+        // 그 외의 sort 조건일 경우, Sort 객체를 생성해 PageRequest에 적용
+        if ("priorityDesc".equals(sort)) {
+            pageable = PageRequest.of(
+                    Math.max(page, 0),
+                    Math.min(Math.max(size, 1), 100)
+            );
+        } else {
+            Sort sortObj = switch (sort) {
+                case "createdAtDesc" -> Sort.by(Sort.Direction.DESC, "createdAt");
+                case "dueDateAsc" -> Sort.by(Sort.Direction.ASC, "dueDate");
+                case "dueDateDesc" -> Sort.by(Sort.Direction.DESC, "dueDate");
+                default -> Sort.by(Sort.Direction.DESC, "createdAt");
+            };
+            pageable = PageRequest.of(
+                    Math.max(page, 0),
+                    Math.min(Math.max(size, 1), 100),
+                    sortObj
+            );
+        }
+
+        // 로그인 사용자 정보
         UserEntity me = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(ErrorCode.UNAUTHORIZED, "사용자가 존재하지 않습니다."));
         Long myDeptId = me.getDepartment().getId();
-        // 로그인 사용자 정보 + 부서 ID
 
         Page<TaskEntity> result;
 
-        if (me.getRole() == Role.ADMIN) {
-        	Long targetDeptId = deptId; // URL에서 받은 부서 필터
-            switch(scope) {
-                case "all" -> {
-                    if (deptId != null) {
-                        result = (status == null)
-                            ? taskRepository.findByWorkDepartment_IdAndIsDeletedFalse(deptId, pageable)
-                            : taskRepository.findByWorkDepartment_IdAndStatusAndIsDeletedFalse(deptId, status, pageable);
-                    } else {
-                        result = (status == null)
-                            ? taskRepository.findByIsDeletedFalse(pageable)
-                            : taskRepository.findByIsDeletedFalseAndStatus(status, pageable);
+        if (usePrioritySort) {
+            // 우선순위 정렬
+            if (me.getRole() == Role.ADMIN) {
+                // ADMIN → 전체 업무 우선순위 정렬
+                result = taskRepository.findAllByPriorityMappedDesc(scope, status, userId, deptId, myDeptId, pageable);
+            } else {
+                // 일반 사용자/팀장 → 자신이 볼 수 있는 업무만 우선순위 정렬
+                result = taskRepository.findVisibleTasksPriorityDesc(scope, status, userId, deptId, pageable);
+            }
+
+        } else {
+            // 일반 scope 기반 조회
+            if (me.getRole() == Role.ADMIN) {
+                Long targetDeptId = deptId;
+                switch(scope) {
+                    case "all" -> {
+                        if (targetDeptId != null) {
+                            result = (status == null)
+                                ? taskRepository.findByWorkDepartment_IdAndIsDeletedFalse(targetDeptId, pageable)
+                                : taskRepository.findByWorkDepartment_IdAndStatusAndIsDeletedFalse(targetDeptId, status, pageable);
+                        } else {
+                            result = (status == null)
+                                ? taskRepository.findByIsDeletedFalse(pageable)
+                                : taskRepository.findByIsDeletedFalseAndStatus(status, pageable);
+                        }
                     }
+                    case "public" -> {
+                        if (targetDeptId != null) {
+                            result = (status == null)
+                                ? taskRepository.findPublicByDepartmentId(targetDeptId, pageable)
+                                : taskRepository.findPublicByDepartmentIdAndStatus(targetDeptId, status, pageable);
+                        } else {
+                            result = (status == null)
+                                ? taskRepository.findPublicOnly(pageable)
+                                : taskRepository.findPublicOnlyByStatus(status, pageable);
+                        }
+                    }
+                    case "team" -> {
+                        result = (status == null)
+                            ? taskRepository.findByWorkDepartment_IdAndIsDeletedFalse(myDeptId, pageable)
+                            : taskRepository.findByWorkDepartment_IdAndStatusAndIsDeletedFalse(myDeptId, status, pageable);
+                    }
+                    case "created" -> {
+                        result = (status == null)
+                            ? taskRepository.findByIsDeletedFalseAndCreatedBy_Id(userId, pageable)
+                            : taskRepository.findByIsDeletedFalseAndCreatedBy_IdAndStatus(userId, status, pageable);
+                    }
+                    case "assigned" -> {
+                        result = (status == null)
+                            ? taskRepository.findByIsDeletedFalseAndAssignee_Id(userId, pageable)
+                            : taskRepository.findByIsDeletedFalseAndAssignee_IdAndStatus(userId, status, pageable);
+                    }
+                    case "private" -> {
+                        if (targetDeptId != null) {
+                            result = (status == null)
+                                ? taskRepository.findByIsDeletedFalseAndVisibilityAndWorkDepartment_Id(TaskVisibility.PRIVATE, targetDeptId, pageable)
+                                : taskRepository.findByIsDeletedFalseAndVisibilityAndWorkDepartment_IdAndStatus(TaskVisibility.PRIVATE, targetDeptId, status, pageable);
+                        } else {
+                            result = (status == null)
+                                ? taskRepository.findByIsDeletedFalseAndVisibility(TaskVisibility.PRIVATE, pageable)
+                                : taskRepository.findByIsDeletedFalseAndVisibilityAndStatus(TaskVisibility.PRIVATE, status, pageable);
+                        }
+                    }
+                    default -> throw new ApiException(ErrorCode.BAD_REQUEST,
+                            "scope 값이 올바르지 않습니다. (all|public|team|created|assigned)");
                 }
-                case "public" -> {
-                    if (targetDeptId != null) {
-                        // 부서 + public만 조회
-                        result = (status == null)
-                            ? taskRepository.findPublicByDepartmentId(targetDeptId, pageable)
-                            : taskRepository.findPublicByDepartmentIdAndStatus(targetDeptId, status, pageable);
-                    } else {
-                        result = (status == null)
+            } else {
+                // 일반 사용자/팀장
+                switch (scope) {
+                    case "all" -> result = (status == null)
+                            ? taskRepository.findAllVisibleForUser(userId, myDeptId, pageable)
+                            : taskRepository.findAllVisibleForUserByStatus(userId, myDeptId, status, pageable);
+                    case "public" -> result = (status == null)
                             ? taskRepository.findPublicOnly(pageable)
                             : taskRepository.findPublicOnlyByStatus(status, pageable);
-                    }
+                    case "team" -> result = (status == null)
+                            ? taskRepository.findTeamVisibleForUser(userId, myDeptId, pageable)
+                            : taskRepository.findTeamVisibleForUserByStatus(userId, myDeptId, status, pageable);
+                    case "created" -> result = (status == null)
+                            ? taskRepository.findByIsDeletedFalseAndCreatedBy_Id(userId, pageable)
+                            : taskRepository.findByIsDeletedFalseAndCreatedBy_IdAndStatus(userId, status, pageable);
+                    case "assigned" -> result = (status == null)
+                            ? taskRepository.findByIsDeletedFalseAndAssignee_Id(userId, pageable)
+                            : taskRepository.findByIsDeletedFalseAndAssignee_IdAndStatus(userId, status, pageable);
+                    case "private" -> result = (status == null)
+                            ? taskRepository.findVisiblePrivateForUser(TaskVisibility.PRIVATE, userId, userId, pageable)
+                            : taskRepository.findVisiblePrivateForUserByStatus(TaskVisibility.PRIVATE, status, userId, userId, pageable);
+                    default -> throw new ApiException(ErrorCode.BAD_REQUEST,
+                            "scope 값이 올바르지 않습니다. (all|public|team|created|assigned)");
                 }
-                case "team" -> {
-                    result = (status == null)
-                        ? taskRepository.findByWorkDepartment_IdAndIsDeletedFalse(myDeptId, pageable)
-                        : taskRepository.findByWorkDepartment_IdAndStatusAndIsDeletedFalse(myDeptId, status, pageable);
-                }
-                case "created" -> {
-                    result = (status == null)
-                        ? taskRepository.findByIsDeletedFalseAndCreatedBy_Id(userId, pageable)
-                        : taskRepository.findByIsDeletedFalseAndCreatedBy_IdAndStatus(userId, status, pageable);
-                }
-                case "assigned" -> {
-                    result = (status == null)
-                        ? taskRepository.findByIsDeletedFalseAndAssignee_Id(userId, pageable)
-                        : taskRepository.findByIsDeletedFalseAndAssignee_IdAndStatus(userId, status, pageable);
-                }
-                
-                case "private" -> {
-                    if (targetDeptId != null) {
-                        // 부서 필터 적용
-                        result = (status == null)
-                            ? taskRepository.findByIsDeletedFalseAndVisibilityAndWorkDepartment_Id(TaskVisibility.PRIVATE, targetDeptId, pageable)
-                            : taskRepository.findByIsDeletedFalseAndVisibilityAndWorkDepartment_IdAndStatus(TaskVisibility.PRIVATE, targetDeptId, status, pageable);
-                    } else {
-                        // 부서 필터 없이 전체 조회
-                        result = (status == null)
-                            ? taskRepository.findByIsDeletedFalseAndVisibility(TaskVisibility.PRIVATE, pageable)
-                            : taskRepository.findByIsDeletedFalseAndVisibilityAndStatus(TaskVisibility.PRIVATE, status, pageable);
-                    }
-                }
-                default -> throw new ApiException(ErrorCode.BAD_REQUEST,
-                        "scope 값이 올바르지 않습니다. (all|public|team|created|assigned)");
-            }
-        
-            
-        } else {
-            // 자바 14 이상부터 switch expression 사용
-            switch (scope) {
-
-                // 전체 업무: 내가 볼 수 있는 모든 업무
-                case "all" -> result = (status == null)
-                        ? taskRepository.findAllVisibleForUser(userId, myDeptId, pageable)
-                        : taskRepository.findAllVisibleForUserByStatus(userId, myDeptId, status, pageable);
-
-                // 전사 업무: PUBLIC만
-                case "public" -> result = (status == null)
-                        ? taskRepository.findPublicOnly(pageable)
-                        : taskRepository.findPublicOnlyByStatus(status, pageable);
-
-                // 우리팀 업무: 우리 팀만 + PRIVATE는 (작성자/담당자=나)만 예외 허용
-                case "team" -> result = (status == null)
-                        ? taskRepository.findTeamVisibleForUser(userId, myDeptId, pageable)
-                        : taskRepository.findTeamVisibleForUserByStatus(userId, myDeptId, status, pageable);
-
-                // 내가 만든 업무: 내가 작성자인 것만
-                case "created" -> result = (status == null)
-                        ? taskRepository.findByIsDeletedFalseAndCreatedBy_Id(userId, pageable)
-                        : taskRepository.findByIsDeletedFalseAndCreatedBy_IdAndStatus(userId, status, pageable);
-
-                // 담당 업무: 내가 담당자인 것만
-                case "assigned" -> result = (status == null)
-                        ? taskRepository.findByIsDeletedFalseAndAssignee_Id(userId, pageable)
-                        : taskRepository.findByIsDeletedFalseAndAssignee_IdAndStatus(userId, status, pageable);
-                
-                case "private" ->
-                    // 본인만 조회
-                    result = (status == null)
-                        ? taskRepository.findVisiblePrivateForUser(TaskVisibility.PRIVATE, userId, userId, pageable)
-                        : taskRepository.findVisiblePrivateForUserByStatus(TaskVisibility.PRIVATE, status, userId, userId, pageable);
-
-                default -> throw new ApiException(ErrorCode.BAD_REQUEST, "scope 값이 올바르지 않습니다. (all|public|team|created|assigned)");
-                // 범위 값 검증
             }
         }
 
+        // TaskEntity → TaskResponse 매핑, attachments count만 포함
         return result.map(t -> {
             long cnt = attachmentService.countActiveByTask(t.getId());
-            return TaskResponse.from(t, cnt); // 목록은 attachments 비우고 count만
+            return TaskResponse.from(t, cnt);
         });
     }
 

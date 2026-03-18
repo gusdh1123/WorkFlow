@@ -1,5 +1,5 @@
 import "../../css/tasks/TaskDetail.css";
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, NavLink } from "react-router-dom";
 import { api } from "../../api/api.js";
 
@@ -25,7 +25,7 @@ const stripHtml = (html) => {
 };
 
 // 내용/제목 줄임 + 길이 체크
-const trimText = (text) => (text && text.length > 30 ? text.slice(0, 30) + "…" : text);
+const trimText = (text) => (text && text.length > 67 ? text.slice(0, 67) + "…" : text);
 
 export default function TaskDetail() {
   const { id } = useParams();
@@ -101,18 +101,21 @@ export default function TaskDetail() {
     return () => controller.abort();
   }, [id]);
 
-  const createdAtLabel = useMemo(() => formatRelativeDateTime(task?.createdAt), [task?.createdAt]);
+  // useMemo 제거
+  const createdAtLabel = formatRelativeDateTime(task?.createdAt);
 
-  const dday = useMemo(() => {
-    if (!task?.dueDate) return null;
-    if (task?.status === "DONE" || task?.status === "CANCELED") return null;
+  // useMemo 제거
+  const dday = (() => {
+    if (!task?.dueDate) return "-";
+    if (task?.status === "DONE") return "완료";
+    if (task?.status === "CANCELED") return "취소됨";
     return ddayLabel(task.dueDate);
-  }, [task?.dueDate, task?.status]);
-
-  const attachments = useMemo(() => {
-    const arr = task?.attachments || [];
-    return Array.isArray(arr) ? arr : [];
-  }, [task?.attachments]);
+  })();
+  
+  // useMemo 제거
+  const attachments = Array.isArray(task?.attachments)
+    ? task.attachments
+    : [];
 
   const onAttachmentDeleted = (deletedId) => {
     setTask((prev) => {

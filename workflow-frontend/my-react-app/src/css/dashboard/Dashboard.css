@@ -109,7 +109,7 @@
 ========================== */
 .two__col {
   display: grid;
-  grid-template-columns: 3.2fr 1.4fr;
+  grid-template-columns: 3.4fr 1.2fr;
   gap: 16px;
   align-items: start;
 }
@@ -208,6 +208,27 @@
   background-color: #eef2f7; /* 마우스 오버 효과 */
 }
 
+/* 테이블 간격 */
+.col-title { width: 267px; }
+
+.col-status { width: 99px; }
+
+.col-priority { width: 60px; }
+
+.col-due-date { width: 87px; }
+
+.col-remaining { width: 75px; }
+
+.col-assignee { width: 45px; }
+
+.col-assignee-dept { width: 55px; }
+
+.col-creator { width: 45px; }
+
+.col-creator-dept { width: 68px; }
+
+.col-created-at { width: 87px; }
+
 /* ==========================
    activity__logs Styling
 ========================== */
@@ -217,12 +238,15 @@
   gap: 8px;
   font-size: 13px;
   line-height: 1.3;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
 .activity__logItem {
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   padding: 8px 12px;
+  margin-bottom: 5px;
   background: #f9fafb;
 }
 

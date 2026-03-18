@@ -4,7 +4,7 @@
 =================================================== */
 
 .tasks {
-  max-width: 1150px;
+  max-width: 1185px;
   margin: 0 auto;
   padding: 24px 20px;
 }
@@ -242,8 +242,6 @@
 
 /* D-day 배지 */
 .tasks__badge--dday {
-  margin-left: 0 !important; 
-  border-style: dashed;
   font-weight: 900;
 }
 

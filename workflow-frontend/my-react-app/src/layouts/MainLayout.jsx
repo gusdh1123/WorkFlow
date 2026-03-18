@@ -41,6 +41,21 @@ export default function MainLayout() {
     document.title = title;
   }, [title]);
 
+  
+  // 직급 부서명 한글 설정
+
+  const roleMap = {
+    USER: "사원",
+    MANAGER: "팀장",
+    ADMIN: "관리자",
+  };
+
+  const deptMap ={
+    Design: "디자인팀",
+    Development: "개발팀",
+    Operations: "운영팀",
+  };
+
   return (
     <div className="app__shell">
 
@@ -75,7 +90,18 @@ export default function MainLayout() {
                 <button className="ghost__btn">Search</button>
                 {/* <button className="ghostBtn">Profile</button> */}
                 <button className="ghost__btn">Notifications</button>
+
+                {/* 이름 표시 */}
+                <div className="user-wrapper">
                 <button className="ghost__btn header__userBtn">{user?.name}님</button>
+                <div className="tooltip">
+                  <div>이름: {user?.name}</div>
+                  <div>부서: {deptMap[user?.department] ?? user?.department}</div>
+                  <div>직급: {roleMap[user?.role] ?? user?.role}</div>
+                  <div>이메일: {user?.email}</div>
+                </div>
+                </div>
+
                 <button onClick={logout} className="ghost__btn">logout</button>
               </div>
             </header>

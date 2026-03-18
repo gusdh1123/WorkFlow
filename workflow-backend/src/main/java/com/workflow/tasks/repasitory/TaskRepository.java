@@ -232,4 +232,69 @@ public interface TaskRepository extends JpaRepository<TaskEntity, Long> {
 	                                                   @Param("createdById") Long createdById,
 	                                                   @Param("assigneeId") Long assigneeId,
 	                                                   Pageable pageable);
+	
+	    // 어드민 용 PriorityDesc
+	    @Query("""
+	        SELECT t FROM TaskEntity t
+	        WHERE t.isDeleted = false
+	        AND (:status IS NULL OR t.status = :status)
+	        AND (
+	            :scope = 'all' OR
+	            (:scope = 'public' AND t.visibility = 'PUBLIC') OR
+	            (:scope = 'team' AND t.workDepartment.id = :myDeptId) OR
+	            (:scope = 'created' AND t.createdBy.id = :userId) OR
+	            (:scope = 'assigned' AND t.assignee.id = :userId) OR
+	            (:scope = 'private' AND t.visibility = 'PRIVATE')
+	        )
+	        ORDER BY
+	        CASE t.priority
+	            WHEN 'HIGH' THEN 3
+	            WHEN 'MEDIUM' THEN 2
+	            WHEN 'LOW' THEN 1
+	            ELSE 0
+	        END DESC,
+	        t.createdAt DESC
+	    """)
+	    Page<TaskEntity> findAllByPriorityMappedDesc(
+	        @Param("scope") String scope,
+	        @Param("status") TaskStatus status,
+	        @Param("userId") Long userId,
+	        @Param("deptId") Long deptId,
+	        @Param("myDeptId") Long myDeptId,
+	        Pageable pageable
+	    );
+	    
+	 // 일반 사용자 및 팀장용 PriorityDesc
+	    @Query("""
+	    	    SELECT t 
+	    	    FROM TaskEntity t
+	    	    WHERE t.isDeleted = false
+	    	      AND (
+	    	            :scope = 'all' OR
+	    	            (:scope = 'public' AND t.visibility = 'PUBLIC') OR
+	    	            (:scope = 'team' AND t.visibility IN ('PUBLIC','DEPARTMENT') AND t.workDepartment.id = :deptId) OR
+	    	            (:scope = 'created' AND t.createdBy.id = :userId) OR
+	    	            (:scope = 'assigned' AND t.assignee.id = :userId) OR
+	    	            (:scope = 'private' AND t.visibility = 'PRIVATE' AND (t.createdBy.id = :userId OR t.assignee.id = :userId))
+	    	          )
+	    	      AND (:status IS NULL OR t.status = :status)
+	    	    ORDER BY
+	    	      CASE t.priority
+	    	        WHEN 'HIGH' THEN 3
+	    	        WHEN 'MEDIUM' THEN 2
+	    	        WHEN 'LOW' THEN 1
+	    	        ELSE 0
+	    	      END DESC,
+	    	      t.createdAt DESC
+	    	""")
+	    	Page<TaskEntity> findVisibleTasksPriorityDesc(
+	    	        @Param("scope") String scope,
+	    	        @Param("status") TaskStatus status,
+	    	        @Param("userId") Long userId,
+	    	        @Param("deptId") Long deptId,
+	    	        Pageable pageable
+	    	);
+	    
+	    
+	    
 }

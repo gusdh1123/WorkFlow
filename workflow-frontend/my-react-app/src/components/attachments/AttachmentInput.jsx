@@ -18,8 +18,8 @@ export default function AttachmentInput({ value = [], onChange, onDelete }) {
   const inputRef = useRef(null);  // 숨겨진 파일 input 접근용 ref
   const [error, setError] = useState(""); // 검증 오류 메시지 상태
 
-  // 선택된 파일 총 용량 계산
-  // 기존 + 새로 올린 파일 용량 계산
+// 선택된 파일 총 용량 계산
+// 기존 + 새로 올린 파일 용량 계산
 const totalBytes = useMemo(
   () =>
     (value || []).reduce((sum, f) => sum + (f.file?.size ?? f.size ?? 0), 0),

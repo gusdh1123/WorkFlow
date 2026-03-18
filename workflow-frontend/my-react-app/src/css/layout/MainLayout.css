@@ -251,3 +251,29 @@ body {
   /* 줄 대신 여백으로 헤더/본문 분리 */
   padding: 10px 18px 18px;
 }
+
+/* 유저 정보 툴팁 */
+.user-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip {
+  display: none;
+  position: absolute;
+  top: 120%;
+  right: 0;
+
+  background: #1f2937;
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  min-width: 180px;
+
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.user-wrapper:hover .tooltip {
+  display: block;
+}

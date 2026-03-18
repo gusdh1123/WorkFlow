@@ -67,7 +67,7 @@ public class JwtProvider {
 				// subject(sub) 에 사용자 고유값 저장 (여기선 userId)
 				.subject(String.valueOf(userEntity.getId()))
 
-				// 권한 정보 (ROLE_USER / ROLE_ADMIN 등)
+				// 권한 정보 (USER / ADMIN 등)
 				.claim("role", userEntity.getRole().name())
 
 				// 토큰 타입 구분 (access)

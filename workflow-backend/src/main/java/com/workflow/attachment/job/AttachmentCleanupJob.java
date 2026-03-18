@@ -26,8 +26,8 @@ public class AttachmentCleanupJob {
     @Value("${app.attachment-cleanup.enabled:true}")
     private boolean enabled; // 청소 기능 활성 여부
 
-//    @Value("${app.attachment-cleanup.retention-days:1}")
-    @Value("${app.attachment-cleanup.retention-minutes:10}")
+//    @Value("${app.attachment-cleanup.retention-minutes:10}")
+    @Value("${app.attachment-cleanup.retention-days:14}")
     private int retentionDays; // soft delete 후 보관 일수
 
     // 매일 새벽 3시 실행(cron = "0 0 3 * * *")
@@ -36,7 +36,7 @@ public class AttachmentCleanupJob {
     // fixedDelay = 10000 10초마다 실행
     // fixedDelay = 60000 1분
     // fixedDelay = 600000 10분
-    @Scheduled(fixedDelay = 600000) // 10분마다 실행
+    @Scheduled(cron = "0 0 3 * * *") // 10분마다 실행
     @Transactional
     public void cleanupDeletedAttachments() {
     	

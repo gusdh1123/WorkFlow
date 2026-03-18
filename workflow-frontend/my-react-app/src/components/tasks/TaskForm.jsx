@@ -384,14 +384,14 @@ export default function TaskForm({ mode = "create", initialData }) {
           {isEdit && (
             <div className="taskform__section taskform__section--reason">
               <label className="taskform__label">수정 사유</label>
-              <textarea
+              <input
                 className="taskform__input"
                 rows={2}
-                maxLength={50}
+                maxLength={67}
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="
-수정 사유를 입력하세요.(최대 50자)"
+수정 사유를 입력하세요.(최대 67자)"
               />
             </div>
           )}

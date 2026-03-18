@@ -41,10 +41,11 @@ public class TaskController {
         @RequestParam(name = "deptId", required = false) Long deptId, // 부서 아이디
 	    @RequestParam(name = "page", required = false, defaultValue = "0") int page, // 페이지 번호(0부터 시작)
 	    @RequestParam(name = "size", required = false, defaultValue = "9") int size, // 한 페이지에 보여줄 개수
+	    @RequestParam(name = "sort", required = false, defaultValue = "createdAtDesc") String sort,
 	    @AuthenticationPrincipal UserDetails principal // Spring Security 인증 정보
 	) {
 		Long userId = Long.parseLong(principal.getUsername()); // username에 실제 userId 저장
-		Page<TaskResponse> result = taskQueryService.list(scope, status, userId, deptId, page, size); // 서비스 호출
+		Page<TaskResponse> result = taskQueryService.list(scope, status, userId, deptId, page, size, sort); // 서비스 호출
 		
 		System.out.println("deptId : " + deptId);
 		

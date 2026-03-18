@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { api } from "../../api/api";
 import "../../css/dashboard/Dashboard.css";
+import { ddayLabel } from "../../utils/dateUtils";
 
 export default function Dashboard() {
   const nav = useNavigate(); // 페이지 이동 훅
@@ -71,7 +72,7 @@ export default function Dashboard() {
       .catch((err) => console.error("Audit Log 불러오기 실패", err));
   };
 
-  const displayedLogs = showAllLogs ? activityLog : activityLog.slice(0, 3);
+  const displayedLogs = showAllLogs ? activityLog : activityLog.slice(0, 5);
 
   // HTML 태그 제거
   function stripHtml(html) {
@@ -82,7 +83,7 @@ export default function Dashboard() {
   }
 
   // 긴 텍스트 줄이기 (trim)
-  function trimText(text, length = 30) {
+  function trimText(text, length = 18) {
     if (!text) return "";
     return text.length > length ? text.slice(0, length) + "…" : text;
   }
@@ -142,27 +143,30 @@ export default function Dashboard() {
               <table className="tasks__table">
                 <thead>
                   <tr>
-                    <th>제목</th>
-                    <th>상태</th>
-                    <th>우선순위</th>
-                    <th>마감일</th>
-                    <th>남은 기간</th>
-                    <th>담당자</th>
-                    <th>담당 부서</th>
-                    <th>작성자</th>
-                    <th>작성자 부서</th>
-                    <th>작성일</th>
+                    <th className="col-title">제목</th>
+                    <th className="col-status">상태</th>
+                    <th className="col-priority">우선순위</th>
+                    <th className="col-due-date">마감일</th>
+                    <th className="col-remaining">남은 기간</th>
+                    <th className="col-assignee">담당자</th>
+                    <th className="col-assignee-dept">담당 부서</th>
+                    <th className="col-creator">작성자</th>
+                    <th className="col-creator-dept">작성자 부서</th>
+                    <th className="col-created-at">작성일</th>
                   </tr>
                 </thead>
                 <tbody>
                   {myTasks.map((t) => {
+                    
                     const dueDate = t.dueDate ? new Date(t.dueDate) : null;
                     const createdAt = t.createdAt ? new Date(t.createdAt) : null;
-                    const today = new Date();
-                    const remaining =
-                      dueDate && !t.is_deleted
-                        ? Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24))
-                        : "-";
+
+                    const dday = (() => {
+                      if (!t.dueDate) return "-";
+                      if (t.status === "DONE") return "완료";
+                      if (t.status === "CANCELED") return "취소됨";
+                      return ddayLabel(t.dueDate);
+                      })();
 
                     return (
                       <tr
@@ -175,7 +179,7 @@ export default function Dashboard() {
                         <td>{t.status}</td>
                         <td>{t.priority}</td>
                         <td>{dueDate?.toLocaleDateString() || "-"}</td>
-                        <td>{remaining !== "-" ? `${remaining}일 남음` : "-"}</td>
+                        <td>{dday}</td>
                         <td>{t.assigneeName || "-"}</td>
                         <td>{departmentNameMap[t.workDepartmentName] || "-"}</td>
                         <td>{t.createdByName || "-"}</td>
@@ -232,7 +236,7 @@ export default function Dashboard() {
 
                         // 로그별 더보기 적용
                         const isLong =
-                          (beforeVal?.length || 0) > 30 || (afterVal?.length || 0) > 30;
+                          (beforeVal?.length || 0) > 18 || (afterVal?.length || 0) > 18;
                         if (isLong && !showFullText[idx]) {
                           beforeVal = trimText(beforeVal);
                           afterVal = trimText(afterVal);
