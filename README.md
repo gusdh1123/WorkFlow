@@ -192,7 +192,7 @@
 ## 📦 버전 기록
 
 <details>
-<summary><b></b>v1.0 (2026-0-??)</b></summary>
+<summary><b>v1.0 (2026-0-??)</b></summary>
 
 - 기본 기능
   - 사용자 인증/권한 관리: JWT, Spring Security 기반
