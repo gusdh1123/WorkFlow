@@ -189,7 +189,7 @@
 ## 📦 버전 기록
 
 <details>
-<summary><b>v1.0 (2026-0-??)</b></summary>
+<summary><b>v1.0 (예정)</b></summary>
 
   
 - 기본 기능
