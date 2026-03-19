@@ -35,7 +35,7 @@ function parseFilenameFromContentDisposition(cd) {
     try {
       return decodeURIComponent(mStar[1].trim().replace(/(^"|"$)/g, "")); // URL 디코딩
     } catch (e) {
-      console.log(e);
+      console.error(e);
     }
   }
 

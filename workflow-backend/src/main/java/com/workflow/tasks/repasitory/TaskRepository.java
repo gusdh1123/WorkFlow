@@ -253,7 +253,8 @@ public interface TaskRepository extends JpaRepository<TaskEntity, Long> {
 	            WHEN 'LOW' THEN 1
 	            ELSE 0
 	        END DESC,
-	        t.createdAt DESC
+	        t.createdAt DESC,
+	        t.id DESC
 	    """)
 	    Page<TaskEntity> findAllByPriorityMappedDesc(
 	        @Param("scope") String scope,
@@ -285,7 +286,8 @@ public interface TaskRepository extends JpaRepository<TaskEntity, Long> {
 	    	        WHEN 'LOW' THEN 1
 	    	        ELSE 0
 	    	      END DESC,
-	    	      t.createdAt DESC
+	    	      t.createdAt DESC,
+	    	      t.id DESC
 	    	""")
 	    	Page<TaskEntity> findVisibleTasksPriorityDesc(
 	    	        @Param("scope") String scope,

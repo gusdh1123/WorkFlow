@@ -1,4 +1,4 @@
-package com.workflow.user;
+package com.workflow;
 
 import java.util.Map;
 
@@ -18,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 public class DashboardController {
 	
 	private final TaskQueryService taskQueryService;
-//	private final AuditLogService auditLogService;
 
     // 시스템 상태 확인용 엔드포인트
     @GetMapping("/health")

@@ -10,8 +10,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 // (exclude = {org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class})
 public class WorkflowBackendApplication {
 
-    public static void main(String[] args) {
-        // Spring Boot 애플리케이션 실행
-        SpringApplication.run(WorkflowBackendApplication.class, args);
-    }
+	public static void main(String[] args) {
+		// Spring Boot 애플리케이션 실행
+		SpringApplication.run(WorkflowBackendApplication.class, args);
+	}
 }

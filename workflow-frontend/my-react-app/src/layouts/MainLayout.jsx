@@ -16,7 +16,7 @@ export default function MainLayout() {
   const { user } = useAuth();  // 전역 인증 상태
 
   const { pathname } = useLocation(); // 현재 경로 확인
-  console.log("현재 경로:", pathname);
+  // console.log("현재 경로:", pathname);
 
   // 경로별 헤더 타이틀 매핑
   const routes = [

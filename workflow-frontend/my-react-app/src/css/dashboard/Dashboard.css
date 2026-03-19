@@ -209,25 +209,25 @@
 }
 
 /* 테이블 간격 */
-.col-title { width: 267px; }
+.col-title { width: 267px; } /* 제목 */
 
-.col-status { width: 99px; }
+.col-status { width: 95px; } /* 상태 */
 
-.col-priority { width: 60px; }
+.col-priority { width: 59px; } /* 우선순위 */
 
-.col-due-date { width: 87px; }
+.col-due-date { width: 84px; } /* 마감일 */
 
-.col-remaining { width: 75px; }
+.col-remaining { width: 54px; } /* 남은 기간 */
 
-.col-assignee { width: 45px; }
+.col-assignee { width: 45px; } /* 담당자 */
 
-.col-assignee-dept { width: 55px; }
+.col-assignee-dept { width: 55px; } /* 담당 부서 */
 
-.col-creator { width: 45px; }
+.col-creator { width: 45px; } /* 작성자 */
 
-.col-creator-dept { width: 68px; }
+.col-creator-dept { width: 55px; } /* 작성 부서 */
 
-.col-created-at { width: 87px; }
+.col-created-at { width: 84px; } /* 작성일 */
 
 /* ==========================
    activity__logs Styling
@@ -270,6 +270,7 @@
   white-space: nowrap;       /* 기본 한 줄 */
   overflow: hidden;
   text-overflow: ellipsis;
+  flex-wrap: wrap; /* 줄 넘치면 아래로 */
 }
 
 .activity__logChange.expanded {

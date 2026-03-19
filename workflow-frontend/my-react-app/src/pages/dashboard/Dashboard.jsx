@@ -83,7 +83,7 @@ export default function Dashboard() {
   }
 
   // 긴 텍스트 줄이기 (trim)
-  function trimText(text, length = 18) {
+  function trimText(text, length = 30) {
     if (!text) return "";
     return text.length > length ? text.slice(0, length) + "…" : text;
   }
@@ -151,7 +151,7 @@ export default function Dashboard() {
                     <th className="col-assignee">담당자</th>
                     <th className="col-assignee-dept">담당 부서</th>
                     <th className="col-creator">작성자</th>
-                    <th className="col-creator-dept">작성자 부서</th>
+                    <th className="col-creator-dept">작성 부서</th>
                     <th className="col-created-at">작성일</th>
                   </tr>
                 </thead>
@@ -200,7 +200,7 @@ export default function Dashboard() {
           <div className="muted">
             {activityLog.length === 0 ? (
               <p className="muted" style={{padding: "3px 0" }}>
-                활동 내역이 없습니다.
+                이력이 없습니다.
               </p>
             ) : (
               <div className="activity__logs">
@@ -236,7 +236,8 @@ export default function Dashboard() {
 
                         // 로그별 더보기 적용
                         const isLong =
-                          (beforeVal?.length || 0) > 18 || (afterVal?.length || 0) > 18;
+                          (beforeVal?.length || 0) > 30 || (afterVal?.length || 0) > 30;
+
                         if (isLong && !showFullText[idx]) {
                           beforeVal = trimText(beforeVal);
                           afterVal = trimText(afterVal);
@@ -260,10 +261,18 @@ export default function Dashboard() {
                     {a.reason && <div className="activity__logReason">사유: {a.reason}</div>}
 
                     {/* 각 로그별 더보기 버튼 (최하단으로 이동) */}
-                    {a.changes.some(c => 
-                      (stripHtml(c.beforeValue)?.length || 0) > 30 || 
-                      (stripHtml(c.afterValue)?.length || 0) > 30
-                    ) && (
+                    {a.changes.some(c => {
+                      const beforeRaw = c.field ==="description"
+                        ? stripHtml(c.beforeValue)
+                        : c.beforeValue
+
+                      const afterRaw = c.field ==="description"
+                        ? stripHtml(c.afterValue)
+                        : c.afterValue
+
+                        return (beforeRaw?.length || 0) > 30 ||
+                              (afterRaw?.length || 0) > 30;
+                      }) && (
                       <button
                         className="btn-more"
                         onClick={() => {
@@ -271,7 +280,7 @@ export default function Dashboard() {
                           newState[idx] = !newState[idx];
                           setShowFullText(newState);
                         }}
-                        style={{ marginTop: "8px" }}
+                        style={{ marginTop: "0px" }}
                       >
                         {showFullText[idx] ? "접기" : "더보기"}
                       </button>
@@ -282,7 +291,7 @@ export default function Dashboard() {
             )}
 
             {/* 전체 로그 더보기 버튼 */}
-            {activityLog.length > 3 && (
+            {activityLog.length > 5 && (
                <div className="activity__logs__footer">
               <button
                 onClick={() => setShowAllLogs(prev => !prev)}

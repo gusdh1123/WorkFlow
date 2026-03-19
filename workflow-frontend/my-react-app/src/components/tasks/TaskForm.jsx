@@ -158,7 +158,8 @@ export default function TaskForm({ mode = "create", initialData }) {
     if (msg) return alert(msg);
 
 
-    console.log(initialData);
+    // console.log(initialData);
+
     // payload 구성
     const payload = {
       title: title.trim(),

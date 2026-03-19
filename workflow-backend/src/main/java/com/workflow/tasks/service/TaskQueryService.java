@@ -58,18 +58,30 @@ public class TaskQueryService {
         if ("priorityDesc".equals(sort)) {
             pageable = PageRequest.of(
                     Math.max(page, 0),
-                    Math.min(Math.max(size, 1), 100)
+                    Math.min(Math.max(size, 1), 9)
             );
         } else {
-            Sort sortObj = switch (sort) {
-                case "createdAtDesc" -> Sort.by(Sort.Direction.DESC, "createdAt");
-                case "dueDateAsc" -> Sort.by(Sort.Direction.ASC, "dueDate");
-                case "dueDateDesc" -> Sort.by(Sort.Direction.DESC, "dueDate");
-                default -> Sort.by(Sort.Direction.DESC, "createdAt");
+        	Sort sortObj = switch (sort) {
+            case "createdAtDesc" -> Sort.by(
+                    Sort.Order.desc("createdAt"),
+                    Sort.Order.desc("id")
+            );
+            case "dueDateAsc" -> Sort.by(
+                    Sort.Order.asc("dueDate"),
+                    Sort.Order.desc("id")
+            );
+            case "dueDateDesc" -> Sort.by(
+                    Sort.Order.desc("dueDate"),
+                    Sort.Order.desc("id")
+            );
+            default -> Sort.by(
+                    Sort.Order.desc("createdAt"),
+                    Sort.Order.desc("id")
+            );
             };
             pageable = PageRequest.of(
                     Math.max(page, 0),
-                    Math.min(Math.max(size, 1), 100),
+                    Math.min(Math.max(size, 1), 9),
                     sortObj
             );
         }
