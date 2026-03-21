@@ -8,7 +8,7 @@
 | 항목 | 내용 |
 |------|------|
 | **프로젝트명** | **WorkFlow - 사내 업무 관리 시스템** |
-| **개발 기간** | 2026.01.25 ~ 2026.03.19 |
+| **개발 기간** | v1.0: 2026.01.25 ~ 2026.03.19 |
 | **개발 인원** | 2명 |
 | **주요 기술** | **Java, Spring Security, JWT, JPA, React, PostgreSQL, GitHub Actions CI, Spring Boot, Gradle** |
 | **프로젝트 주소** | GitHub Repository |
