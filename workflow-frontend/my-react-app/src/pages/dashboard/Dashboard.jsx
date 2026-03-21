@@ -249,9 +249,9 @@ export default function Dashboard() {
                             className={`activity__logChange ${showFullText[idx] ? "expanded" : ""}`}
                           >
                             <span className="activity__field">{label}</span>:
-                            <span className="activity__before">{beforeVal ?? ""}</span>
+                            <span className="activity__before">{beforeVal ?? "null"}</span>
                             <span className="activity__arrow">→</span>
-                            <span className="activity__after">{afterVal ?? ""}</span>
+                            <span className="activity__after">{afterVal ?? "null"}</span>
                           </div>
                         );
                       })}

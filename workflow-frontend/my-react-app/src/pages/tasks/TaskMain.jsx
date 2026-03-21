@@ -250,6 +250,12 @@ export default function Tasks() {
     { id: "3", name: "디자인팀" },
   ];
 
+  const departmentMap = {
+    Operations: "운영팀",
+    Development: "개발팀",
+    Design: "디자인팀",
+  };
+
   const pageButtons = buildPageButtons(page, totalPages);
 
   return (
@@ -319,8 +325,9 @@ export default function Tasks() {
           const descForRender = descText || "\u00A0";
           const att = getAttachSummary(t);
 
-          const createdLabel = `${t.createdByName ?? "-"}${t.createdByDepartmentName ? ` (${t.createdByDepartmentName})` : ""}`;
-          const assigneeLabel = t.assigneeName ? `${t.assigneeName}${t.assigneeDepartmentName ? ` (${t.assigneeDepartmentName})` : ""}` : "-";
+          const getDepartmentLabel = (engName) => departmentMap[engName] ?? "-";
+          const createdLabel = `${t.createdByName ?? "-"}${t.createdByDepartmentName ? ` (${getDepartmentLabel(t.createdByDepartmentName)})` : ""}`;
+          const assigneeLabel = t.assigneeName? `${t.assigneeName}${t.assigneeDepartmentName ? ` (${getDepartmentLabel(t.assigneeDepartmentName)})` : ""}`: "-";
 
           const dday = (() => {
             if (!t.dueDate) return "-";

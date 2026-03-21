@@ -133,6 +133,8 @@ CREATE TABLE audit_logs(
     FOREIGN KEY (actor_id) REFERENCES users(id)
 );
 
+CREATE INDEX idx_audit_task_id ON audit_logs(task_id);
+
 CREATE TABLE refresh_tokens(
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
@@ -312,6 +314,132 @@ VALUES (
     now(),
     now()
 );
+
+
+-- 더미 데이터 20개
+INSERT INTO tasks (
+    title,
+    description,
+    status,
+    priority,
+    visibility,
+    due_date,
+    created_by,
+    assignee_id,
+    owner_department_id,
+    work_department_id,
+    created_at,
+    updated_at
+) VALUES
+
+-- ADMIN → DEV
+('인증 서버 리팩토링',
+ 'JWT 구조 개선 및 인증 로직 정리',
+ 'IN_PROGRESS','HIGH','PRIVATE','2026-03-22',
+ 1,3,1,2,now(),now()),
+
+('메인 API 응답 속도 개선',
+ '쿼리 최적화 및 캐싱 적용',
+ 'TODO','HIGH','DEPARTMENT','2026-03-28',
+ 1,2,1,2,now(),now()),
+
+-- ADMIN → DSG
+('대시보드 UI 개선',
+ '카드 레이아웃 및 색상 개선',
+ 'IN_PROGRESS','MEDIUM','PUBLIC','2026-03-24',
+ 1,4,1,3,now(),now()),
+
+('알림 아이콘 디자인 수정',
+ '아이콘 가시성 개선 및 통일성 유지',
+ 'TODO','LOW','PUBLIC','2026-03-29',
+ 1,5,1,3,now(),now()),
+
+-- DEV 내부 (MANAGER → USER)
+('로그인 실패 처리',
+ '예외 메시지 및 로깅 강화',
+ 'REVIEW','HIGH','PRIVATE','2026-03-21',
+ 2,3,2,2,now(),now()),
+
+('검색 기능 리팩토링',
+ '검색 쿼리 개선 및 성능 향상',
+ 'IN_PROGRESS','MEDIUM','DEPARTMENT','2026-03-26',
+ 2,3,2,2,now(),now()),
+
+-- DEV 내부 (USER → MANAGER)
+('배포 자동화 스크립트 작성',
+ 'CI/CD 스크립트 구성',
+ 'TODO','HIGH','DEPARTMENT','2026-03-30',
+ 3,2,2,2,now(),now()),
+
+('테스트 코드 보강',
+ '단위 테스트 및 통합 테스트 추가',
+ 'IN_PROGRESS','MEDIUM','DEPARTMENT','2026-03-25',
+ 3,2,2,2,now(),now()),
+
+-- DSG 내부 (MANAGER → USER)
+('프로필 UI 개선',
+ '프로필 화면 레이아웃 수정',
+ 'IN_PROGRESS','MEDIUM','PUBLIC','2026-03-23',
+ 4,5,3,3,now(),now()),
+
+('버튼 스타일 가이드 정리',
+ '공통 버튼 스타일 정의',
+ 'DONE','LOW','PUBLIC','2026-03-18',
+ 4,5,3,3,now(),now()),
+
+-- DSG 내부 (USER → MANAGER)
+('모바일 UI 테스트',
+ '반응형 깨짐 여부 점검',
+ 'REVIEW','MEDIUM','PUBLIC','2026-03-22',
+ 5,4,3,3,now(),now()),
+
+('에러 페이지 디자인',
+ '404/500 페이지 디자인 개선',
+ 'TODO','LOW','PUBLIC','2026-03-27',
+ 5,4,3,3,now(),now()),
+
+-- ADMIN 혼합
+('알림 시스템 설계',
+ '실시간 알림 구조 정의',
+ 'TODO','HIGH','PRIVATE','2026-03-27',
+ 1,3,1,2,now(),now()),
+
+('파일 업로드 최적화',
+ '대용량 파일 처리 개선',
+ 'IN_PROGRESS','HIGH','DEPARTMENT','2026-03-26',
+ 1,2,1,2,now(),now()),
+
+('UI 접근성 개선',
+ '웹 접근성 기준 반영',
+ 'TODO','MEDIUM','PUBLIC','2026-03-28',
+ 1,4,1,3,now(),now()),
+
+('다크모드 지원',
+ '다크모드 UI 설계 및 적용',
+ 'IN_PROGRESS','MEDIUM','PUBLIC','2026-03-25',
+ 1,5,1,3,now(),now()),
+
+-- 추가 DEV
+('DB 인덱스 최적화',
+ '조회 성능 개선',
+ 'IN_PROGRESS','HIGH','PRIVATE','2026-03-27',
+ 2,3,2,2,now(),now()),
+
+('토큰 만료 처리',
+ '리프레시 토큰 관리 개선',
+ 'REVIEW','HIGH','PRIVATE','2026-03-22',
+ 2,3,2,2,now(),now()),
+
+-- 추가 DSG
+('컬러 시스템 정리',
+ '브랜드 컬러 체계 정의',
+ 'DONE','LOW','PUBLIC','2026-03-19',
+ 4,5,3,3,now(),now()),
+
+('아이콘 세트 정리',
+ '아이콘 통일 및 리소스 정리',
+ 'IN_PROGRESS','LOW','PUBLIC','2026-03-26',
+ 4,5,3,3,now(),now());
 
 
 -- 생성된 테이블 조회

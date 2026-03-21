@@ -130,7 +130,7 @@ public class TaskCommandService {
         
         // 낙관적 락 체크 추가
         if (!Objects.equals(task.getVersion(), req.version())) {
-            throw new ApiException(ErrorCode.CONFLICT, "다른 사용자가 먼저 수정했습니다. 다시 새로고침 후 시도하세요.");
+            throw new ApiException(ErrorCode.CONFLICT, "다른 사용자가 먼저 수정했습니다. 뒤로가기 후 다시 시도해 주세요.");
         }
 
         // 제목 공백 제거

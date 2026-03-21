@@ -169,6 +169,12 @@ export default function TaskDetail() {
 
   const visibleAuditLogs = showAllAuditLogs ? auditLogs : auditLogs.slice(0, 3);
 
+const departments = [
+    { id: "Operations", name: "운영팀" },
+    { id: "Development", name: "개발팀" },
+    { id: "Design", name: "디자인팀" },
+  ];
+
   return (
     <div className="taskdetail">
       <div className="taskdetail__card taskdetail__card--header">
@@ -233,11 +239,11 @@ export default function TaskDetail() {
           <div className="taskdetail__card taskdetail__card--meta">
             <div className="taskdetail__metaRow">
               <div className="taskdetail__metaKey">작성자</div>
-              <div className="taskdetail__metaVal">{task.createdByName ?? task.creatorName ?? "-"}</div>
+              <div className="taskdetail__metaVal">{task.createdByName ?? task.creatorName ?? "-"}({departments.find(d => d.id === (task.workDepartmentName ?? "-"))?.name ?? "-"})</div>
             </div>
             <div className="taskdetail__metaRow">
               <div className="taskdetail__metaKey">담당자</div>
-              <div className="taskdetail__metaVal">{task.assigneeName ?? "-"}</div>
+              <div className="taskdetail__metaVal">{task.assigneeName ?? "-"}({departments.find(d => d.id === (task.assigneeDepartmentName ?? "-"))?.name ?? "-"})</div>
             </div>
             <div className="taskdetail__metaRow">
               <div className="taskdetail__metaKey">마감일</div>
