@@ -266,7 +266,7 @@
 </details>
 
 <details>
-<summary><b>v1.0 (2026-03-19)</b></summary>
+<summary><b>v1.0 (2026-04-03)</b></summary>
 
   
 - 복구 기능 추가 및 삭제 업무 조회 및 개선
