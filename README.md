@@ -241,6 +241,27 @@
 </details>
 </li>
 
+<li>
+<details>
+<summary><b>Restore</b></summary>
+
+<img width="2025" height="1221" alt="Restore" src="https://github.com/user-attachments/assets/7b9370f3-897e-4c14-b3bd-5b96704c16de" />
+
+
+</details>
+</li>
+
+<li>
+<details>
+<summary><b>Favorite</b></summary>
+
+<img width="2026" height="1206" alt="Favorite" src="https://github.com/user-attachments/assets/85316cd9-8984-44f5-a180-5ad542a24d48" />
+
+<img width="580" height="315" alt="Favorite1" src="https://github.com/user-attachments/assets/86a1dc16-ffbb-4627-8b91-f8c9aaa44119" />
+
+</details>
+</li>
+
 </ul>
 </details>
 
