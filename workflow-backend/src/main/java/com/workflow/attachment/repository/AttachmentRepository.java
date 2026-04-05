@@ -70,4 +70,14 @@ public interface AttachmentRepository extends JpaRepository<AttachmentEntity, Lo
     // 특정 Task에 연결된 첨부파일 DB에서 삭제
     @Transactional
     void deleteByTaskId(Long taskId);
+    
+    // 삭제 여부 관계없이 전체 조회
+    List<AttachmentEntity> findByTaskId(Long taskId);
+    
+    // 첨부 파일 복구
+    List<AttachmentEntity> findByTaskIdAndIsDeletedTrue(Long taskId);
+
+    // taskId 기준 전체 첨부 파일 수 (삭제 여부 상관 없음)
+    @Query("SELECT COUNT(a) FROM AttachmentEntity a WHERE a.taskId = :taskId")
+    long countByTaskId(@Param("taskId") Long taskId);
 }

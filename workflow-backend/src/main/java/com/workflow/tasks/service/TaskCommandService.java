@@ -18,6 +18,7 @@ import com.workflow.common.exception.ApiException;
 import com.workflow.common.exception.ErrorCode;
 import com.workflow.common.file.FileStorageService;
 import com.workflow.department.entity.DepartmentEntity;
+import com.workflow.favorite.repository.FavoriteRepository;
 import com.workflow.tasks.dto.TaskCreateRequest;
 import com.workflow.tasks.dto.TaskResponse;
 import com.workflow.tasks.dto.TaskUpdateRequest;
@@ -43,6 +44,7 @@ public class TaskCommandService {
     private final AuditLogService auditLogService;
     private final FileStorageService fileStorageService;
     private final AttachmentService attachmentService;
+    private final FavoriteRepository favoriteRepository;
 
     // 업무 작성
     public TaskResponse create(TaskCreateRequest req, Long loginUserId) {
@@ -108,6 +110,26 @@ public class TaskCommandService {
 
         // 수정된 description 재저장
         taskRepository.save(task);
+        
+        // 업무 생성 로그
+        auditLogService.saveTaskUpdateLogs(
+                task,
+                creator,
+                null,
+                task.getTitle(),
+                task.getAssignee() != null ? task.getAssignee().getId() : null,
+                task.getDueDate(),
+                task.getDescription(),
+                task.getVisibility(),
+                task.getPriority(),
+                task.getStatus(),
+                AuditActionType.TASK_CREATE,
+                "업무 생성",
+                null,
+                null
+                
+        );
+        
 
         // DTO로 변환 후 반환
         return TaskResponse.from(task);
@@ -223,6 +245,9 @@ public class TaskCommandService {
         // 로그인 유저 조회
         UserEntity loginUser = userRepository.findById(loginUserId)
                 .orElseThrow(() -> new ApiException(ErrorCode.UNAUTHORIZED, "사용자가 존재하지 않습니다."));
+        
+        if (deleteReason == null)
+        	throw new ApiException(ErrorCode.BAD_REQUEST, "삭제 사유는 필수입니다.");
 
         // 삭제 권한 체크
         boolean canDelete = false;
@@ -270,7 +295,80 @@ public class TaskCommandService {
                 .map(AttachmentEntity::getId)
                 .collect(Collectors.toList());
         
+        // 첨부파일 소프트 삭제
         attachmentService.softDelete(taskId, attachmentIds, loginUserId);
+        
+        // 즐겨찾기 해제
+        favoriteRepository.deleteByTaskId(taskId);
+
+        return TaskResponse.from(task);
+    }
+    
+    // 업무 복구
+    public TaskResponse restoreTask(Long taskId, Long loginUserId, String resaon) {
+
+        if (loginUserId == null)
+            throw new ApiException(ErrorCode.UNAUTHORIZED, "로그인이 필요합니다.");
+
+        // Task 조회
+        TaskEntity task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "업무를 찾을 수 없습니다. id=" + taskId));
+
+        // 이미 삭제 안된 경우 방어
+        if (!task.isDeleted()) {
+            throw new ApiException(ErrorCode.BAD_REQUEST, "삭제된 업무만 복구할 수 있습니다.");
+        }
+
+        // 로그인 유저 조회
+        UserEntity loginUser = userRepository.findById(loginUserId)
+                .orElseThrow(() -> new ApiException(ErrorCode.UNAUTHORIZED, "사용자가 존재하지 않습니다."));
+        
+        if (resaon == null)
+        	throw new ApiException(ErrorCode.BAD_REQUEST, "복구 사유는 필수입니다.");
+
+        // 권한 체크 (삭제랑 동일하게)
+        boolean canRestore = false;
+        Role role = loginUser.getRole();
+
+        if (role == Role.ADMIN) {
+            canRestore = true;
+        } else if (task.getCreatedBy().getId().equals(loginUserId)) {
+            canRestore = true;
+        } else if (task.getAssignee() != null && task.getAssignee().getId().equals(loginUserId)) {
+            canRestore = true;
+        } else if (role == Role.MANAGER 
+                && loginUser.getDepartment().getId().equals(task.getWorkDepartment().getId())) {
+            canRestore = true;
+        }
+
+        if (!canRestore)
+            throw new ApiException(ErrorCode.UNAUTHORIZED, "복구 권한이 없습니다.");
+
+        // 복구 처리
+        task.setDeleted(false);
+        task.setDeletedAt(null);
+        taskRepository.save(task);
+
+        // 첨부파일 복구
+        attachmentService.restore(taskId, loginUserId);
+
+        // Audit 로그
+        auditLogService.saveTaskUpdateLogs(
+                task,
+                loginUser,
+                null,
+                task.getTitle(),
+                task.getAssignee() != null ? task.getAssignee().getId() : null,
+                task.getDueDate(),
+                task.getDescription(),
+                task.getVisibility(),
+                task.getPriority(),
+                task.getStatus(),
+                AuditActionType.TASK_RESTORE,
+                resaon, // reason
+                null,
+                null
+        );
 
         return TaskResponse.from(task);
     }
@@ -336,8 +434,7 @@ public class TaskCommandService {
         }
 
         throw new ApiException(ErrorCode.UNAUTHORIZED, "상태 변경 권한이 없습니다.");
-    }
-    
+    }   
     
     // 로그인 유저가 담당자로 지정할 수 있는 사용자 목록 반환
     private List<UserEntity> getAssignableUsers(UserEntity loginUser) {

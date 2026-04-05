@@ -9,6 +9,8 @@ export const SCOPES = [
   "created",  // 내가 생성한 업무
   "assigned", // 내가 담당인 업무
   "private", // 개인 업무
+  "favorite", // 즐겨찾기
+  "deleted", // 삭제된 업무
 ];
 
 // 상태 옵션

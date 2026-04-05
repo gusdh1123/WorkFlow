@@ -103,6 +103,8 @@ export default function TaskDetail() {
 
   // useMemo 제거
   const createdAtLabel = formatRelativeDateTime(task?.createdAt);
+  const deletedAtLabel = formatRelativeDateTime(task?.deletedAt);
+  const favoriteCreatedAtLabel = formatRelativeDateTime(task?.favoriteCreatedAt);
 
   // useMemo 제거
   const dday = (() => {
@@ -158,7 +160,7 @@ export default function TaskDetail() {
     if (!window.confirm("정말로 삭제하시겠습니까?")) return;
 
     try {
-      await api.delete(`/api/tasks/${task.id}?reason=${encodeURIComponent(reason)}`);
+      await api.delete(`/api/tasks/${task.id}`, { data: { reason } });
       alert("업무가 삭제되었습니다.");
       nav("/tasks");
     } catch (error) {
@@ -175,13 +177,79 @@ const departments = [
     { id: "Design", name: "디자인팀" },
   ];
 
+// 복구
+const handleRestore = async (taskId) => {
+  const reason = prompt("복구 사유를 입력하세요:");
+  if (reason === null) return;
+  if (reason.trim() === "") {
+    alert("사유를 입력해야 합니다.");
+    return;
+  }
+  if (!confirm("이 업무를 복구하시겠습니까?")) return;
+
+  try {
+    // 복구 요청
+    await api.post(`/api/tasks/${taskId}/restore`, { reason });
+    alert("복구 완료");
+
+    // Task + Audit Log 재조회
+    const [taskRes, logRes] = await Promise.all([
+      api.get(`/api/tasks/${taskId}`),
+      api.get(`/api/audit/${taskId}/audit-logs`)
+    ]);
+
+    setTask(taskRes.data);
+    setAuditLogs(logRes.data);
+    setShowAllLogs(logRes.data.map(() => false));
+  } catch (e) {
+    console.error(e);
+    alert("복구 실패");
+  }
+};
+
+// 즐겨찾기 토글
+const toggleFavorite = async (taskId) => {
+  // UI에서 즉시 반영 (낙관적 업데이트)
+  setTask(prev => prev ? { ...prev, favorite: !prev.favorite } : prev);
+
+  try {
+    await api.post(`/api/favorite/${taskId}`);
+  } catch (e) {
+    console.error("즐겨찾기 실패", e.response?.data || e);
+    // 서버 실패 시 롤백
+    setTask(prev => prev ? { ...prev, favorite: !prev.favorite } : prev);
+    alert("즐겨찾기 변경 실패");
+  }
+};
+
+// console.log(task);
+
   return (
     <div className="taskdetail">
       <div className="taskdetail__card taskdetail__card--header">
         <div className="taskdetail__topRow">
           <div>
-            <div className="taskdetail__eyebrow">{createdAtLabel}</div>
-            <h2 className="taskdetail__title">{task.title}</h2>
+            <div className="taskdetail__eyebrow">작성일: {createdAtLabel}</div>
+            {task.deleted && (
+            <div className="taskdetail__eyebrow taskdetail__deleted">삭제일: {deletedAtLabel}</div>
+            )}
+            <h2 className="taskdetail__title">
+              {/* 즐겨찾기 버튼 */}
+              {!task.deleted && (
+                <button
+                  type="button"
+                  className={`tasks__favoriteBtn ${task.favorite ? "is-active" : ""}`}
+                  onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  toggleFavorite(task.id);
+                }}
+                title={task.favorite ? "즐겨찾기 해제" : "즐겨찾기 등록"}
+              >
+                ★
+              </button>
+              )} {task.title}
+            </h2>
           </div>
 
           <div className="taskdetail__actions">
@@ -189,17 +257,33 @@ const departments = [
               목록으로
             </NavLink>
 
-            {canEdit && (
-              <NavLink className="taskdetail__btn" to={`/tasks/${id}/edit`} state={{ task }}>
-                수정
-              </NavLink>
-            )}
-
-            {canEdit && (
-              <button type="button" className="taskdetail__btn taskdetail__btn--danger" onClick={handleDelete}>
-                삭제
+             {/* 복구 버튼 */}
+             {task.deleted ? (
+              <button
+                type="button"
+                className="tasks__restoreBtn--inline"
+                onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleRestore(task.id);
+                  }}
+               >
+                복구
               </button>
-            )}
+            ) : (
+              <>
+                {canEdit && (
+                  <NavLink className="taskdetail__btn" to={`/tasks/${id}/edit`} state={{ task }}>
+                    수정
+                  </NavLink>
+                )}
+                {canEdit && (
+                 <button type="button" className="taskdetail__btn taskdetail__btn--danger" onClick={handleDelete}>
+                   삭제
+                  </button>
+                )}
+             </>
+           )}
           </div>
         </div>
 
@@ -210,9 +294,7 @@ const departments = [
 
           <span className="taskdetail__badge taskdetail__badge--visibility">{visibilityLabel(task.visibility)}</span>
 
-          <span className={`taskdetail__badge taskdetail__badge--priority taskdetail__badge--priority-${priorityKey}`}>
-            중요도: {task.priority ?? "-"}
-          </span>
+          <span className={`taskdetail__badge taskdetail__badge--priority taskdetail__badge--priority-${priorityKey}`}>{task.priority ?? "-"}</span>
 
           {task.dueDate && <span className="taskdetail__badge taskdetail__badge--due">마감: {task.dueDate}</span>}
 
@@ -255,6 +337,20 @@ const departments = [
               <div className="taskdetail__metaKey">작성일</div>
               <div className="taskdetail__metaVal">{createdAtLabel}</div>
             </div>
+          {task.deleted && (
+          <div className="taskdetail__metaRow">
+            <div className="taskdetail__metaKey taskdetail__deleted">삭제일</div>
+            <div className="taskdetail__metaVal taskdetail__deleted">{deletedAtLabel}
+            </div>
+          </div>
+          )}
+          {task.favorite && (
+          <div className="taskdetail__metaRow">
+            <div className="taskdetail__metaKey">즐겨찾기 등록</div>
+            <div className="taskdetail__metaVal">{favoriteCreatedAtLabel}
+            </div>
+          </div>
+          )}
           </div>
 
           {visibleAuditLogs.length > 0 &&(
@@ -264,12 +360,12 @@ const departments = [
             <div key={idx} className="taskdetail__card taskdetail__card--log">
               <div className={`taskdetail__logItem ${log.isRecent ? "taskdetail__logItem--recent" : ""}`}>
                 <div className="taskdetail__metaRow">
-                  <div className="taskdetail__metaKey">수정자</div>
+                  <div className="taskdetail__metaKey">행위자</div>
                   <div className="taskdetail__metaVal">{log.actorName}</div>
                 </div>
 
                 <div className="taskdetail__metaRow">
-                  <div className="taskdetail__metaKey">수정 시간</div>
+                  <div className="taskdetail__metaKey">작업 시간</div>
                   <div className="taskdetail__metaVal">{formatRelativeDateTime(log.modifiedAt)}</div>
                 </div>
 
@@ -294,15 +390,18 @@ const departments = [
                       valueText = `${oldVal ?? ""}`;
                     } else {
                       const fieldNameMap = {
-                        title: "제목",
-                        description: "내용",
-                        assignee_id: "담당자",
-                        priority: "우선순위",
-                        visibility: "공개 범위",
-                        due_date: "마감일",
-                        status: "진행도",
+                        title: "제목 변경",
+                        description: "내용 변경",
+                        assignee_id: "담당자 변경",
+                        priority: "우선순위 변경",
+                        visibility: "공개 범위 변경",
+                        due_date: "마감일 변경",
+                        status: "진행도 변경",
+                        deleted: "업무 삭제",
+                        restore: "업무 복구",
+                        create: "업무 생성",
                       };
-                      label = fieldNameMap[field] ? `${fieldNameMap[field]} 변경` : "수정 필드";
+                      label = fieldNameMap[field] ? `${fieldNameMap[field]}` : "수정 필드";
 
                       // 로그 안에서 제목/내용만 길이 체크 후 trimText 적용
                       if (field === "title" || field === "description") {

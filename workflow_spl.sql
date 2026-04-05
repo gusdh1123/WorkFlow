@@ -3,23 +3,27 @@ SELECT current_user;
 -- 현재 DB조회
 SELECT current_database();
 
+-- 테이블 조회
 SELECT * FROM department;
 SELECT * FROM users;
-SELECT * FROM tasks;
+SELECT * FROM tasks ORDER by id ASC;
 SELECT * FROM comments;
-SELECT * FROM attachments;
+SELECT * FROM attachments ORDER by id ASC;
 SELECT * FROM audit_logs;
 SELECT * FROM refresh_tokens;
+SELECT * FROM favorites;
 
+-- 테이블 삭제
+DROP TABLE favorites CASCADE;
+DROP TABLE refresh_tokens CASCADE;
+DROP TABLE audit_logs CASCADE;
+DROP TABLE attachments CASCADE;
+DROP TABLE comments CASCADE;
+DROP TABLE tasks CASCADE;
+DROP TABLE users CASCADE;
+DROP TABLE department CASCADE;
 
-DROP TABLE refresh_tokens;
-DROP TABLE audit_logs;
-DROP TABLE attachments;
-DROP TABLE comments;
-DROP TABLE tasks;
-DROP TABLE users;
-DROP TABLE department;
-
+-- 테이블 및 인덱스, 제약조건 생성
 CREATE TABLE department (
 	id BIGSERIAL PRIMARY KEY,
 	name VARCHAR(100) UNIQUE NOT NULL,
@@ -145,6 +149,19 @@ CREATE TABLE refresh_tokens(
     FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
+CREATE TABLE favorites (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    task_id BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	UNIQUE (user_id, task_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+	FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_favorite_user_id ON favorite(user_id);
+CREATE INDEX idx_favorite_task_id ON favorite(task_id);
+
 
 --DB 값 추가
 -- 부서 3개
@@ -189,7 +206,8 @@ VALUES (
 );
 
 
--- 계정 3개
+-- 계정 5개
+-- 관리자 1, 개발팀 2, 디자인팀 2
 INSERT INTO users (
     email,
     password_hash,

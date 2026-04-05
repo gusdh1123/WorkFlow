@@ -41,10 +41,9 @@ public class AttachmentService {
     // Task 상세 조회 시 첨부 포함용
     @Transactional(readOnly = true)
     public List<AttachmentResponse> listByTask(Long taskId) {
-        // taskId 기준 soft delete 안 된 첨부만 조회
         return attachmentRepository.findByTaskIdAndIsDeletedFalseOrderByIdDesc(taskId)
                 .stream()
-                .map(AttachmentMapper::toResponse) // Mapper로 변환
+                .map(AttachmentMapper::toResponse)
                 .toList();
     }
 
@@ -138,6 +137,39 @@ public class AttachmentService {
 
             attachmentRepository.save(a);
         }
+    }
+    
+    // 첨부파일 복구
+    @Transactional
+    public void restore(Long taskId, Long loginUserId) {
+
+        // 삭제된 첨부파일 조회
+        List<AttachmentEntity> attachments =
+                attachmentRepository.findByTaskIdAndIsDeletedTrue(taskId);
+
+        if (attachments.isEmpty()) return;
+
+        for (AttachmentEntity attachment : attachments) {
+            attachment.setDeleted(false);
+            attachment.setDeletedAt(null);
+        }
+
+        attachmentRepository.saveAll(attachments);
+    }
+    
+    // 삭제 여부 상관없이 전체 첨부 조회   
+    @Transactional(readOnly = true)
+    public List<AttachmentResponse> listAllByTaskIncludingDeleted(Long taskId) {
+        return attachmentRepository.findByTaskId(taskId)
+                .stream()
+                .map(AttachmentMapper::toResponse)
+                .toList();
+    }
+    
+    // 삭제된 것도 첨부파일 개수 조회
+    @Transactional(readOnly = true)
+    public long countByTaskIncludingDeleted(Long taskId) {
+        return attachmentRepository.countByTaskId(taskId); // 모든 첨부 포함
     }
     
     // 다운로드용: 엔티티 + 실제 디스크 경로 반환

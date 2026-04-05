@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { api } from "../../api/api";
 import "../../css/dashboard/Dashboard.css";
@@ -8,10 +8,13 @@ import { ddayLabel } from "../../utils/dateUtils";
 export default function Dashboard() {
   const nav = useNavigate(); // 페이지 이동 훅
   const { accessToken } = useAuth(); // 로그인 토큰 + 사용자 정보
-
+  const [searchParams, setSearchParams] = useSearchParams(); // URL 쿼리
   const kpis = ["TODO", "IN_PROGRESS", "REVIEW", "DONE", "ON_HOLD", "CANCELED"];
+
+  // URL 기반 scope 설정 (기본값: assigned)
+  const scope = searchParams.get("scope") || "assigned";
+
   const [counts, setCounts] = useState({});
-  const [scope, setScope] = useState("assigned");
   const [myTasks, setMyTasks] = useState([]);
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [activityLog, setActivityLog] = useState([]);
@@ -26,17 +29,22 @@ export default function Dashboard() {
     Design: "디자인팀",
   };
 
-  // KPI + 내 업무 불러오기
+  // KPI + 내 업무/즐겨찾기 불러오기
   useEffect(() => {
     if (!accessToken) return;
 
+    // KPI 조회
     api.get("/api/kpi")
-      .then((res) => setCounts(res.data))
+      .then((res) => {
+        // console.log("counts:", res.data); // 숫자 확인용
+        setCounts(res.data);
+      })
       .catch((e) => console.error("KPI 불러오기 실패", e));
 
+    // 업무 조회 (assigned / created / favorite)
     api.get(`/api/tasks?scope=${scope}&page=0&size=10`)
       .then((res) => setMyTasks(res.data.content))
-      .catch((e) => console.error("내 업무 불러오기 실패", e));
+      .catch((e) => console.error(`${scope} 업무 불러오기 실패`, e));
   }, [accessToken, scope]);
 
   // 첫 번째 업무 자동 선택 후 활동 로그 불러오기
@@ -54,15 +62,15 @@ export default function Dashboard() {
 
   // activityLog 변경 시 로그별 전체보기 초기화
   useEffect(() => {
-  Promise.resolve().then(() => {
-    setShowFullText(activityLog.map(() => false));
-  });
-}, [activityLog]);
+    Promise.resolve().then(() => {
+      setShowFullText(activityLog.map(() => false));
+    });
+  }, [activityLog]);
 
-  // KPI 카드 클릭 시 이동
-  const handleKpiClick = (status) => {
-    nav(`/tasks?status=${encodeURIComponent(status)}&scope=${encodeURIComponent(scope)}`);
-  };
+// KPI 카드 클릭 시 이동
+const handleKpiClick = (status) => {
+  nav(`/tasks?status=${encodeURIComponent(status)}&scope=${encodeURIComponent(scope)}`);
+};
 
   // 업무 클릭 시 선택 및 활동 로그 불러오기
   const handleTaskClick = (taskId) => {
@@ -95,7 +103,7 @@ export default function Dashboard() {
       <div className="kpi__tabs">
         <button
           className={scope === "assigned" ? "active" : ""}
-          onClick={() => setScope("assigned")}
+          onClick={() => setSearchParams({ scope: "assigned" })}
           type="button"
         >
           내 업무
@@ -103,10 +111,18 @@ export default function Dashboard() {
 
         <button
           className={scope === "created" ? "active" : ""}
-          onClick={() => setScope("created")}
+          onClick={() => setSearchParams({ scope: "created" })}
           type="button"
         >
           내가 만든 업무
+        </button>
+
+        <button
+          className={scope === "favorite" ? "active" : ""}
+          onClick={() => setSearchParams({ scope: "favorite" })}
+          type="button"
+        >
+          즐겨찾기
         </button>
       </div>
 
@@ -133,9 +149,9 @@ export default function Dashboard() {
       {/* 아래 영역: 2열 레이아웃 */}
       <section className="two__col">
 
-        {/* 내 업무 테이블 카드 */}
+        {/* 내 업무 / 즐겨찾기 테이블 카드 */}
         <div className="card card__tasks">
-          <div className="card__title">My Tasks Table</div>
+          <div className="card__title">{scope === "favorite" ? "Favorite Tasks" : "My Tasks Table"}</div>
           <div className="muted">
             {myTasks.length === 0 ? (
               <p>업무가 없습니다.</p>
@@ -157,7 +173,6 @@ export default function Dashboard() {
                 </thead>
                 <tbody>
                   {myTasks.map((t) => {
-                    
                     const dueDate = t.dueDate ? new Date(t.dueDate) : null;
                     const createdAt = t.createdAt ? new Date(t.createdAt) : null;
 
@@ -166,7 +181,7 @@ export default function Dashboard() {
                       if (t.status === "DONE") return "완료";
                       if (t.status === "CANCELED") return "취소됨";
                       return ddayLabel(t.dueDate);
-                      })();
+                    })();
 
                     return (
                       <tr
@@ -175,7 +190,18 @@ export default function Dashboard() {
                         className={t.id === selectedTaskId ? "selected" : ""}
                         style={{ cursor: "pointer" }}
                       >
-                        <td>{t.title}</td>
+                        <td>
+                          <a
+                            href={`/tasks/${t.id}`}
+                            onClick={(e) => { 
+                              e.preventDefault(); 
+                              handleTaskClick(t.id); 
+                              nav(`/tasks/${t.id}`); 
+                            }}
+                          >
+                            {t.title}
+                          </a>
+                        </td>
                         <td>{t.status}</td>
                         <td>{t.priority}</td>
                         <td>{dueDate?.toLocaleDateString() || "-"}</td>
@@ -206,9 +232,9 @@ export default function Dashboard() {
               <div className="activity__logs">
                 {displayedLogs.map((a, idx) => (
                   <div key={idx} className="activity__logItem">
-                    {/* 헤더: 수정자 + 시간 */}
+                    {/* 헤더: 행위자 + 시간 */}
                     <div className="activity__logHeader">
-                      <strong>수정자: {a.actorName}</strong>
+                      <strong>행위자: {a.actorName}</strong>
                       <span className="activity__logTime">
                         {new Date(a.modifiedAt).toLocaleString()}
                       </span>
@@ -227,6 +253,9 @@ export default function Dashboard() {
                           status: "진행도",
                           attachment_add: "첨부파일 추가",
                           attachment_delete: "첨부파일 삭제",
+                          deleted: "업무 삭제",
+                          restore: "업무 복구",
+                          create: "업무 생성",
                         };
 
                         const label = fieldNameMap[c.field] || "수정 필드";
@@ -264,14 +293,14 @@ export default function Dashboard() {
                     {a.changes.some(c => {
                       const beforeRaw = c.field ==="description"
                         ? stripHtml(c.beforeValue)
-                        : c.beforeValue
+                        : c.beforeValue;
 
                       const afterRaw = c.field ==="description"
                         ? stripHtml(c.afterValue)
-                        : c.afterValue
+                        : c.afterValue;
 
-                        return (beforeRaw?.length || 0) > 30 ||
-                              (afterRaw?.length || 0) > 30;
+                      return (beforeRaw?.length || 0) > 30 ||
+                             (afterRaw?.length || 0) > 30;
                       }) && (
                       <button
                         className="btn-more"
@@ -292,15 +321,15 @@ export default function Dashboard() {
 
             {/* 전체 로그 더보기 버튼 */}
             {activityLog.length > 5 && (
-               <div className="activity__logs__footer">
-              <button
-                onClick={() => setShowAllLogs(prev => !prev)}
-                type="button"
-                className="btn-more"
-                style={{ marginTop: "12px" }}
-              >
-                {showAllLogs ? "접기" : "더보기"}
-              </button>
+              <div className="activity__logs__footer">
+                <button
+                  onClick={() => setShowAllLogs(prev => !prev)}
+                  type="button"
+                  className="btn-more"
+                  style={{ marginTop: "12px" }}
+                >
+                  {showAllLogs ? "접기" : "더보기"}
+                </button>
               </div>
             )}
           </div>

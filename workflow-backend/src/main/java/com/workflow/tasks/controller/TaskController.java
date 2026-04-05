@@ -90,18 +90,36 @@ public class TaskController {
 	    return ResponseEntity.ok(taskCommandService.update(id, req, userId));
 	}
 	
+	// DTO
+	public static class ReasonRequest {
+	    private String reason;
+	    public String getReason() { return reason; }
+	    public void setReason(String reason) { this.reason = reason; }
+	}
+
 	// 업무 삭제
 	@DeleteMapping("/{id}")
 	public ResponseEntity<TaskResponse> delete(
 	        @PathVariable("id") Long id,
-	        @RequestParam(name="reason", required=false) String reason,
+	        @RequestBody ReasonRequest request,
 	        @AuthenticationPrincipal UserDetails principal
 	) {
 	    if (principal == null) return ResponseEntity.status(401).build();
-
 	    Long userId = Long.parseLong(principal.getUsername());
-	    TaskResponse deletedTask = taskCommandService.softDeleteTask(id, userId, reason); // reason 전달
+	    TaskResponse deletedTask = taskCommandService.softDeleteTask(id, userId, request.getReason());
 	    return ResponseEntity.ok(deletedTask);
+	}
+
+	// 업무 복구
+	@PostMapping("/{taskId}/restore")
+	public ResponseEntity<TaskResponse> restoreTask(
+	        @PathVariable("taskId") Long taskId,
+	        @RequestBody ReasonRequest request,
+	        @AuthenticationPrincipal UserDetails principal
+	) {
+	    if (principal == null) return ResponseEntity.status(401).build();
+	    Long userId = Long.parseLong(principal.getUsername());
+	    return ResponseEntity.ok(taskCommandService.restoreTask(taskId, userId, request.getReason()));
 	}
 
 }

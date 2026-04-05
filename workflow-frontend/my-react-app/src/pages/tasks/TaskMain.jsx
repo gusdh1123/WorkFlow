@@ -66,8 +66,15 @@ export default function Tasks() {
   // 로딩 상태 관리
   const [loading, setLoading] = useState(false);
 
-  // 프론트에서 제공할 정렬 옵션, 초기값은 생성일 내림차순
-  const [sort, setSort] = useState("createdAtDesc");
+  // 프론트에서 제공할 정렬 옵션
+ const initialSort = (() => {
+  const s = sp.get("sort");
+  if (s) return s;
+  if (normalizedScope === "deleted") return "deletedAtDesc";
+  if (normalizedScope === "favorite") return "createdAtDesc";
+  return "createdAtDesc";
+})();
+const [sort, setSort] = useState(initialSort);
 
   // 서버에서 받아온 페이지 전체 데이터 상태
   const [pageData, setPageData] = useState({ ...EMPTY_PAGE });
@@ -75,6 +82,9 @@ export default function Tasks() {
   // size와 totalPages는 pageData 기준
   const size = pageData.size;
   const totalPages = pageData.totalPages;
+
+  // UI용 tasks 상태
+  const [tasks, setTasks] = useState([]);
 
   // URL 변경 시 state 동기화
   useEffect(() => {
@@ -203,8 +213,10 @@ export default function Tasks() {
     fetchTasks();
   }, [fetchTasks]);
 
-  // 서버에서 내려준 순서 그대로 사용
-  const tasksToRender = pageData.content;
+// fetch 후 초기화
+useEffect(() => {
+  setTasks(pageData.content);
+}, [pageData.content]);
 
   // 페이지 이동
   const goFirst = () => { if (!pageData.first) setPage(0); };
@@ -258,142 +270,340 @@ export default function Tasks() {
 
   const pageButtons = buildPageButtons(page, totalPages);
 
-  return (
-    <div className="tasks">
-      <div className="tasks__header">
-        <div className="tasks__titleRow">
-          <h2 className="tasks__title">Tasks</h2>
-          <NavLink className="tasks__create" to="/tasks/create">
-            + 작성
-          </NavLink>
+// 복구
+const handleRestore = async (taskId) => {
+  // 사유 입력 받기
+  const reason = prompt("복구 사유를 입력하세요:");
+  
+  if (reason === null) return; // 취소
+  if (reason.trim() === "") {
+    alert("사유를 입력해야 합니다.");
+    return;
+  }
+
+  if (!confirm("이 업무를 복구하시겠습니까?")) return;
+
+  try {
+    await api.post(`/api/tasks/${taskId}/restore`, { reason });
+    alert("복구 완료");
+    fetchTasks();
+  } catch (e) {
+    console.error(e);
+    alert("복구 실패");
+  }
+};
+
+// 즐겨찾기 토글
+const toggleFavorite = async (taskId) => {
+  // UI에서 즉시 반영 (낙관적 업데이트)
+  setTasks(prevTasks =>
+    prevTasks.map(t =>
+      t.id === taskId ? { ...t, favorite: !t.favorite } : t
+    )
+  );
+
+  // 서버 요청
+  try {
+    await api.post(`/api/favorite/${taskId}`);
+  } catch (e) {
+    console.error("즐겨찾기 실패", e);
+    // 실패 시 롤백
+    setTasks(prevTasks =>
+      prevTasks.map(t =>
+        t.id === taskId ? { ...t, favorite: !t.favorite } : t
+      )
+    );
+  }
+};
+
+// console.log(tasks);
+
+return (
+  <div className="tasks">
+    <div className="tasks__header">
+      <div className="tasks__titleRow">
+        <h2 className="tasks__title">Tasks</h2>
+        <NavLink className="tasks__create" to="/tasks/create">
+          + 작성
+        </NavLink>
+      </div>
+
+      <div className="tasks__controls">
+        <div className="tasks__tabs" role="tablist" aria-label="업무 범위">
+          {SCOPES.map((s) => (
+            <button
+              key={s}
+              type="button"
+              className={`tasks__tab ${scope === s ? "is-active" : ""}`}
+              onClick={() => onChangeScope(s)}
+            >
+              {s === "all"
+                ? "전체 업무"
+                : s === "public"
+                ? "전사 업무"
+                : s === "team"
+                ? "우리 팀 업무"
+                : s === "created"
+                ? "내가 만든 업무"
+                : s === "assigned"
+                ? "담당 업무"
+                : s === "favorite"
+                ? "즐겨찾기"
+                : s === "deleted"
+                ? "삭제된 업무"
+                : "개인 업무"}
+            </button>
+          ))}
         </div>
 
-        <div className="tasks__controls">
-          <div className="tasks__tabs" role="tablist" aria-label="업무 범위">
-            {SCOPES.map((s) => (
-              <button
-                key={s}
-                type="button"
-                className={`tasks__tab ${scope === s ? "is-active" : ""}`}
-                onClick={() => onChangeScope(s)}
+        <div className="tasks__filters">
+          {user?.role === "ADMIN" &&
+            !["team", "created", "assigned"].includes(scope) && (
+              <select
+                className="tasks__select"
+                value={deptId}
+                onChange={(e) => onChangeDept(e.target.value)}
               >
-                {s === "all" ? "전체 업무" :
-                 s === "public" ? "전사 업무" :
-                 s === "team" ? "우리 팀 업무" :
-                 s === "created" ? "내가 만든 업무" :
-                 s === "assigned" ? "담당 업무" :
-                 "개인 업무"}
-              </button>
-            ))}
-          </div>
-
-          <div className="tasks__filters">
-            {user?.role === "ADMIN" && !["team", "created", "assigned"].includes(scope) && (
-              <select className="tasks__select" value={deptId} onChange={(e) => onChangeDept(e.target.value)}>
                 <option value="">전체 부서</option>
-                {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                {departments.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
+                  </option>
+                ))}
               </select>
             )}
 
-            <select className="tasks__select" value={status} onChange={(e) => onChangeStatus(e.target.value)}>
-              <option value="">전체</option>
-              {STATUSES.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
+          <select
+            className="tasks__select"
+            value={status}
+            onChange={(e) => onChangeStatus(e.target.value)}
+          >
+            <option value="">전체</option>
+            {STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
 
-            <select className="tasks__select" value={sort} onChange={(e) => {setSort(e.target.value);
-                                                                            setPage(0);
-                                                                            updateParams({ sort: e.target.value, page: 0});}}>
-              <option value="createdAtDesc">최신순</option>
+          <select
+            className="tasks__select"
+            value={sort}
+            onChange={(e) => {
+              setSort(e.target.value);
+              setPage(0);
+              updateParams({ sort: e.target.value, page: 0 });
+            }}
+          >
+          {scope === "deleted" ? (
+            <>
+             <option value="deletedAtDesc">최근 삭제순</option>
+            <option value="deletedAtAsc">오래된 삭제순</option>
+            </>
+          ) : scope === "favorite" ? (
+            <>
+              <option value="createdAtDesc">등록일순</option>
+              <option value="createdAtAsc">등록일 오래된순</option>
               <option value="dueDateAsc">마감 임박순</option>
               <option value="dueDateDesc">마감 늦은순</option>
               <option value="priorityDesc">우선순위 높은순</option>
-            </select>
-          </div>
+              <option value="priorityAsc">우선순위 낮은순</option>
+            </>
+          ) : (
+            <>
+              <option value="createdAtDesc">최신순</option>
+              <option value="createdAtAsc">오래된순</option>
+              <option value="dueDateAsc">마감 임박순</option>
+              <option value="dueDateDesc">마감 늦은순</option>
+              <option value="priorityDesc">우선순위 높은순</option>
+              <option value="priorityAsc">우선순위 낮은순</option>
+            </>
+          )}  
+          </select>
         </div>
       </div>
+    </div>
 
-      <div className="tasks__divider" />
+    <div className="tasks__divider" />
 
-      {loading && <div className="tasks__state">불러오는 중...</div>}
-      {!loading && tasksToRender.length === 0 && <div className="tasks__state">업무가 없습니다.</div>}
+    {loading && <div className="tasks__state">불러오는 중...</div>}
+    {!loading && tasks.length === 0 && (
+      <div className="tasks__state">업무가 없습니다.</div>
+    )}
 
-      <ul className="tasks__grid">
-        {tasksToRender.map((t) => {
-          const descText = stripHtml(t.description || "");
-          const descForRender = descText || "\u00A0";
-          const att = getAttachSummary(t);
+    <ul className="tasks__grid">
+      {tasks.map((t) => {
+        const descText = stripHtml(t.description || "");
+        const descForRender = descText || "\u00A0";
+        const att = getAttachSummary(t);
 
-          const getDepartmentLabel = (engName) => departmentMap[engName] ?? "-";
-          const createdLabel = `${t.createdByName ?? "-"}${t.createdByDepartmentName ? ` (${getDepartmentLabel(t.createdByDepartmentName)})` : ""}`;
-          const assigneeLabel = t.assigneeName? `${t.assigneeName}${t.assigneeDepartmentName ? ` (${getDepartmentLabel(t.assigneeDepartmentName)})` : ""}`: "-";
+        const getDepartmentLabel = (engName) =>
+          departmentMap[engName] ?? "-";
+        const createdLabel = `${t.createdByName ?? "-"}${
+          t.createdByDepartmentName
+            ? ` (${getDepartmentLabel(t.createdByDepartmentName)})`
+            : ""
+        }`;
+        const assigneeLabel = t.assigneeName
+          ? `${t.assigneeName}${
+              t.assigneeDepartmentName
+                ? ` (${getDepartmentLabel(t.assigneeDepartmentName)})`
+                : ""
+            }`
+          : "-";
 
-          const dday = (() => {
-            if (!t.dueDate) return "-";
-            if (t.status === "DONE") return "완료";
-            if (t.status === "CANCELED") return "취소됨";
-            return ddayLabel(t.dueDate);
-          })();
+        const dday = (() => {
+          if (!t.dueDate) return "-";
+          if (t.status === "DONE") return "완료";
+          if (t.status === "CANCELED") return "취소됨";
+          return ddayLabel(t.dueDate);
+        })();
 
-          return (
-            <li key={t.id} className={`tasks__card tasks__card--${(t.status || "").toLowerCase()} ${dueClass(t.dueDate, t.status)}`}>
-              <NavLink to={`/tasks/${t.id}`} className="tasks__cardLink">
-                <div className="tasks__cardTop">
-                  <strong className="tasks__cardTitle">{t.title}</strong>
+        return (
+          <li
+            key={t.id}
+            className={`tasks__card tasks__card--${
+              (t.status || "").toLowerCase()
+            } ${dueClass(t.dueDate, t.status)}`}
+          >
+            <NavLink to={`/tasks/${t.id}`} className="tasks__cardLink">
+              <div className="tasks__cardTop">
+                <strong className="tasks__cardTitle">{t.title}</strong>
 
-                  <div className="tasks__cardIcons">
-                    {att.hasAnyFile && <span className="tasks__att tasks__att--file" title='첨부파일 포함'>📎</span>}
-                    {att.hasImage && <span className="tasks__att tasks__att--img" title="이미지 포함">📷</span>}
-                    {att.hasVideo && <span className="tasks__att tasks__att--video" title="영상 포함">🎬</span>}
-                  </div>
+                <div className="tasks__cardIcons">
+                  {att.hasAnyFile && (
+                    <span className="tasks__att tasks__att--file" title="첨부파일 포함">
+                      📎
+                    </span>
+                  )}
+                  {att.hasImage && (
+                    <span className="tasks__att tasks__att--img" title="이미지 포함">
+                      📷
+                    </span>
+                  )}
+                  {att.hasVideo && (
+                    <span className="tasks__att tasks__att--video" title="영상 포함">
+                      🎬
+                    </span>
+                  )}
+
+                  {/* 복구 버튼 (삭제된 업무일 때만) */}
+                  {scope === "deleted" && (
+                    <button
+                      className="tasks__restoreBtn--inline"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleRestore(t.id);
+                      }}
+                    >
+                      복구
+                    </button>
+                  )}
+
+                  {/* 즐겨찾기 버튼 */}
+                  {scope !== "deleted" && (
+                    <button
+                      type="button"
+                      className={`tasks__favoriteBtn ${
+                        t.favorite ? "is-active" : ""
+                      }`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleFavorite(t.id);
+                      }}
+                      title={t.favorite ? "즐겨찾기 해제" : "즐겨찾기 등록"}
+                    >
+                      ★
+                    </button>
+                  )}
                 </div>
+              </div>
 
-                <div className={`tasks__desc ${descText ? "" : "is-empty"}`}>{descForRender}</div>
+              <div className={`tasks__desc ${descText ? "" : "is-empty"}`}>
+                {descForRender}
+              </div>
 
-                <div className="tasks__meta">
+              <div className="tasks__meta">
+                {scope === "deleted" ? (
+                  <span>
+                    작성일: {formatListDateTime(t.createdAt)} ·{" "}
+                    <span className="tasks__deletedDate">
+                      삭제일: {formatListDateTime(t.deletedAt)}
+                    </span>
+                </span>
+              ) : (
+                <>
                   <span>마감일: {t.dueDate ?? "-"}</span>
                   <span className="tasks__dot">·</span>
                   <span>작성일: {formatListDateTime(t.createdAt)}</span>
-                </div>
+                </>
+              )}
+            </div>
 
-                <div className="tasks__meta">
-                  <span>작성자: {createdLabel}</span>
-                  <span className="tasks__dot">·</span>
-                  <span>담당자: {assigneeLabel}</span>
-                </div>
+              <div className="tasks__meta">
+                <span>작성자: {createdLabel}</span>
+                <span className="tasks__dot">·</span>
+                <span>담당자: {assigneeLabel}</span>
+              </div>
 
-                <div className="tasks__badges">
-                  <span className={`tasks__badge tasks__badge--${(t.status || "").toLowerCase()}`}>{t.status}</span>
-                  <span className="tasks__badge tasks__badge--visibility">{visibilityLabel(t.visibility)}</span>
-                  <span className={`tasks__badge tasks__badge--priority tasks__badge--priority-${(t.priority || "").toLowerCase()}`}>
-                    중요도: {t.priority ?? "-"}
-                  </span>
-                  {dday && <span className="tasks__badge tasks__badge--dday">{dday}</span>}
-                </div>
-              </NavLink>
-            </li>
-          );
-        })}
-      </ul>
+              <div className="tasks__badges">
+                <span
+                  className={`tasks__badge tasks__badge--${
+                    (t.status || "").toLowerCase()
+                  }`}
+                >
+                  {t.status}
+                </span>
+                <span className="tasks__badge tasks__badge--visibility">
+                  {visibilityLabel(t.visibility)}
+                </span>
+                <span
+                  className={`tasks__badge tasks__badge--priority tasks__badge--priority-${
+                    (t.priority || "").toLowerCase()
+                  }`}
+                >
+                  {t.priority ?? "-"}
+                </span>
+                {dday && <span className="tasks__badge tasks__badge--dday">{dday}</span>}
+              </div>
+            </NavLink>
+          </li>
+        );
+      })}
+    </ul>
 
-      {totalPages > 1 && (
-        <div className="tasks__pagination" aria-label="페이지 이동">
-          <button type="button" className="tasks__pageBtn" onClick={goFirst} disabled={pageData.first}>«</button>
-          <button type="button" className="tasks__pageBtn" onClick={goPrev} disabled={pageData.first}>‹</button>
+    {totalPages > 1 && (
+      <div className="tasks__pagination" aria-label="페이지 이동">
+        <button type="button" className="tasks__pageBtn" onClick={goFirst} disabled={pageData.first}>
+          «
+        </button>
+        <button type="button" className="tasks__pageBtn" onClick={goPrev} disabled={pageData.first}>
+          ‹
+        </button>
 
-          {pageButtons[0] > 0 && <span className="tasks__pageEllipsis">…</span>}
-          {pageButtons.map((p) => (
-            <button key={p} type="button" className={`tasks__pageBtn ${p === page ? "is-active" : ""}`} onClick={() => goPage(p)}>
-              {p + 1}
-            </button>
-          ))}
-          {pageButtons[pageButtons.length - 1] < totalPages - 1 && <span className="tasks__pageEllipsis">…</span>}
+        {pageButtons[0] > 0 && <span className="tasks__pageEllipsis">…</span>}
+        {pageButtons.map((p) => (
+          <button
+            key={p}
+            type="button"
+            className={`tasks__pageBtn ${p === page ? "is-active" : ""}`}
+            onClick={() => goPage(p)}
+          >
+            {p + 1}
+          </button>
+        ))}
+        {pageButtons[pageButtons.length - 1] < totalPages - 1 && <span className="tasks__pageEllipsis">…</span>}
 
-          <button type="button" className="tasks__pageBtn" onClick={goNext} disabled={pageData.last}>›</button>
-          <button type="button" className="tasks__pageBtn" onClick={goLast} disabled={pageData.last}>»</button>
-        </div>
-      )}
-    </div>
-  );
+        <button type="button" className="tasks__pageBtn" onClick={goNext} disabled={pageData.last}>
+          ›
+        </button>
+        <button type="button" className="tasks__pageBtn" onClick={goLast} disabled={pageData.last}>
+          »
+        </button>
+      </div>
+    )}
+  </div>
+);
 }

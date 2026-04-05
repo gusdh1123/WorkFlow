@@ -48,23 +48,33 @@ public class TaskResponse {
     
     private Long version; // 버전
 
+    private boolean isDeleted; // 삭제 여부
+
+    private LocalDateTime deletedAt;  // 삭제 시각 추가
+    
+    private boolean isFavorite; // 즐겨찾기 여부 추가
+
+    private LocalDateTime favoriteCreatedAt; // 즐겨찾기 등록일 추가
+
     // 정적 빌더 변환 메서드
     
     // 상세 조회용: 첨부 리스트 포함
     public static TaskResponse from(TaskEntity t, List<AttachmentResponse> attachments) {
         long count = (attachments == null) ? 0 : attachments.size();
-        return from(t, attachments, count);
+        return from(t, attachments, count, false, null);
     }
 
     // 목록 조회용: 첨부 리스트 없이 개수만
     public static TaskResponse from(TaskEntity t, long attachmentsCount) {
-        return from(t, List.of(), attachmentsCount);
+        return from(t, List.of(), attachmentsCount, false, null);
     }
 
-    // 공통 빌더: 생성자, 담당자, 부서 정보 모두 포함
+    // 즐겨찾기 포함한 메서드
     public static TaskResponse from(TaskEntity t,
-                                       List<AttachmentResponse> attachments,
-                                       long attachmentsCount) {
+                                    List<AttachmentResponse> attachments,
+                                    long attachmentsCount,
+                                    boolean isFavorite,
+                                    LocalDateTime favoriteCreatedAt) {
 
         UserEntity cb = t.getCreatedBy();  // 생성자 정보
         UserEntity as = t.getAssignee();   // 담당자 정보
@@ -104,6 +114,12 @@ public class TaskResponse {
                 .attachmentsCount(Math.max(0, attachmentsCount)) // 음수 방어
                 
                 .version(t.getVersion()) // 버전 추가
+                .isDeleted(t.getDeletedAt() != null) // 삭제 여부 추가
+                .deletedAt(t.getDeletedAt())  // 삭제 시간
+
+                .isFavorite(isFavorite) // 즐겨찾기 추가
+                .favoriteCreatedAt(favoriteCreatedAt) // 즐겨찾기 등록일 추가
+
                 .build();
     }
 

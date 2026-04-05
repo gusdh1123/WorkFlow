@@ -482,3 +482,9 @@
   margin-right: 6px;
   font-size: 16px;
 }
+
+/* 삭제일 색상 강조 */
+.taskdetail__deleted {
+  color: #ff6b6b;
+  font-weight: bold;
+}

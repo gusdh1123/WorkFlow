@@ -233,70 +233,167 @@ public interface TaskRepository extends JpaRepository<TaskEntity, Long> {
 	                                                   @Param("assigneeId") Long assigneeId,
 	                                                   Pageable pageable);
 	
-	    // 어드민 용 PriorityDesc
-	    @Query("""
-	        SELECT t FROM TaskEntity t
-	        WHERE t.isDeleted = false
-	        AND (:status IS NULL OR t.status = :status)
-	        AND (
-	            :scope = 'all' OR
-	            (:scope = 'public' AND t.visibility = 'PUBLIC') OR
-	            (:scope = 'team' AND t.workDepartment.id = :myDeptId) OR
-	            (:scope = 'created' AND t.createdBy.id = :userId) OR
-	            (:scope = 'assigned' AND t.assignee.id = :userId) OR
-	            (:scope = 'private' AND t.visibility = 'PRIVATE')
-	        )
-	        ORDER BY
-	        CASE t.priority
-	            WHEN 'HIGH' THEN 3
-	            WHEN 'MEDIUM' THEN 2
-	            WHEN 'LOW' THEN 1
-	            ELSE 0
-	        END DESC,
-	        t.createdAt DESC,
-	        t.id DESC
-	    """)
-	    Page<TaskEntity> findAllByPriorityMappedDesc(
+	// ADMIN 전체 업무 우선순위 내림차순
+	@Query("""
+	    SELECT t FROM TaskEntity t
+	    WHERE t.isDeleted = false
+	      AND (:status IS NULL OR t.status = :status)
+	      AND (
+	          :scope = 'all' OR
+	          (:scope = 'public' AND t.visibility = 'PUBLIC') OR
+	          (:scope = 'team' AND t.workDepartment.id = :myDeptId) OR
+	          (:scope = 'created' AND t.createdBy.id = :userId) OR
+	          (:scope = 'assigned' AND t.assignee.id = :userId) OR
+	          (:scope = 'private' AND t.visibility = 'PRIVATE')
+	      )
+	    ORDER BY
+	      CASE t.priority
+	          WHEN 'HIGH' THEN 3
+	          WHEN 'MEDIUM' THEN 2
+	          WHEN 'LOW' THEN 1
+	          ELSE 0
+	      END DESC,
+	      t.createdAt DESC,
+	      t.id DESC
+	""")
+	Page<TaskEntity> findAllByPriorityMappedDesc(
 	        @Param("scope") String scope,
 	        @Param("status") TaskStatus status,
 	        @Param("userId") Long userId,
 	        @Param("deptId") Long deptId,
 	        @Param("myDeptId") Long myDeptId,
 	        Pageable pageable
-	    );
+	);
+
+	// ADMIN 전체 업무 우선순위 오름차순
+	@Query("""
+	    SELECT t FROM TaskEntity t
+	    WHERE t.isDeleted = false
+	      AND (:status IS NULL OR t.status = :status)
+	      AND (:scope = 'all' OR
+	          (:scope = 'public' AND t.visibility = 'PUBLIC') OR
+	          (:scope = 'private' AND t.visibility = 'PRIVATE') OR
+	          (:scope = 'team' AND t.workDepartment.id = :myDeptId) OR
+	          (:scope = 'created' AND t.createdBy.id = :userId) OR
+	          (:scope = 'assigned' AND t.assignee.id = :userId)
+	      )
+	    ORDER BY
+	      CASE t.priority
+	          WHEN 'LOW' THEN 3
+	          WHEN 'MEDIUM' THEN 2
+	          WHEN 'HIGH' THEN 1
+	          ELSE 0
+	      END DESC,
+	      t.createdAt ASC,
+	      t.id ASC
+	""")
+	Page<TaskEntity> findAllByPriorityMappedAsc(
+	        @Param("scope") String scope,
+	        @Param("status") TaskStatus status,
+	        @Param("userId") Long userId,
+	        @Param("deptId") Long deptId,
+	        @Param("myDeptId") Long myDeptId,
+	        Pageable pageable
+	);
+
+	// 일반 사용자/팀장 우선순위 내림차순
+	@Query("""
+	    SELECT t 
+	    FROM TaskEntity t
+	    WHERE t.isDeleted = false
+	      AND (
+	            :scope = 'all' OR
+	            (:scope = 'public' AND t.visibility = 'PUBLIC') OR
+	            (:scope = 'team' AND t.visibility IN ('PUBLIC','DEPARTMENT') AND t.workDepartment.id = :deptId) OR
+	            (:scope = 'created' AND t.createdBy.id = :userId) OR
+	            (:scope = 'assigned' AND t.assignee.id = :userId) OR
+	            (:scope = 'private' AND t.visibility = 'PRIVATE' AND (t.createdBy.id = :userId OR t.assignee.id = :userId))
+	          )
+	      AND (:status IS NULL OR t.status = :status)
+	    ORDER BY
+	      CASE t.priority
+	        WHEN 'HIGH' THEN 3
+	        WHEN 'MEDIUM' THEN 2
+	        WHEN 'LOW' THEN 1
+	        ELSE 0
+	      END DESC,
+	      t.createdAt DESC,
+	      t.id DESC
+	""")
+	Page<TaskEntity> findVisibleTasksPriorityDesc(
+	        @Param("scope") String scope,
+	        @Param("status") TaskStatus status,
+	        @Param("userId") Long userId,
+	        @Param("deptId") Long deptId,
+	        Pageable pageable
+	);
+
+	// 일반 사용자/팀장 → priority 오름차순
+	@Query("""
+	    SELECT t 
+	    FROM TaskEntity t
+	    WHERE t.isDeleted = false
+	      AND (
+	            :scope = 'all' OR
+	            (:scope = 'public' AND t.visibility = 'PUBLIC') OR
+	            (:scope = 'team' AND t.visibility IN ('PUBLIC','DEPARTMENT') AND t.workDepartment.id = :deptId) OR
+	            (:scope = 'created' AND t.createdBy.id = :userId) OR
+	            (:scope = 'assigned' AND t.assignee.id = :userId) OR
+	            (:scope = 'private' AND t.visibility = 'PRIVATE' AND (t.createdBy.id = :userId OR t.assignee.id = :userId))
+	          )
+	      AND (:status IS NULL OR t.status = :status)
+	    ORDER BY
+	      CASE t.priority
+	        WHEN 'LOW' THEN 3
+	        WHEN 'MEDIUM' THEN 2
+	        WHEN 'HIGH' THEN 1
+	        ELSE 0
+	      END ASC,
+	      t.createdAt ASC,
+	      t.id ASC
+	""")
+	Page<TaskEntity> findVisibleTasksPriorityAsc(
+	        @Param("scope") String scope,
+	        @Param("status") TaskStatus status,
+	        @Param("userId") Long userId,
+	        @Param("deptId") Long deptId,
+	        Pageable pageable
+	);
 	    
-	 // 일반 사용자 및 팀장용 PriorityDesc
+	    // 삭제된 업무(권한 포함)
 	    @Query("""
-	    	    SELECT t 
-	    	    FROM TaskEntity t
-	    	    WHERE t.isDeleted = false
+	    	    SELECT t FROM TaskEntity t
+	    	    WHERE t.isDeleted = true
 	    	      AND (
-	    	            :scope = 'all' OR
-	    	            (:scope = 'public' AND t.visibility = 'PUBLIC') OR
-	    	            (:scope = 'team' AND t.visibility IN ('PUBLIC','DEPARTMENT') AND t.workDepartment.id = :deptId) OR
-	    	            (:scope = 'created' AND t.createdBy.id = :userId) OR
-	    	            (:scope = 'assigned' AND t.assignee.id = :userId) OR
-	    	            (:scope = 'private' AND t.visibility = 'PRIVATE' AND (t.createdBy.id = :userId OR t.assignee.id = :userId))
-	    	          )
-	    	      AND (:status IS NULL OR t.status = :status)
-	    	    ORDER BY
-	    	      CASE t.priority
-	    	        WHEN 'HIGH' THEN 3
-	    	        WHEN 'MEDIUM' THEN 2
-	    	        WHEN 'LOW' THEN 1
-	    	        ELSE 0
-	    	      END DESC,
-	    	      t.createdAt DESC,
-	    	      t.id DESC
+	    	           t.createdBy.id = :userId
+	    	        OR t.assignee.id = :userId
+	    	        OR (:deptId IS NOT NULL AND t.workDepartment.id = :deptId)
+	    	      )
 	    	""")
-	    	Page<TaskEntity> findVisibleTasksPriorityDesc(
-	    	        @Param("scope") String scope,
-	    	        @Param("status") TaskStatus status,
-	    	        @Param("userId") Long userId,
-	    	        @Param("deptId") Long deptId,
-	    	        Pageable pageable
-	    	);
+	    	Page<TaskEntity> findDeletedVisibleForUser(@Param("userId") Long userId,
+	    	                                           @Param("deptId") Long deptId,
+	    	                                           Pageable pageable);
 	    
+	    @Query("""
+	    	    SELECT t FROM TaskEntity t
+	    	    WHERE t.isDeleted = true
+	    	      AND t.status = :status
+	    	      AND (
+	    	           t.createdBy.id = :userId
+	    	        OR t.assignee.id = :userId
+	    	        OR (:deptId IS NOT NULL AND t.workDepartment.id = :deptId)
+	    	      )
+	    	""")
+	    	Page<TaskEntity> findDeletedVisibleForUserByStatus(@Param("userId") Long userId,
+	    	                                                   @Param("deptId") Long deptId,
+	    	                                                   @Param("status") TaskStatus status,
+	    	                                                   Pageable pageable);
 	    
+	 // ADMIN 전체 삭제 조회
+	    @Query("SELECT t FROM TaskEntity t WHERE t.isDeleted = true")
+	    Page<TaskEntity> findAllDeleted(Pageable pageable);
+
+	    @Query("SELECT t FROM TaskEntity t WHERE t.isDeleted = true AND t.status = :status")
+	    Page<TaskEntity> findAllDeletedByStatus(@Param("status") TaskStatus status, Pageable pageable);
 	    
 }

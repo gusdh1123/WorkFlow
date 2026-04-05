@@ -48,20 +48,32 @@ public class AuditLogService {
             TaskPriority oldPriority,
             TaskStatus oldStatus,
             AuditActionType actionType,
-            String deleteReason, // 삭제 사유
+            String reason, // 사유
             List<AttachmentEntity> addedAttachments,    // 새로 추가된 첨부파일
             List<AttachmentEntity> deletedAttachments   // 삭제된 첨부파일
     ) {
         List<AuditLogEntity> logs = new ArrayList<>();
 
-        String finalReason = (req != null ? req.reasonTrimmed() : deleteReason);
+        String finalReason = (req != null ? req.reasonTrimmed() : reason);
 
         if (actionType == AuditActionType.TASK_DELETE) {
         	
             // 삭제 시 제목 + 내용 기록
-            String summary = String.format("제목: '%s' 삭제됨. 내용: %s", oldTitle, oldDescription);
-            addLog(logs, task, loginUser, actionType, "task", summary, null, finalReason);
-        } else {
+            String summary = String.format("제목: '%s' / 내용: %s", oldTitle, oldDescription);
+            addLog(logs, task, loginUser, actionType, "deleted", summary, "삭제", finalReason);
+        } 
+        
+        else if (actionType == AuditActionType.TASK_CREATE) {
+            String summary = String.format("제목: '%s' / 내용: %s", task.getTitle(), task.getDescription());
+            addLog(logs, task, loginUser, actionType, "create", "생성", summary, "");
+        }
+        
+        else if (actionType == AuditActionType.TASK_RESTORE) {
+            String summary = String.format("제목: '%s' / 내용: %s", task.getTitle(), task.getDescription());
+            addLog(logs, task, loginUser, actionType, "restore", "복구", summary, finalReason);
+        }
+        
+        else {
         	
             // 제목
             if (!Objects.equals(oldTitle, task.getTitle())) {
