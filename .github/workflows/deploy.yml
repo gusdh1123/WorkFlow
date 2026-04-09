@@ -25,4 +25,3 @@ jobs:
           port: ${{ secrets.EC2_PORT }}       # 예: 22
           script: |
             /home/ubuntu/deploy.sh
-          
