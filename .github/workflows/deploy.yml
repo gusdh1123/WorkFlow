@@ -10,19 +10,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 레포지토리 체크아웃
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      # SSH를 통해 서버에서 deploy.sh 실행
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.EC2_HOST }}       # EC2 퍼블릭 IP 또는 도메인
-          username: ${{ secrets.EC2_USER }}   # 예: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}     # PEM 키
-          port: ${{ secrets.EC2_PORT }}       # 보통 22
+          host: ${{ secrets.EC2_HOST }} 
+          username: ${{ secrets.EC2_USER }} 
+          key: ${{ secrets.EC2_SSH_KEY }} 
+          port: ${{ secrets.EC2_PORT }} 
           script: |
-            # deploy.sh 실행
-            chmod +x /home/ubuntu/deploy.sh
             /home/ubuntu/deploy.sh
