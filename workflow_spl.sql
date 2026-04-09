@@ -159,8 +159,25 @@ CREATE TABLE favorites (
 	FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_favorite_user_id ON favorite(user_id);
-CREATE INDEX idx_favorite_task_id ON favorite(task_id);
+CREATE INDEX idx_favorites_user_id ON favorites(user_id);
+CREATE INDEX idx_favorites_task_id ON favorites(task_id);
+
+CREATE TABLE notifications (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NULL,
+    type VARCHAR(20) NOT NULL,              -- COMMENT, TASK_ASSIGN 등
+    reference_id BIGINT NULL,               -- task_id, comment_id 등
+    reference_type VARCHAR(20) NOT NULL,    -- TASK, COMMENT 등
+    is_read BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP(6) WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+-- 사용자별 전체 알림 조회
+CREATE INDEX idx_notifications_user_id ON notifications(user_id);
+
+-- 사용자별 읽지 않은 알림 조회
+CREATE INDEX idx_notifications_user_read ON notifications(user_id, is_read);
 
 
 --DB 값 추가
