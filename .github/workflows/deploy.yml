@@ -1,29 +1,10 @@
-name: Deploy to EC2
-
-# main 브랜치에 push 될 때 자동 실행
+name: Test Workflow
 on:
   push:
     branches:
       - main
-
 jobs:
-  deploy:
+  test:
     runs-on: ubuntu-latest
-
     steps:
-      # 레포지토리 체크아웃
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      # SSH를 통해 서버에서 deploy.sh 실행
-      - name: Deploy over SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}       # EC2 퍼블릭 IP 또는 도메인
-          username: ${{ secrets.EC2_USER }}   # 예: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}     # PEM 키
-          port: ${{ secrets.EC2_PORT }}       # 보통 22
-          script: |
-            # deploy.sh 실행
-            chmod +x /home/ubuntu/deploy.sh
-            /home/ubuntu/deploy.sh
+      - run: echo "Hello world"
