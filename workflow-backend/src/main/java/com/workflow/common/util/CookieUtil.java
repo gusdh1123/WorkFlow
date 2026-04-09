@@ -15,8 +15,8 @@ public class CookieUtil {
         // ResponseCookie 사용 → 더 안전하게 쿠키 옵션 지정 가능
         ResponseCookie cookie = ResponseCookie.from(name, value)
                 .httpOnly(true)      // JS에서 접근 불가 → XSS 공격 방어
-                .secure(false)       // HTTPS 환경이면 true로 변경 필요
-                .sameSite("Lax")     // CSRF 공격 방어
+                .secure(true)       // HTTPS 환경이면 true로 변경 필요
+                .sameSite("None")     // CSRF 공격 방어
                 .path("/")           // 모든 경로에서 접근 가능
                 .maxAge(maxMin * 60L) // 만료 시간: 분 단위 → 초 단위로 변환
                 .build();
@@ -30,8 +30,8 @@ public class CookieUtil {
         // 동일한 이름으로 maxAge=0 설정 → 브라우저가 쿠키 삭제
         ResponseCookie cookie = ResponseCookie.from(name, "")
                 .httpOnly(true)
-                .secure(false)
-                .sameSite("Lax")
+                .secure(true)
+                .sameSite("None")
                 .path("/")
                 .maxAge(0)
                 .build();
