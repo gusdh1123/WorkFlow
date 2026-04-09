@@ -99,7 +99,7 @@ public class SecurityConfig {
 
 		// 허용할 프론트 주소
 		// 배포 시 도메인 추가 필요
-		config.setAllowedOrigins(List.of("http://localhost:5173", "https://www.workflow.kro.kr"));
+		config.setAllowedOrigins(List.of("http://localhost:5173", "https://www.workflow.kro.kr", "https://workflow.kro.kr"));
 
 		// 허용 HTTP 메서드
 		config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
