@@ -9,7 +9,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
+    
     steps:
       # 체크아웃 (옵션: deploy.sh 자체를 최신으로 가져오기 위함)
       - name: Checkout repository
