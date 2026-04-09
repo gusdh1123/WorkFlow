@@ -75,6 +75,10 @@
 ### ⚙️ 협업 도구
 - GitHub / Notion / Discord / GitHub Actions(CI)
 
+### ☁️ DevOps
+- AWS EC2 (Ubuntu)
+- 고정 IP + 도메인 설정
+
 ---
 
 ## 📌 현재 구현된 기능
