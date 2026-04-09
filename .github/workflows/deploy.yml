@@ -14,7 +14,7 @@ jobs:
       # 체크아웃 (옵션: deploy.sh 자체를 최신으로 가져오기 위함)
       - name: Checkout repository
         uses: actions/checkout@v3
- 
+
       # SSH를 통해 서버에서 deploy.sh 실행
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1.0.3
