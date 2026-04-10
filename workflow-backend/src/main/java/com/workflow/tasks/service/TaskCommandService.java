@@ -135,7 +135,8 @@ public class TaskCommandService {
         return TaskResponse.from(task);
     }
 
-    // 업무 수정
+
+ // 업무 수정
     public TaskResponse update(Long taskId, TaskUpdateRequest req, Long loginUserId) {
         if (loginUserId == null) throw new ApiException(ErrorCode.UNAUTHORIZED, "로그인이 필요합니다.");
 
@@ -149,7 +150,7 @@ public class TaskCommandService {
         if (!task.canEdit(loginUser)) {
             throw new ApiException(ErrorCode.UNAUTHORIZED, "수정 권한이 없습니다.");
         }
-        
+
         // 낙관적 락 체크 추가
         if (!Objects.equals(task.getVersion(), req.version())) {
             throw new ApiException(ErrorCode.CONFLICT, "다른 사용자가 먼저 수정했습니다. 뒤로가기 후 다시 시도해 주세요.");
@@ -160,20 +161,20 @@ public class TaskCommandService {
         if (title == null || title.isEmpty()) {
             throw new ApiException(ErrorCode.BAD_REQUEST, "제목은 필수입니다.");
         }
-        
+
         // 담당자 존재 여부 확인
         UserEntity assignee = (req.assigneeId() == null) ? null
                 : userRepository.findById(req.assigneeId())
                     .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "담당자를 찾을 수 없습니다."));
-        
+
         // 담당자 유효성 체크
         validateAssignee(loginUser, assignee);
-        
+
         // 수정 사유 확인
         if (req.reason() == null || req.reason().isBlank()) {
             throw new ApiException(ErrorCode.BAD_REQUEST, "수정 사유는 필수입니다.");
         }
-        
+
         // 변경 전 값 저장 (AUDIT_LOGS)
         String oldTitle = task.getTitle();
         Long oldAssigneeId = task.getAssignee() != null ? task.getAssignee().getId() : null;
@@ -183,34 +184,53 @@ public class TaskCommandService {
         TaskPriority oldPriority = task.getPriority();
         TaskStatus oldStatus = task.getStatus();
 
-        // 글 내용에 있는 사진 템프에서 본 폴더로 이동 및 URL 치환
-        String descriptionFinal = fileStorageService.commitEditorImagesInContent(req.description(), "tasks", task.getId());
-        
-        // 문자열 끝에 공백 제거
-        normalizeDescription(descriptionFinal);
-        
+        // 글 내용에 있는 사진 tmp → posts 이동 + URL 치환
+        String descriptionFinal =
+                fileStorageService.commitEditorImagesInContent(
+                        req.description(),
+                        "tasks",
+                        task.getId()
+                );
+
+        if (descriptionFinal == null) {
+            descriptionFinal = "";
+        }
+
+        // 문자열 끝 공백 제거 (반드시 결과 반영)
+        descriptionFinal = normalizeDescription(descriptionFinal);
+
+        // 이미지 삭제 (서버 diff 방식)
+        List<String> oldImages =
+                fileStorageService.extractImages(oldDescription);
+
+        List<String> newImages =
+                fileStorageService.extractImages(descriptionFinal);
+
+        fileStorageService.deleteEditorImages(oldImages, newImages, "tasks");
+
         // 상태 전이 검증 처리
         TaskStatus newStatus = validateAndGetNewStatus(task, req.status(), loginUser);
         task.setStatus(newStatus);
-        
+
         // TaskEntity 업데이트
         task.setTitle(title);
         task.setPriority(req.priority());
         task.setVisibility(req.visibility());
         task.setAssignee(assignee);
         task.setDueDate(req.dueDate());
-
         task.setDescription(descriptionFinal);
 
         taskRepository.save(task); // 업데이트 반영
-        
-        // 수정에서 추가/삭제된 첨부 조회
-        List<AttachmentEntity> addedAttachments = req.addedAttachmentIds() == null ? List.of() :
-                attachmentRepository.findAllById(req.addedAttachmentIds());
 
-        List<AttachmentEntity> deletedAttachments = req.deletedAttachmentIds() == null ? List.of() :
-                attachmentRepository.findAllById(req.deletedAttachmentIds());
-        
+        // 수정에서 추가/삭제된 첨부 조회
+        List<AttachmentEntity> addedAttachments =
+                req.addedAttachmentIds() == null ? List.of()
+                        : attachmentRepository.findAllById(req.addedAttachmentIds());
+
+        List<AttachmentEntity> deletedAttachments =
+                req.deletedAttachmentIds() == null ? List.of()
+                        : attachmentRepository.findAllById(req.deletedAttachmentIds());
+
         // 변경 이력 인서트
         auditLogService.saveTaskUpdateLogs(
                 task,
@@ -228,7 +248,7 @@ public class TaskCommandService {
                 addedAttachments,
                 deletedAttachments
         );
-        
+
         return TaskResponse.from(task);
     }
 

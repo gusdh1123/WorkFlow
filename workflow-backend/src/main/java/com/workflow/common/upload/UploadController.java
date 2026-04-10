@@ -47,13 +47,13 @@ public class UploadController {
         return ResponseEntity.ok(Map.of("url", path));
     }
     
-    // 이미지 즉시 삭제(수정 시)
-    @PostMapping("/images/delete")
-    public ResponseEntity<?> deleteImage(
-            @RequestParam("url") String url,
-            @RequestParam("module") String module
-    ) {
-        fileStorageService.deleteEditorImage(url, module);
-        return ResponseEntity.ok(Map.of("success", true));
-    }
+//    // 이미지 즉시 삭제(수정 시)
+//    @PostMapping("/images/delete")
+//    public ResponseEntity<?> deleteImage(
+//            @RequestParam("url") String url,
+//            @RequestParam("module") String module
+//    ) {
+//        fileStorageService.deleteEditorImage(url, module);
+//        return ResponseEntity.ok(Map.of("success", true));
+//    }
 }

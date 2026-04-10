@@ -183,39 +183,79 @@ public class FileStorageService {
         return updated;
     }
     
-    // 이미지 즉시 삭제 (수정 시)
+ // 이미지 삭제 (수정할때 저장 시에 삭제)
     public void deleteEditorImage(String url, String module) {
-    	
+
         if (url == null || url.isBlank()) return;
 
         try {
             // URL -> 서버 상대 경로 추출
-            String prefix = "/uploads/"; // URL에서 업로드 경로 시작점
-            int idx = url.indexOf(prefix);
-            if (idx < 0) throw new ApiException(ErrorCode.INTERNAL_ERROR, "잘못된 이미지 경로: " + url);
+            // 예: https://domain.com/uploads/tasks/abc.png
+            String decodedUrl = java.net.URLDecoder.decode(url, StandardCharsets.UTF_8);
 
-            // URL 디코딩
-            String relativePath = java.net.URLDecoder.decode(url.substring(idx + prefix.length()), StandardCharsets.UTF_8);
+            // query string 제거 (?v=123 같은 캐시 대응)
+            String cleanUrl = decodedUrl.split("\\?")[0];
 
-            // uploadRoot가 없으면 생성
+            String prefix = "/uploads/" + module + "/";
+
+            int idx = cleanUrl.indexOf(prefix);
+            if (idx < 0) {
+                throw new ApiException(ErrorCode.INTERNAL_ERROR, "잘못된 이미지 경로: " + url);
+            }
+
+            String relativePath = cleanUrl.substring(idx + "/uploads/".length());
+
             if (!Files.exists(root)) {
                 Files.createDirectories(root);
             }
 
-            // 실제 삭제할 경로 계산
-            Path path = root.resolve(relativePath).normalize(); 
+            Path path = root.resolve(relativePath).normalize();
+
             System.out.println("삭제 대상: " + path.toAbsolutePath());
 
-            // 존재하면 삭제
             if (Files.exists(path)) {
                 Files.delete(path);
-            } else {
-                System.out.println("삭제 대상 파일이 존재하지 않음: " + path.toAbsolutePath());
             }
 
         } catch (IOException e) {
             throw new ApiException(ErrorCode.INTERNAL_ERROR, "이미지 삭제 실패: " + url);
         }
+    }
+    
+    
+ // 이미지 수정 시 삭제 (old - new diff)
+    public void deleteEditorImages(List<String> oldImages, List<String> newImages, String module) {
+
+        if (oldImages == null || oldImages.isEmpty()) return;
+
+        Set<String> newImageSet = new HashSet<>(
+                newImages == null ? List.of() : newImages
+        );
+
+        for (String oldUrl : oldImages) {
+
+            if (oldUrl == null || oldUrl.isBlank()) continue;
+
+            if (!newImageSet.contains(oldUrl)) {
+                deleteEditorImage(oldUrl, module);
+            }
+        }
+    }
+    
+    public List<String> extractImages(String html) {
+
+        if (html == null || html.isBlank()) return List.of();
+
+        List<String> images = new ArrayList<>();
+
+        Pattern pattern = Pattern.compile("<img[^>]+src\\s*=\\s*\"([^\"]+)\"");
+        Matcher matcher = pattern.matcher(html);
+
+        while (matcher.find()) {
+            images.add(matcher.group(1));
+        }
+
+        return images;
     }
 
     
