@@ -31,17 +31,20 @@ public class UploadController {
     ) {
 
         // tmp 폴더에 파일 저장 후 상대 경로 반환
-    	// 나중에 다른 거 업로드 할때는 "tasks" 이 부분만 모듈화해서 만들면 됨. 아님 화면단에 받아와서 처리하던가.
         String path = fileStorageService.storeEditorImageToTmp(file, "tasks");
 
-        // 클라이언트에서 접근 가능한 전체 URL 생성
-        String base = req.getScheme() + "://" + req.getServerName() +
-                ((req.getServerPort() == 80 || req.getServerPort() == 443)
-                        ? "" // 기본 HTTP/HTTPS 포트면 생략
-                        : ":" + req.getServerPort());
+        if(System.getProperty("os.name").toLowerCase().contains("win")) {
+            // 클라이언트에서 접근 가능한 전체 URL 생성
+            String base = req.getScheme() + "://" + req.getServerName() +
+                    ((req.getServerPort() == 80 || req.getServerPort() == 443)
+                            ? "" // 기본 HTTP/HTTPS 포트면 생략
+                                    : ":" + req.getServerPort());
 
-        // {"url": "http://host:port/uploads/tasks/tmp/파일명"} 형식으로 반환
-        return ResponseEntity.ok(Map.of("url", base + path));
+            // {"url": "http://host:port/uploads/tasks/tmp/파일명"} 형식으로 반환
+            return ResponseEntity.ok(Map.of("url", base + path));
+
+        }
+        return ResponseEntity.ok(Map.of("url", path));
     }
     
     // 이미지 즉시 삭제(수정 시)
