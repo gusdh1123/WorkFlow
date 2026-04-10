@@ -73,7 +73,7 @@
 - PostgreSQL
 
 ### ⚙️ 협업 도구
-- GitHub / Notion / Discord / GitHub Actions(CI)
+- GitHub / Notion / Discord / GitHub Actions(CI/CD)
 
 ### ☁️ DevOps
 - AWS EC2 (Ubuntu)
