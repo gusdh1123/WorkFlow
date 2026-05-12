@@ -72,7 +72,7 @@ export default function MainLayout() {
             <NavLink to="/" className="nav__item">Dashboard</NavLink>
             <NavLink to="/tasks" className="nav__item">My Tasks</NavLink>
 
-            {/* 나중에 추가할 메뉴들 */}
+            {/* 나중에 추가될 기능 */}
             {/* <NavLink to="/projects" className="nav__item">Projects</NavLink>
             <NavLink to="/team" className="nav__item">Team</NavLink>
             <NavLink to="/calendar" className="nav__item">Calendar</NavLink>
