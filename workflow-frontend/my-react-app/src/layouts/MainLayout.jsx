@@ -89,9 +89,9 @@ export default function MainLayout() {
             <header className="header">
               <div className="header__title">{title}</div>
               <div className="header__actions">
-                <button className="ghost__btn">Search</button>
+                {/* <button className="ghost__btn">Search</button> */}
                 {/* <button className="ghostBtn">Profile</button> */}
-                <button className="ghost__btn">Notifications</button>
+                {/* <button className="ghost__btn">Notifications</button> */}
 
                 {/* 이름 표시 */}
                 <div className="user-wrapper">
