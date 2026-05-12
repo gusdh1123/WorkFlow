@@ -12,8 +12,10 @@ SELECT * FROM attachments ORDER by id ASC;
 SELECT * FROM audit_logs;
 SELECT * FROM refresh_tokens;
 SELECT * FROM favorites;
+SELECT * FROM notifications;
 
 -- 테이블 삭제
+DROP TABLE notifications CASCADE;
 DROP TABLE favorites CASCADE;
 DROP TABLE refresh_tokens CASCADE;
 DROP TABLE audit_logs CASCADE;
