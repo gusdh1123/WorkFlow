@@ -369,21 +369,6 @@ INSERT INTO tasks (
     updated_at
 ) VALUES
 
-INSERT INTO tasks (
-    title,
-    description,
-    status,
-    priority,
-    visibility,
-    due_date,
-    created_by,
-    assignee_id,
-    owner_department_id,
-    work_department_id,
-    created_at,
-    updated_at
-) VALUES
-
 -- ADMIN → DEV
 ('인증 서버 리팩토링',
  'JWT 구조 개선 및 인증 로직 정리',
