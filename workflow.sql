@@ -369,6 +369,21 @@ INSERT INTO tasks (
     updated_at
 ) VALUES
 
+INSERT INTO tasks (
+    title,
+    description,
+    status,
+    priority,
+    visibility,
+    due_date,
+    created_by,
+    assignee_id,
+    owner_department_id,
+    work_department_id,
+    created_at,
+    updated_at
+) VALUES
+
 -- ADMIN → DEV
 ('인증 서버 리팩토링',
  'JWT 구조 개선 및 인증 로직 정리',
@@ -413,7 +428,7 @@ INSERT INTO tasks (
  'IN_PROGRESS','MEDIUM','DEPARTMENT','2026-05-25',
  3,2,2,2,now(),now()),
 
--- DSG 내부 (MANAGER → USER)
+-- DSG 내부
 ('프로필 UI 개선',
  '프로필 화면 레이아웃 수정',
  'IN_PROGRESS','MEDIUM','PUBLIC','2026-05-23',
@@ -424,7 +439,6 @@ INSERT INTO tasks (
  'DONE','LOW','PUBLIC','2026-05-18',
  4,5,3,3,now(),now()),
 
--- DSG 내부 (USER → MANAGER)
 ('모바일 UI 테스트',
  '반응형 깨짐 여부 점검',
  'REVIEW','MEDIUM','PUBLIC','2026-05-22',
@@ -456,7 +470,7 @@ INSERT INTO tasks (
  'IN_PROGRESS','MEDIUM','PUBLIC','2026-05-25',
  1,5,1,3,now(),now()),
 
--- 추가 DEV
+-- DEV 추가
 ('DB 인덱스 최적화',
  '조회 성능 개선',
  'IN_PROGRESS','HIGH','PRIVATE','2026-05-27',
@@ -467,7 +481,7 @@ INSERT INTO tasks (
  'REVIEW','HIGH','PRIVATE','2026-05-22',
  2,3,2,2,now(),now()),
 
--- 추가 DSG
+-- DSG 추가
 ('컬러 시스템 정리',
  '브랜드 컬러 체계 정의',
  'DONE','LOW','PUBLIC','2026-05-19',
@@ -476,7 +490,7 @@ INSERT INTO tasks (
 ('아이콘 세트 정리',
  '아이콘 통일 및 리소스 정리',
  'IN_PROGRESS','LOW','PUBLIC','2026-05-26',
- 4,5,3,3,now(),now());
+ 4,5,3,3,now(),now()),
 
 -- 김워크 업무
 ('전체 인증 시스템 보안 점검',
