@@ -71,11 +71,11 @@ export default function MainLayout() {
             {/* NavLink: 현재 경로에 active 스타일 적용 */}
             <NavLink to="/" className="nav__item">Dashboard</NavLink>
             <NavLink to="/tasks" className="nav__item">My Tasks</NavLink>
-            <NavLink to="/projects" className="nav__item">Projects</NavLink>
+            {/* <NavLink to="/projects" className="nav__item">Projects</NavLink>
             <NavLink to="/team" className="nav__item">Team</NavLink>
             <NavLink to="/calendar" className="nav__item">Calendar</NavLink>
             <NavLink to="/reports" className="nav__item">Reports</NavLink>
-            <NavLink to="/settings" className="nav__item">Settings</NavLink>
+            <NavLink to="/settings" className="nav__item">Settings</NavLink> */}
           </nav>
         </aside>
 
