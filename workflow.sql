@@ -527,7 +527,7 @@ INSERT INTO tasks (
 ('운영 안정성 및 배포 전략 개선',
  '무중단 배포 및 롤백 전략 표준화',
  'IN_PROGRESS','HIGH','DEPARTMENT','2026-05-27',
- 1,1,1,2,now(),now())
+ 1,1,1,2,now(),now());
 
 
 -- 생성된 테이블 조회
