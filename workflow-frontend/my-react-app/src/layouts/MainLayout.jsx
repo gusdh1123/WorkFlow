@@ -89,7 +89,7 @@ export default function MainLayout() {
             <header className="header">
               <div className="header__title">{title}</div>
               <div className="header__actions">
-                {/* 나중에 추가 */}
+                {/* 나중에 추가될 기능들*/}
                 {/* <button className="ghost__btn">Search</button> */}
                 {/* <button className="ghostBtn">Profile</button> */}
                 {/* <button className="ghost__btn">Notifications</button> */}
