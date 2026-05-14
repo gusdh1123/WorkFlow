@@ -218,7 +218,7 @@
 <details>
 <summary><b>List</b></summary>
 
-<img width="1816" height="1211" alt="List" src="https://github.com/user-attachments/assets/00d0d52e-51b0-4297-8b3d-0070fc9e4543" />
+<img width="2029" height="1207" alt="image" src="https://github.com/user-attachments/assets/d052965c-44b8-469d-aed9-27e6e2d50640" />
 
 </details>
 </li>
