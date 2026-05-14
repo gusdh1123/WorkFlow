@@ -218,7 +218,7 @@
 <details>
 <summary><b>List</b></summary>
 
-<img width="2029" height="1207" alt="image" src="https://github.com/user-attachments/assets/d052965c-44b8-469d-aed9-27e6e2d50640" />
+<img width="1825" height="1216" alt="image" src="https://github.com/user-attachments/assets/d0477738-6f6f-4dcc-9058-2d7dc963fdb7" />
 
 </details>
 </li>
@@ -227,7 +227,7 @@
 <details>
 <summary><b>Create</b></summary>
 
-<img width="1811" height="1237" alt="Create" src="https://github.com/user-attachments/assets/b8d2984f-1f36-4328-9eb3-c99814bd01ae" />
+<img width="1562" height="1248" alt="image" src="https://github.com/user-attachments/assets/d6077822-61ed-444c-8186-5b9cb7d5e96c" />
 
 </details>
 </li>
@@ -236,7 +236,7 @@
 <details>
 <summary><b>Read</b></summary>
 
-<img width="1736" height="1212" alt="Read" src="https://github.com/user-attachments/assets/82d2bb5b-353d-4699-9edc-a8e85e0f2b2c" />
+<img width="1571" height="1216" alt="image" src="https://github.com/user-attachments/assets/a7689c67-3407-4bca-bca0-caba090c1f53" />
 
 </details>
 </li>
@@ -245,7 +245,7 @@
 <details>
 <summary><b>Update</b></summary>
 
-<img width="1618" height="1226" alt="Update" src="https://github.com/user-attachments/assets/76add4f7-056a-455f-89c2-f6c907c8b196" />
+<img width="1391" height="1225" alt="image" src="https://github.com/user-attachments/assets/e226a926-daf2-425a-a724-2dd2cc870952" />
 
 </details>
 </li>
@@ -254,7 +254,7 @@
 <details>
 <summary><b>Delete</b></summary>
 
-<img width="1629" height="1259" alt="Delete" src="https://github.com/user-attachments/assets/2f3a30de-310c-46b3-81ae-b75620bb73fd" />
+<img width="1397" height="579" alt="image" src="https://github.com/user-attachments/assets/08dc3868-1e35-4ddc-bfb5-ac20aa750fb3" />
 
 </details>
 </li>
@@ -263,8 +263,7 @@
 <details>
 <summary><b>Restore</b></summary>
 
-<img width="2025" height="1221" alt="Restore" src="https://github.com/user-attachments/assets/7b9370f3-897e-4c14-b3bd-5b96704c16de" />
-
+<img width="1402" height="522" alt="image" src="https://github.com/user-attachments/assets/2e8ef606-e4eb-4231-911d-afff831a2aae" />
 
 </details>
 </li>
@@ -273,9 +272,7 @@
 <details>
 <summary><b>Favorite</b></summary>
 
-<img width="2026" height="1206" alt="Favorite" src="https://github.com/user-attachments/assets/85316cd9-8984-44f5-a180-5ad542a24d48" />
-
-<img width="580" height="315" alt="Favorite1" src="https://github.com/user-attachments/assets/86a1dc16-ffbb-4627-8b91-f8c9aaa44119" />
+<img width="1411" height="478" alt="image" src="https://github.com/user-attachments/assets/a16281e1-96ff-479f-9589-916ff311deb0" />
 
 </details>
 </li>
