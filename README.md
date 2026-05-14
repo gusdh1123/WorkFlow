@@ -205,7 +205,7 @@
 <details>
 <summary><b>Dashboard</b></summary>
 
-<img width="1924" height="1201" alt="DashBoard" src="https://github.com/user-attachments/assets/ffe9d8c1-fd5a-4b6d-92db-5d988dc779b0" />
+<img width="2027" height="1212" alt="image" src="https://github.com/user-attachments/assets/45ba1b3c-5d08-4bb4-8f85-5a68042134c8" />
 
 </details>
 
