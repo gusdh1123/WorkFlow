@@ -372,161 +372,161 @@ INSERT INTO tasks (
 -- ADMIN → DEV
 ('인증 서버 리팩토링',
  'JWT 구조 개선 및 인증 로직 정리',
- 'IN_PROGRESS','HIGH','PRIVATE','2026-05-22',
+ 'IN_PROGRESS','HIGH','PRIVATE','2026-06-22',
  1,3,1,2,now(),now()),
 
 ('메인 API 응답 속도 개선',
  '쿼리 최적화 및 캐싱 적용',
- 'TODO','HIGH','DEPARTMENT','2026-05-28',
+ 'TODO','HIGH','DEPARTMENT','2026-06-28',
  1,2,1,2,now(),now()),
 
 -- ADMIN → DSG
 ('대시보드 UI 개선',
  '카드 레이아웃 및 색상 개선',
- 'IN_PROGRESS','MEDIUM','PUBLIC','2026-05-24',
+ 'IN_PROGRESS','MEDIUM','PUBLIC','2026-06-24',
  1,4,1,3,now(),now()),
 
 ('알림 아이콘 디자인 수정',
  '아이콘 가시성 개선 및 통일성 유지',
- 'TODO','LOW','PUBLIC','2026-05-29',
+ 'TODO','LOW','PUBLIC','2026-06-29',
  1,5,1,3,now(),now()),
 
 -- DEV 내부 (MANAGER → USER)
 ('로그인 실패 처리',
  '예외 메시지 및 로깅 강화',
- 'REVIEW','HIGH','PRIVATE','2026-05-21',
+ 'REVIEW','HIGH','PRIVATE','2026-06-21',
  2,3,2,2,now(),now()),
 
 ('검색 기능 리팩토링',
  '검색 쿼리 개선 및 성능 향상',
- 'IN_PROGRESS','MEDIUM','DEPARTMENT','2026-05-26',
+ 'IN_PROGRESS','MEDIUM','DEPARTMENT','2026-06-26',
  2,3,2,2,now(),now()),
 
 -- DEV 내부 (USER → MANAGER)
 ('배포 자동화 스크립트 작성',
  'CI/CD 스크립트 구성',
- 'TODO','HIGH','DEPARTMENT','2026-05-30',
+ 'TODO','HIGH','DEPARTMENT','2026-06-30',
  3,2,2,2,now(),now()),
 
 ('테스트 코드 보강',
  '단위 테스트 및 통합 테스트 추가',
- 'IN_PROGRESS','MEDIUM','DEPARTMENT','2026-05-25',
+ 'IN_PROGRESS','MEDIUM','DEPARTMENT','2026-06-25',
  3,2,2,2,now(),now()),
 
 -- DSG 내부
 ('프로필 UI 개선',
  '프로필 화면 레이아웃 수정',
- 'IN_PROGRESS','MEDIUM','PUBLIC','2026-05-23',
+ 'IN_PROGRESS','MEDIUM','PUBLIC','2026-06-23',
  4,5,3,3,now(),now()),
 
 ('버튼 스타일 가이드 정리',
  '공통 버튼 스타일 정의',
- 'DONE','LOW','PUBLIC','2026-05-18',
+ 'DONE','LOW','PUBLIC','2026-06-18',
  4,5,3,3,now(),now()),
 
 ('모바일 UI 테스트',
  '반응형 깨짐 여부 점검',
- 'REVIEW','MEDIUM','PUBLIC','2026-05-22',
+ 'REVIEW','MEDIUM','PUBLIC','2026-06-22',
  5,4,3,3,now(),now()),
 
 ('에러 페이지 디자인',
  '404/500 페이지 디자인 개선',
- 'TODO','LOW','PUBLIC','2026-05-27',
+ 'TODO','LOW','PUBLIC','2026-06-27',
  5,4,3,3,now(),now()),
 
 -- ADMIN 혼합
 ('알림 시스템 설계',
  '실시간 알림 구조 정의',
- 'TODO','HIGH','PRIVATE','2026-05-27',
+ 'TODO','HIGH','PRIVATE','2026-06-27',
  1,3,1,2,now(),now()),
 
 ('파일 업로드 최적화',
  '대용량 파일 처리 개선',
- 'IN_PROGRESS','HIGH','DEPARTMENT','2026-05-26',
+ 'IN_PROGRESS','HIGH','DEPARTMENT','2026-06-26',
  1,2,1,2,now(),now()),
 
 ('UI 접근성 개선',
  '웹 접근성 기준 반영',
- 'TODO','MEDIUM','PUBLIC','2026-05-28',
+ 'TODO','MEDIUM','PUBLIC','2026-06-28',
  1,4,1,3,now(),now()),
 
 ('다크모드 지원',
  '다크모드 UI 설계 및 적용',
- 'IN_PROGRESS','MEDIUM','PUBLIC','2026-05-25',
+ 'IN_PROGRESS','MEDIUM','PUBLIC','2026-06-25',
  1,5,1,3,now(),now()),
 
 -- DEV 추가
 ('DB 인덱스 최적화',
  '조회 성능 개선',
- 'IN_PROGRESS','HIGH','PRIVATE','2026-05-27',
+ 'IN_PROGRESS','HIGH','PRIVATE','2026-06-27',
  2,3,2,2,now(),now()),
 
 ('토큰 만료 처리',
  '리프레시 토큰 관리 개선',
- 'REVIEW','HIGH','PRIVATE','2026-05-22',
+ 'REVIEW','HIGH','PRIVATE','2026-06-22',
  2,3,2,2,now(),now()),
 
 -- DSG 추가
 ('컬러 시스템 정리',
  '브랜드 컬러 체계 정의',
- 'DONE','LOW','PUBLIC','2026-05-19',
+ 'DONE','LOW','PUBLIC','2026-06-19',
  4,5,3,3,now(),now()),
 
 ('아이콘 세트 정리',
  '아이콘 통일 및 리소스 정리',
- 'IN_PROGRESS','LOW','PUBLIC','2026-05-26',
+ 'IN_PROGRESS','LOW','PUBLIC','2026-06-26',
  4,5,3,3,now(),now()),
 
 -- 김워크 관리자 업무 (정리된 구조)
 
 ('전체 인증 아키텍처 재설계',
  'JWT 기반 인증 구조 및 보안 정책 전면 재정의',
- 'IN_PROGRESS','HIGH','PRIVATE','2026-05-29',
+ 'IN_PROGRESS','HIGH','PRIVATE','2026-06-29',
  1,1,1,2,now(),now()),
 
 ('전사 권한 체계 표준화',
  'ADMIN / MANAGER / USER 권한 정책 통합 설계',
- 'REVIEW','HIGH','PRIVATE','2026-05-28',
+ 'REVIEW','HIGH','PRIVATE','2026-06-28',
  1,1,1,2,now(),now()),
 
 ('API 공통 응답 구조 설계',
  '전 시스템 Response DTO 표준화 및 에러 코드 체계 정리',
- 'IN_PROGRESS','MEDIUM','DEPARTMENT','2026-05-27',
+ 'IN_PROGRESS','MEDIUM','DEPARTMENT','2026-06-27',
  1,1,1,2,now(),now()),
 
 ('전체 시스템 장애 대응 전략 수립',
  '장애 발생 시 자동 복구 및 알림 정책 정의',
- 'TODO','HIGH','PRIVATE','2026-05-30',
+ 'TODO','HIGH','PRIVATE','2026-06-30',
  1,1,1,2,now(),now()),
 
 ('로그/모니터링 아키텍처 설계',
  'ELK 기반 로그 수집 구조 및 모니터링 기준 정의',
- 'IN_PROGRESS','HIGH','DEPARTMENT','2026-05-26',
+ 'IN_PROGRESS','HIGH','DEPARTMENT','2026-06-26',
  1,1,1,2,now(),now()),
 
 ('데이터베이스 성능 관리 정책 수립',
  '슬로우 쿼리 탐지 및 인덱스 관리 기준 설계',
- 'TODO','HIGH','PRIVATE','2026-05-28',
+ 'TODO','HIGH','PRIVATE','2026-06-28',
  1,1,1,2,now(),now()),
 
 ('파일 업로드 보안 정책 정의',
  'S3 업로드 검증 및 악성 파일 필터링 구조 설계',
- 'IN_PROGRESS','HIGH','DEPARTMENT','2026-05-25',
+ 'IN_PROGRESS','HIGH','DEPARTMENT','2026-06-25',
  1,1,1,2,now(),now()),
 
 ('실시간 알림 시스템 구조 설계',
  'WebSocket 기반 이벤트 처리 아키텍처 정의',
- 'TODO','HIGH','PRIVATE','2026-05-29',
+ 'TODO','HIGH','PRIVATE','2026-06-29',
  1,1,1,2,now(),now()),
 
 ('시스템 아키텍처 개선 전략 수립',
  '전체 서비스 구조 모듈화 및 확장성 개선 방향 정의',
- 'REVIEW','HIGH','PRIVATE','2026-05-30',
+ 'REVIEW','HIGH','PRIVATE','2026-06-30',
  1,1,1,2,now(),now()),
 
 ('운영 안정성 및 배포 전략 개선',
  '무중단 배포 및 롤백 전략 표준화',
- 'IN_PROGRESS','HIGH','DEPARTMENT','2026-05-27',
+ 'IN_PROGRESS','HIGH','DEPARTMENT','2026-06-27',
  1,1,1,2,now(),now());
 
 
