@@ -66,7 +66,7 @@ department · users · tasks · comments · attachments · audit_logs · refresh
 
 <details>
   <summary>상세 ERD</summary>
-  <img width="1401" height="931" alt="erd- 댓글 x drawio" src="https://github.com/user-attachments/assets/327f6dec-09e6-4395-9186-520e5376d442" />
+  <img width="1401" height="931" alt="erd- 댓글 x drawio" src="https://github.com/user-attachments/assets/5ee8f5a6-8627-45b0-9afd-b409490a0d4e" />
 </details>
 
 ---
