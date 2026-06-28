@@ -55,6 +55,22 @@
 
 ---
 
+## 🗃️ DB 설계 (ERD)
+
+department · users · tasks · comments · attachments · audit_logs · refresh_tokens · favorites 총 8개 테이블로 구성했습니다.
+
+<details>
+  <summary>간단 ERD</summary>
+  <img width="1401" height="821" alt="간단 erd" src="https://github.com/user-attachments/assets/5094e765-8ecc-4a5b-995d-863a98921ea6" />
+</details>
+
+<details>
+  <summary>상세 ERD</summary>
+  <img width="1401" height="821" alt="erd" src="https://github.com/user-attachments/assets/f26f1a93-5845-450b-a6d6-877cda9e1a1f" />
+</details>
+
+---
+
 ## 🛠️ 사용 기술 스택
 
 ### 💻 Backend
@@ -143,7 +159,7 @@
   - 부서별 필터 가능
 
 ### 7️⃣ 즐겨찾기
-- 별 아이콘 클릭 시 즐겨찾기 등록/해제 (낙관적 업데이트 적용)
+- 별 아이콘 클릭 시 즐겨찾기 등록/해제
 - 즐겨찾기 기준 정렬 및 필터링 지원
 
 ---
