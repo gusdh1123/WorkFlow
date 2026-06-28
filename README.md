@@ -61,12 +61,12 @@ department · users · tasks · comments · attachments · audit_logs · refresh
 
 <details>
   <summary>간단 ERD</summary>
-  <img width="1401" height="821" alt="간단 erd drawio" src="https://github.com/user-attachments/assets/22ca11c6-05ea-42a8-9325-01678cdbb974" />
+  <img width="1401" height="908" alt="간단 erd - 댓글 x drawio" src="https://github.com/user-attachments/assets/6cfba9b1-6deb-4da0-8232-4f920fd83a19" />
 </details>
 
 <details>
   <summary>상세 ERD</summary>
-  <img width="1401" height="821" alt="erd drawio" src="https://github.com/user-attachments/assets/4b74343f-d5c5-4c86-a600-26efc1fd0129" />
+  <img width="1401" height="931" alt="erd- 댓글 x drawio" src="https://github.com/user-attachments/assets/327f6dec-09e6-4395-9186-520e5376d442" />
 </details>
 
 ---
