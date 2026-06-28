@@ -57,7 +57,7 @@
 
 ## 🗃️ DB 설계 (ERD)
 
-department · users · tasks · comments · attachments · audit_logs · refresh_tokens · favorites 총 8개 테이블로 구성했습니다.
+department · users · tasks · attachments · audit_logs · refresh_tokens · favorites 총 7개 테이블로 구성했습니다.
 
 <details>
   <summary>간단 ERD</summary>
