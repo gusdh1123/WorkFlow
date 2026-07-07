@@ -92,7 +92,7 @@ department · users · tasks · attachments · audit_logs · refresh_tokens · f
 
 ### ☁️ DevOps
 - AWS EC2 (Ubuntu)
-- 고정 IP + 도메인 설정
+- 고정 IP 및 도메인 설정
 
 ---
 
