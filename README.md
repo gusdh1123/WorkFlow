@@ -58,6 +58,13 @@
 ## 🔑 보안 설계
 Refresh Token 탈취 및 재사용 가능성을 고려해 DB에는 원문이 아닌 해시값을 저장하고, 재발급 시 기존 토큰을 폐기하는 Rotation 방식을 적용했습니다. 또한 만료·폐기된 토큰은 Scheduler를 통해 주기적으로 정리하여 보안성과 DB 관리 효율을 개선했습니다.
 
+<details>
+<summary><b>JWT 기반 인증/인가 처리 흐름</b></summary>
+  
+<img width="1151" height="841" alt="리프래쉬 토큰 로테이션 구조도 drawio" src="https://github.com/user-attachments/assets/a1d1ec5b-d251-42ee-bc63-b0881f27396b" />
+
+</details>
+
 ---
 
 ## 🗃️ DB 설계 (ERD)
