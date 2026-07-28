@@ -59,7 +59,7 @@
 Refresh Token 탈취 및 재사용 가능성을 고려해 DB에는 원문 대신 해시값을 저장하고, 재발급 시 기존 토큰을 폐기한 뒤 새로운 토큰을 발급하는 Rotation 방식을 적용했습니다. 또한 폐기된 토큰은 일정 기간 보관 후 Scheduler를 통해 자동 삭제하여 DB 관리 효율을 높였습니다.
 
 <details>
-<summary>JWT 기반 인증/인가 처리 흐름</summary>
+<summary>JWT 기반 인증/인가 처리 흐름 (Refresh Token Rotation 포함)</summary>
   
 <img width="1081" height="683" alt="리프래쉬 토큰 로테이션 구조도 drawio" src="https://github.com/user-attachments/assets/7ba3d716-44e2-42ff-99a0-84c037619fd4" />
 
