@@ -61,7 +61,7 @@ Refresh Token 탈취 및 재사용 가능성을 고려해 DB에는 원문 대신
 <details>
 <summary>JWT 기반 인증/인가 처리 흐름</summary>
   
-<img width="1151" height="841" alt="리프래쉬 토큰 로테이션 구조도 drawio" src="https://github.com/user-attachments/assets/a1d1ec5b-d251-42ee-bc63-b0881f27396b" />
+<img width="1081" height="683" alt="리프래쉬 토큰 로테이션 구조도 drawio" src="https://github.com/user-attachments/assets/7ba3d716-44e2-42ff-99a0-84c037619fd4" />
 
 </details>
 
