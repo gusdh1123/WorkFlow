@@ -1,4 +1,4 @@
-name: Deploy to EC2
+name: WorkFlow CD
 
 # main 브랜치에 push 될 때 자동 실행
 on:
