@@ -46,18 +46,39 @@ export default function TaskDetail() {
   const [imgModal, setImgModal] = useState({ open: false, src: "", alt: "" });
   const closeModal = () => setImgModal({ open: false, src: "", alt: "" });
 
-  // 이미지 클릭 시 모달 오픈
-const handleDescriptionClick = (e) => {
-  const target = e.target;
-  // 클릭된 요소가 이미지(IMG) 태그인지 확인
-  if (target && target.tagName === "IMG") {
-    setImgModal({
-      open: true,
-      src: target.getAttribute("src") || "",
-      alt: target.getAttribute("alt") || "",
-    });
-  }
-};
+// 이미지 클릭 시 모달 오픈
+useEffect(() => {
+  // setTimeout을 주어 브라우저가 dangerouslySetInnerHTML 렌더링을 끝내기를 기다림
+  const timer = setTimeout(() => {
+    const el = descRef.current;
+    if (!el) return;
+
+    const onClick = (e) => {
+      const target = e.target;
+      if (target && target.tagName === "IMG") {
+        setImgModal({
+          open: true,
+          src: target.getAttribute("src") || "",
+          alt: target.getAttribute("alt") || "",
+        });
+      }
+    };
+
+    el.addEventListener("click", onClick);
+    
+    // 내부 cleanup 함수에서 지울 수 있도록 참조 저장
+    el._oldOnClick = onClick; 
+  }, 50); // 미세한 지연으로 운영 서버 타이밍 이슈 해결
+
+  // cleanup 함수
+  return () => {
+    clearTimeout(timer);
+    const el = descRef.current;
+    if (el && el._oldOnClick) {
+      el.removeEventListener("click", el._oldOnClick);
+    }
+  };
+}, [task?.description]);
 
   // Task + Audit Log 조회
   useEffect(() => {
@@ -298,12 +319,7 @@ const toggleFavorite = async (taskId) => {
       <div className="taskdetail__grid">
         <div className="taskdetail__card">
           {task.description ? (
-            <div 
-              ref={descRef}
-              onClick={handleDescriptionClick} 
-              className="taskdetail__desc" 
-              dangerouslySetInnerHTML={{ __html: task?.description || "" }} 
-            />
+            <div ref={descRef} className="taskdetail__desc" dangerouslySetInnerHTML={{ __html: task.description }} />
           ) : (
             <div className="taskdetail__empty">설명이 없습니다.</div>
           )}
