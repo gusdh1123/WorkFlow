@@ -46,10 +46,8 @@ export default function TaskDetail() {
   const [imgModal, setImgModal] = useState({ open: false, src: "", alt: "" });
   const closeModal = () => setImgModal({ open: false, src: "", alt: "" });
 
-// 이미지 클릭 시 모달 오픈
-useEffect(() => {
-  // setTimeout을 주어 브라우저가 dangerouslySetInnerHTML 렌더링을 끝내기를 기다림
-  const timer = setTimeout(() => {
+  // 이미지 클릭 시 모달 오픈
+  useEffect(() => {
     const el = descRef.current;
     if (!el) return;
 
@@ -65,20 +63,8 @@ useEffect(() => {
     };
 
     el.addEventListener("click", onClick);
-    
-    // 내부 cleanup 함수에서 지울 수 있도록 참조 저장
-    el._oldOnClick = onClick; 
-  }, 50); // 미세한 지연으로 운영 서버 타이밍 이슈 해결
-
-  // cleanup 함수
-  return () => {
-    clearTimeout(timer);
-    const el = descRef.current;
-    if (el && el._oldOnClick) {
-      el.removeEventListener("click", el._oldOnClick);
-    }
-  };
-}, [task?.description]);
+    return () => el.removeEventListener("click", onClick);
+  }, [task?.description]);
 
   // Task + Audit Log 조회
   useEffect(() => {
