@@ -47,24 +47,17 @@ export default function TaskDetail() {
   const closeModal = () => setImgModal({ open: false, src: "", alt: "" });
 
   // 이미지 클릭 시 모달 오픈
-  useEffect(() => {
-    const el = descRef.current;
-    if (!el) return;
-
-    const onClick = (e) => {
-      const target = e.target;
-      if (target && target.tagName === "IMG") {
-        setImgModal({
-          open: true,
-          src: target.getAttribute("src") || "",
-          alt: target.getAttribute("alt") || "",
-        });
-      }
-    };
-
-    el.addEventListener("click", onClick);
-    return () => el.removeEventListener("click", onClick);
-  }, [task?.description]);
+const handleDescriptionClick = (e) => {
+  const target = e.target;
+  // 클릭된 요소가 이미지(IMG) 태그인지 확인
+  if (target && target.tagName === "IMG") {
+    setImgModal({
+      open: true,
+      src: target.getAttribute("src") || "",
+      alt: target.getAttribute("alt") || "",
+    });
+  }
+};
 
   // Task + Audit Log 조회
   useEffect(() => {
@@ -305,7 +298,12 @@ const toggleFavorite = async (taskId) => {
       <div className="taskdetail__grid">
         <div className="taskdetail__card">
           {task.description ? (
-            <div ref={descRef} className="taskdetail__desc" dangerouslySetInnerHTML={{ __html: task.description }} />
+            <div 
+              ref={descRef}
+              onClick={handleDescriptionClick} 
+              className="taskdetail__desc" 
+              dangerouslySetInnerHTML={{ __html: task?.description || "" }} 
+            />
           ) : (
             <div className="taskdetail__empty">설명이 없습니다.</div>
           )}
