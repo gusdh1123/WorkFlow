@@ -2,12 +2,16 @@ name: WorkFlow CD
 
 # main 브랜치에 push 될 때 자동 실행
 on:
-  push:
+  workflow_run:
+    workflow: [WorkFlow CI]
+    types:
+        - completed
     branches:
-      - main
+        - main
   
 jobs:
   deploy:
+  if: ${{github.event.workflow_run.conclusion == 'success'}}
     runs-on: ubuntu-latest
     
     steps:
